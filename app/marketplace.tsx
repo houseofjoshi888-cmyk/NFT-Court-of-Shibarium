@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -14,13 +14,12 @@ import {
 } from "lucide-react";
 import {
   getAddress,
+  formatEther,
   parseEther,
 } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { shibarium } from "./web3-provider";
-
-const marketplaceAddress = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS as `0x${string}` | undefined;
 
 const marketplaceAbi = [
   {
@@ -31,6 +30,16 @@ const marketplaceAbi = [
       { name: "nftAddress", type: "address" },
       { name: "tokenId", type: "uint256" },
       { name: "price", type: "uint256" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "buyItem",
+    stateMutability: "payable",
+    inputs: [
+      { name: "nftAddress", type: "address" },
+      { name: "tokenId", type: "uint256" },
     ],
     outputs: [],
   },
@@ -48,6 +57,39 @@ function shortAddress(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
+type IndexedListing = {
+  id: string;
+  nftAddress: `0x${string}`;
+  tokenId: string;
+  seller: `0x${string}`;
+  price: string;
+  transactionHash: `0x${string}`;
+  createdBlock: number;
+  updatedBlock: number;
+};
+
+type IndexedActivity = {
+  id: string;
+  eventType: "listed" | "sold" | "canceled" | "withdrawn";
+  nftAddress: `0x${string}` | null;
+  tokenId: string | null;
+  seller: `0x${string}` | null;
+  buyer: `0x${string}` | null;
+  price: string | null;
+  transactionHash: `0x${string}`;
+  blockNumber: number;
+  logIndex: number;
+};
+
+type IndexerResponse = {
+  configured: boolean;
+  marketplaceAddress?: `0x${string}`;
+  listings: IndexedListing[];
+  activity: IndexedActivity[];
+  sync: { caughtUp: boolean; syncedThrough: number; safeLatest: number } | null;
+  syncError?: string | null;
+};
+
 export function Marketplace() {
   const { address: account } = useAccount();
   const chainId = useChainId();
@@ -56,6 +98,35 @@ export function Marketplace() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showList, setShowList] = useState(false);
   const [status, setStatus] = useState("");
+  const [listings, setListings] = useState<IndexedListing[]>([]);
+  const [activity, setActivity] = useState<IndexedActivity[]>([]);
+  const [indexerReady, setIndexerReady] = useState<boolean | null>(null);
+  const [indexerError, setIndexerError] = useState("");
+  const [marketplaceAddress, setMarketplaceAddress] = useState<`0x${string}` | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadOnchainData() {
+      try {
+        const response = await fetch("/api/indexer", { cache: "no-store" });
+        if (!response.ok) throw new Error("Indexer API is unavailable");
+        const data = await response.json() as IndexerResponse;
+        if (!active) return;
+        setIndexerReady(data.configured);
+        setListings(data.listings);
+        setActivity(data.activity);
+        setMarketplaceAddress(data.marketplaceAddress ?? null);
+        setIndexerError(data.syncError ?? "");
+      } catch (error) {
+        if (!active) return;
+        setIndexerReady(false);
+        setIndexerError(error instanceof Error ? error.message : "Indexer API is unavailable");
+      }
+    }
+    void loadOnchainData();
+    const refresh = window.setInterval(loadOnchainData, 30_000);
+    return () => { active = false; window.clearInterval(refresh); };
+  }, []);
 
   async function listNft(nftAddress: string, tokenId: string, price: string) {
     if (!account) {
@@ -80,6 +151,32 @@ export function Marketplace() {
     }
   }
 
+  async function buyListing(listing: IndexedListing) {
+    if (!account) {
+      setStatus("Connect a wallet before acquiring a work.");
+      return;
+    }
+    if (!marketplaceAddress) {
+      setStatus("The marketplace contract address is not configured.");
+      return;
+    }
+    try {
+      if (chainId !== shibarium.id) await switchChainAsync({ chainId: shibarium.id });
+      setStatus(`Confirm purchase of token #${listing.tokenId} in your wallet.`);
+      const hash = await writeContractAsync({
+        address: marketplaceAddress,
+        abi: marketplaceAbi,
+        functionName: "buyItem",
+        args: [getAddress(listing.nftAddress), BigInt(listing.tokenId)],
+        value: BigInt(listing.price),
+        chainId: shibarium.id,
+      });
+      setStatus(`Purchase submitted ${shortAddress(hash)}. The indexer will update after confirmation.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message.split("\n")[0] : "Purchase was not completed.");
+    }
+  }
+
   return (
     <main>
       <header className="site-header">
@@ -88,10 +185,11 @@ export function Marketplace() {
           <span>HOUSE OF JOSHI</span>
         </a>
         <nav className={menuOpen ? "nav open" : "nav"} aria-label="Primary navigation">
-          <a href="#market">Market</a>
-          <a href="#collections">Collections</a>
-          <a href="#activity">Activity</a>
-          <a href="#about">Court notes</a>
+          <a href="/market">Market</a>
+          <a href="/sell">Sell</a>
+          <a href="/activity">Activity</a>
+          <a href="/account">Account</a>
+          <a href="/protocol">Protocol</a>
         </nav>
         <div className="header-actions">
           <span className="network"><i /> Shibarium · 109</span>
@@ -111,8 +209,8 @@ export function Marketplace() {
             <h1>THE NFT<br />COURT OF<br /><em>SHIBARIUM</em></h1>
             <p className="lede">Discover, acquire, and present singular works on Shibarium. Final settlement in BONE, with provenance written onchain.</p>
             <div className="hero-actions">
-              <a className="primary-action" href="#market">Enter the market <ArrowDownRight size={18} /></a>
-              <a className="text-action" href="#about">Read the court notes <ArrowUpRight size={16} /></a>
+              <a className="primary-action" href="/market">Enter the market <ArrowDownRight size={18} /></a>
+              <a className="text-action" href="/protocol">Read the court notes <ArrowUpRight size={16} /></a>
             </div>
           </div>
           <div className="hero-art" aria-label="Abstract faceted marketplace artwork">
@@ -130,14 +228,14 @@ export function Marketplace() {
       <section className="market-section" id="market">
         <div className="section-heading">
           <div><span className="section-no">01 / MARKET</span><h2>WORKS BEFORE<br />THE COURT</h2></div>
-          <p>Verified active ERC-721 listings will be shown here when the onchain index is connected.</p>
+          <p>Verified active ERC-721 listings will be shown here when the onchain index is connected. A fixed 2% protocol fee is deducted from seller proceeds.</p>
         </div>
-        <div className="empty-market" id="collections">
-          <span className="empty-index">NO LIVE LISTINGS</span>
-          <h3>The court is awaiting<br />its first presentation.</h3>
-          <p>Listings will appear here only after the marketplace contract and onchain indexer are connected.</p>
+        {listings.length > 0 ? <div className="indexed-lots" id="collections">{listings.map((listing) => <IndexedListingCard key={listing.id} listing={listing} connected={!!account} onBuy={buyListing} />)}</div> : <div className="empty-market" id="collections">
+          <span className="empty-index">{indexerReady === null ? "SYNCING SHIBARIUM" : indexerReady ? "NO ACTIVE LISTINGS" : "INDEXER NOT CONFIGURED"}</span>
+          <h3>{indexerReady === null ? <>Reading the<br />onchain record.</> : indexerReady ? <>The court is awaiting<br />its first presentation.</> : <>Connect the contract<br />to open the court.</>}</h3>
+          <p>{indexerError || (indexerReady ? "No active marketplace listings were found in the confirmed event record." : "Listings will appear only after the deployed marketplace address and block are configured.")}</p>
           <button onClick={() => setShowList(true)}>Present a work <ArrowUpRight size={16} /></button>
-        </div>
+        </div>}
       </section>
 
       <section className="manifesto" id="about">
@@ -148,13 +246,13 @@ export function Marketplace() {
 
       <section className="activity-section" id="activity">
         <span className="section-no">03 / RECENT JUDGMENTS</span>
-        <div className="empty-activity"><span>No indexed activity yet.</span><p>Verified listing, sale, cancellation, and withdrawal events will appear here.</p></div>
+        {activity.length > 0 ? <div className="activity-list">{activity.map((item) => <ActivityRow key={item.id} item={item} />)}</div> : <div className="empty-activity"><span>{indexerReady === null ? "Synchronizing confirmed blocks." : "No indexed activity yet."}</span><p>Verified listing, sale, cancellation, and withdrawal events will appear here.</p></div>}
       </section>
 
       <footer>
         <div className="footer-brand"><span className="sigil">HJ</span><strong>HOUSE OF JOSHI</strong><p>An independent marketplace for Shibarium’s most considered digital works.</p></div>
-        <div><span className="footer-label">NETWORK</span><a href="https://shibariumscan.io" target="_blank" rel="noreferrer">ShibariumScan <ExternalLink size={13} /></a><span>Chain ID 109</span><span>Settlement in BONE</span></div>
-        <div><span className="footer-label">COURT</span><a href="#market">Market</a><a href="#collections">Collections</a><a href="#activity">Activity</a></div>
+        <div><span className="footer-label">NETWORK</span><a href="https://shibariumscan.io" target="_blank" rel="noreferrer">ShibariumScan <ExternalLink size={13} /></a><span>Chain ID 109</span><span>Settlement in BONE</span><span>Protocol fee 2%</span></div>
+        <div><span className="footer-label">COURT</span><a href="/market">Market</a><a href="/sell">Sell</a><a href="/activity">Activity</a><a href="/account">Account</a></div>
         <div><span className="footer-label">PROTOCOL</span><a href="https://docs.shib.io/shibarium" target="_blank" rel="noreferrer">Documentation <ExternalLink size={13} /></a><a href="https://rpc.shibarium.shib.io" target="_blank" rel="noreferrer">RPC endpoint <ExternalLink size={13} /></a></div>
         <p className="copyright">© 2026 HOUSE OF JOSHI · ALL TRANSACTIONS ARE FINAL ONCHAIN.</p>
       </footer>
@@ -163,6 +261,32 @@ export function Marketplace() {
       {showList && <ListingPanel onClose={() => setShowList(false)} onSubmit={listNft} account={account} />}
     </main>
   );
+}
+
+function IndexedListingCard({ listing, connected, onBuy }: { listing: IndexedListing; connected: boolean; onBuy: (listing: IndexedListing) => void }) {
+  const price = formatEther(BigInt(listing.price));
+  return <article className="indexed-card">
+    <div className="indexed-art"><span>ERC-721</span><strong>#{listing.tokenId}</strong><i>{shortAddress(listing.nftAddress)}</i></div>
+    <div className="indexed-meta">
+      <span className="collection-address">{shortAddress(listing.nftAddress)}</span>
+      <h3>Token #{listing.tokenId}</h3>
+      <p>Owner · {shortAddress(listing.seller)}</p>
+      <div className="indexed-price"><span>ASKING</span><strong>{price} <i>BONE</i></strong></div>
+      {connected ? <button onClick={() => onBuy(listing)}>Acquire <ArrowUpRight size={15} /></button> : <ConnectButton.Custom>{({ openConnectModal }) => <button onClick={openConnectModal}>Connect to acquire <Wallet size={15} /></button>}</ConnectButton.Custom>}
+    </div>
+  </article>;
+}
+
+function ActivityRow({ item }: { item: IndexedActivity }) {
+  const subject = item.nftAddress && item.tokenId ? `${shortAddress(item.nftAddress)} · #${item.tokenId}` : item.seller ? shortAddress(item.seller) : "Marketplace";
+  const participant = item.buyer ?? item.seller;
+  return <a className="activity-row" href={`https://shibariumscan.io/tx/${item.transactionHash}`} target="_blank" rel="noreferrer">
+    <span className={`activity-type ${item.eventType}`}>{item.eventType.toUpperCase()}</span>
+    <span>{subject}</span>
+    <span className="mono">{participant ? shortAddress(participant) : "Onchain"}</span>
+    <strong>{item.price ? `${formatEther(BigInt(item.price))} BONE` : "—"}</strong>
+    <span>Block {item.blockNumber}</span>
+  </a>;
 }
 
 function CourtWalletButton() {
@@ -188,6 +312,7 @@ function ListingPanel({ onClose, onSubmit, account }: { onClose: () => void; onS
       <label className="field"><span>NFT contract address</span><input value={nft} onChange={(e) => setNft(e.target.value)} placeholder="0x…" autoComplete="off" /></label>
       <div className="field-row"><label className="field"><span>Token ID</span><input value={tokenId} onChange={(e) => setTokenId(e.target.value)} placeholder="Enter token ID" inputMode="numeric" /></label><label className="field"><span>Price in BONE</span><input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Enter amount" inputMode="decimal" /></label></div>
       <div className="listing-check"><ShieldCheck /><div><strong>Non-custodial by design</strong><p>Your NFT stays in your wallet until a collector buys it. Revoking approval invalidates the listing.</p></div></div>
+      <p className="fee-disclosure">The listed price is the buyer’s total. A fixed 2% marketplace fee and any ERC-2981 creator royalty are deducted from seller proceeds at settlement.</p>
       {account ? <button className="confirm-buy" disabled={!valid} onClick={() => onSubmit(nft, tokenId, price)}>Approve & present <ArrowUpRight /></button> : <ConnectButton.Custom>{({ openConnectModal }) => <button className="confirm-buy" onClick={openConnectModal}>Connect wallet first <Wallet /></button>}</ConnectButton.Custom>}
     </section>
   </div>;
