@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Mono, Manrope } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Web3Provider } from "./web3-provider";
-
-const serif = Cormorant_Garamond({ variable: "--font-serif", subsets: ["latin"], weight: ["400", "500", "600"] });
-const sans = Manrope({ variable: "--font-sans", subsets: ["latin"] });
-const mono = DM_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["300", "400", "500"] });
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -22,5 +17,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={`${serif.variable} ${sans.variable} ${mono.variable}`}><Web3Provider>{children}</Web3Provider></body></html>;
+  return <html lang="en"><body><Web3Provider>{children}</Web3Provider></body></html>;
 }

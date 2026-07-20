@@ -1,7 +1,17 @@
-import { env } from "cloudflare:workers";
+import { env } from "@runtime-env";
 import { decodeEventLog, getAddress, type Hex } from "viem";
 
 export const dynamic = "force-dynamic";
+
+type D1PreparedStatement = {
+  bind: (...values: unknown[]) => D1PreparedStatement;
+  first: <T = Record<string, unknown>>() => Promise<T | null>;
+};
+
+type D1Database = {
+  prepare: (query: string) => D1PreparedStatement;
+  batch: (statements: D1PreparedStatement[]) => Promise<Array<{ results: Record<string, unknown>[] }>>;
+};
 
 const marketplaceEvents = [
   {
@@ -52,11 +62,11 @@ type RpcLog = {
   transactionHash: Hex;
   logIndex: Hex;
   data: Hex;
-  topics: readonly Hex[];
+  topics: [] | [Hex, ...Hex[]];
 };
 
 type RuntimeEnv = {
-  DB: D1Database;
+  DB?: D1Database;
   MARKETPLACE_ADDRESS?: string;
   MARKETPLACE_DEPLOY_BLOCK?: string;
   SHIBARIUM_RPC_URL?: string;
@@ -65,6 +75,33 @@ type RuntimeEnv = {
 const CHUNK_SIZE = 8_000;
 const MAX_CHUNKS_PER_REQUEST = 8;
 const CONFIRMATIONS = 12;
+
+type IndexedListing = {
+  id: string;
+  nftAddress: string;
+  tokenId: string;
+  seller: string;
+  price: string;
+  transactionHash: string;
+  createdBlock: number;
+  updatedBlock: number;
+};
+
+type IndexedActivity = {
+  id: string;
+  eventType: string;
+  nftAddress: string | null;
+  tokenId: string | null;
+  seller: string | null;
+  buyer: string | null;
+  price: string | null;
+  marketplaceFee: string | null;
+  royaltyRecipient: string | null;
+  royaltyAmount: string | null;
+  transactionHash: string;
+  blockNumber: number;
+  logIndex: number;
+};
 
 async function rpc<T>(url: string, method: string, params: unknown[]): Promise<T> {
   const response = await fetch(url, {
@@ -154,6 +191,61 @@ async function sync(db: D1Database, rpcUrl: string, address: string, deployBlock
   return { safeLatest, syncedThrough: Math.min(nextBlock - 1, safeLatest), caughtUp: nextBlock > safeLatest, logsProcessed };
 }
 
+async function syncWithoutDatabase(rpcUrl: string, address: string, deployBlock: number) {
+  const latestHex = await rpc<Hex>(rpcUrl, "eth_blockNumber", []);
+  const safeLatest = Math.max(0, Number(BigInt(latestHex)) - CONFIRMATIONS);
+  const maximumRange = CHUNK_SIZE * MAX_CHUNKS_PER_REQUEST;
+  const fromBlock = Math.max(deployBlock, safeLatest - maximumRange + 1);
+  const logs: RpcLog[] = [];
+
+  for (let start = fromBlock; start <= safeLatest; start += CHUNK_SIZE) {
+    const end = Math.min(start + CHUNK_SIZE - 1, safeLatest);
+    logs.push(...await rpc<RpcLog[]>(rpcUrl, "eth_getLogs", [{
+      address,
+      fromBlock: `0x${start.toString(16)}`,
+      toBlock: `0x${end.toString(16)}`,
+    }]));
+  }
+
+  const listings = new Map<string, IndexedListing>();
+  const activity: IndexedActivity[] = [];
+  for (const log of logs) {
+    try {
+      const decoded = decodeEventLog({ abi: marketplaceEvents, data: log.data, topics: log.topics, strict: true });
+      const blockNumber = Number(BigInt(log.blockNumber));
+      const logIndex = Number(BigInt(log.logIndex));
+      const id = `${log.transactionHash}:${logIndex}`;
+
+      if (decoded.eventName === "ItemListed") {
+        const { seller, nftAddress, tokenId, price } = decoded.args;
+        listings.set(listingId(nftAddress, tokenId), { id: listingId(nftAddress, tokenId), nftAddress, tokenId: tokenId.toString(), seller, price: price.toString(), transactionHash: log.transactionHash, createdBlock: blockNumber, updatedBlock: blockNumber });
+        activity.push({ id, eventType: "listed", nftAddress, tokenId: tokenId.toString(), seller, buyer: null, price: price.toString(), marketplaceFee: null, royaltyRecipient: null, royaltyAmount: null, transactionHash: log.transactionHash, blockNumber, logIndex });
+      } else if (decoded.eventName === "ItemCanceled") {
+        const { seller, nftAddress, tokenId } = decoded.args;
+        listings.delete(listingId(nftAddress, tokenId));
+        activity.push({ id, eventType: "canceled", nftAddress, tokenId: tokenId.toString(), seller, buyer: null, price: null, marketplaceFee: null, royaltyRecipient: null, royaltyAmount: null, transactionHash: log.transactionHash, blockNumber, logIndex });
+      } else if (decoded.eventName === "ItemBought") {
+        const { buyer, nftAddress, tokenId, price, marketplaceFee, royaltyRecipient, royaltyAmount } = decoded.args;
+        const prior = listings.get(listingId(nftAddress, tokenId));
+        listings.delete(listingId(nftAddress, tokenId));
+        activity.push({ id, eventType: "sold", nftAddress, tokenId: tokenId.toString(), seller: prior?.seller ?? null, buyer, price: price.toString(), marketplaceFee: marketplaceFee.toString(), royaltyRecipient, royaltyAmount: royaltyAmount.toString(), transactionHash: log.transactionHash, blockNumber, logIndex });
+      } else if (decoded.eventName === "ProceedsWithdrawn") {
+        const { seller, amount } = decoded.args;
+        activity.push({ id, eventType: "withdrawn", nftAddress: null, tokenId: null, seller, buyer: null, price: amount.toString(), marketplaceFee: null, royaltyRecipient: null, royaltyAmount: null, transactionHash: log.transactionHash, blockNumber, logIndex });
+      }
+    } catch {
+      // Ignore unknown future marketplace events.
+    }
+  }
+
+  return {
+    listings: [...listings.values()].sort((a, b) => b.updatedBlock - a.updatedBlock).slice(0, 48),
+    activity: activity.sort((a, b) => b.blockNumber - a.blockNumber || b.logIndex - a.logIndex).slice(0, 30),
+    sync: { safeLatest, syncedThrough: safeLatest, caughtUp: fromBlock === deployBlock, logsProcessed: logs.length },
+    syncError: fromBlock > deployBlock ? `Stateless indexer is limited to the latest ${maximumRange.toLocaleString()} blocks.` : null,
+  };
+}
+
 export async function GET() {
   const runtime = env as unknown as RuntimeEnv;
   const addressValue = runtime.MARKETPLACE_ADDRESS;
@@ -165,6 +257,15 @@ export async function GET() {
   }
 
   const address = getAddress(addressValue);
+  if (!runtime.DB) {
+    try {
+      const result = await syncWithoutDatabase(rpcUrl, address, Number(deployBlockValue));
+      return Response.json({ configured: true, marketplaceAddress: address, ...result }, { headers: { "cache-control": "public, max-age=15, stale-while-revalidate=45" } });
+    } catch (error) {
+      return Response.json({ configured: true, marketplaceAddress: address, listings: [], activity: [], sync: null, syncError: error instanceof Error ? error.message : "Indexer sync failed" }, { status: 502 });
+    }
+  }
+
   await ensureSchema(runtime.DB);
   let syncResult = null;
   let syncError: string | null = null;

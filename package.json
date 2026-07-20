@@ -6,9 +6,12 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
-    "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
-    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "dev:sites": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
+    "build:sites": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "start:sites": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
@@ -17,6 +20,8 @@
     "@openzeppelin/contracts": "^5.6.1",
     "@rainbow-me/rainbowkit": "^2.2.11",
     "@tanstack/react-query": "^5.101.3",
+    "@x402/evm": "^2.19.0",
+    "@x402/svm": "^2.19.0",
     "drizzle-orm": "0.45.2",
     "lucide-react": "^1.25.0",
     "next": "16.2.6",
@@ -27,6 +32,8 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",

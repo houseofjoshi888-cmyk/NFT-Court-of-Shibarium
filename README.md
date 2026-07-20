@@ -26,6 +26,8 @@ Deploy the contract with the treasury wallet as `initialFeeRecipient` and verify
 
 The marketplace intentionally ships without sample listings, activity, or metrics. Its D1-backed indexer reads confirmed `ItemListed`, `ItemCanceled`, `ItemBought`, and `ProceedsWithdrawn` events directly from Shibarium, persists a block checkpoint, and exposes active listings and recent activity through `/api/indexer`.
 
+On Vercel, `npm run build` creates the standard `.next` output and the indexer uses a stateless recent-block fallback because D1 is not available. The Cloudflare Sites build remains available through `npm run build:sites` and uses the persistent D1 checkpoint.
+
 ## Production checklist
 
 - Audit the marketplace contract and add contract tests.

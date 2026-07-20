@@ -258,7 +258,7 @@ export function Marketplace() {
       </footer>
 
       {status && <div className="toast" role="status"><CircleHelp size={18} /><span>{status}</span><button onClick={() => setStatus("")} aria-label="Dismiss"><X size={16} /></button></div>}
-      {showList && <ListingPanel onClose={() => setShowList(false)} onSubmit={listNft} account={account} />}
+      {showList && <ListingPanel onClose={() => setShowList(false)} onSubmit={listNft} account={account ?? null} />}
     </main>
   );
 }
