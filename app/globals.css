@@ -100,6 +100,12 @@ h1 em { color:var(--amber); font-weight:400; }
 .price strong i { font-family:var(--font-mono); font-size:8px; font-style:normal; letter-spacing:.08em; }
 .price small { color:#997044; margin-top:3px; }
 .empty-state { text-align:center; padding:100px 0 40px; font-family:var(--font-serif); font-size:28px; color:#77736b; }
+.empty-market { min-height:520px; border-bottom:1px solid rgba(17,17,15,.18); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 20px; }
+.empty-index { font-family:var(--font-mono); font-size:9px; letter-spacing:.16em; color:var(--amber); }
+.empty-market h3 { font-family:var(--font-serif); font-size:clamp(42px,5vw,70px); line-height:.92; letter-spacing:-.04em; font-weight:500; margin:24px 0 16px; }
+.empty-market p { max-width:510px; color:#6e6a62; font-family:var(--font-serif); font-size:17px; line-height:1.5; }
+.empty-market button { margin-top:20px; background:var(--ink); color:var(--paper); border:0; height:52px; padding:0 20px; text-transform:uppercase; letter-spacing:.13em; font-size:9px; font-weight:700; display:flex; gap:24px; align-items:center; cursor:pointer; }
+.empty-market button:hover { background:#2b2924; }
 
 .manifesto { padding:100px clamp(22px,4vw,68px); position:relative; }
 .manifesto blockquote { font-family:var(--font-serif); font-size:clamp(45px,6.5vw,96px); letter-spacing:-.045em; line-height:.95; text-align:center; margin:80px auto; max-width:1200px; font-weight:400; }
@@ -116,6 +122,9 @@ h1 em { color:var(--amber); font-weight:400; }
 .activity-row .mono { color:#8f8c85; font-family:var(--font-mono); font-size:10px; }
 .activity-row strong { font-size:15px; }
 .activity-row > span:last-child { text-align:right; color:#77746d; font-family:var(--font-mono); font-size:9px; }
+.empty-activity { min-height:190px; display:flex; flex-direction:column; justify-content:center; border-bottom:1px solid var(--line); }
+.empty-activity span { font-family:var(--font-serif); font-size:30px; }
+.empty-activity p { color:#7f7c74; font-size:11px; margin:8px 0 0; }
 footer { padding:68px clamp(22px,4vw,68px) 28px; display:grid; grid-template-columns:2fr repeat(3,1fr); gap:40px; border-top:1px solid var(--line); }
 footer > div:not(.footer-brand) { display:flex; flex-direction:column; gap:10px; color:#88857d; font-size:11px; }
 footer a { display:flex; gap:5px; align-items:center; width:max-content; }

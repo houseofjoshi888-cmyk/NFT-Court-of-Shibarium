@@ -22,7 +22,7 @@ Deploy and verify the contract on Puppynet first, then configure the app with it
 
 ## Data layer
 
-The included catalogue is presentation data. Replace `lots` and the recent-activity rows in `app/marketplace.tsx` with an Envio or subgraph API before production launch. Index `ItemListed`, `ItemCanceled`, `ItemBought`, `ProceedsWithdrawn`, and ERC-721 `Transfer` events.
+The marketplace intentionally ships without sample listings, activity, or metrics. Connect an Envio or subgraph API to populate the empty market and activity states with verified onchain data. Index `ItemListed`, `ItemCanceled`, `ItemBought`, `ProceedsWithdrawn`, and ERC-721 `Transfer` events.
 
 ## Production checklist
 
