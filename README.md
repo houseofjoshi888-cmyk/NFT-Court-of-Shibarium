@@ -14,6 +14,8 @@ npm run dev
 
 Set `NEXT_PUBLIC_MARKETPLACE_ADDRESS` to the deployed `NFTMarketplace` address. Until it is set, the marketplace remains a safe interactive preview and does not submit contract writes.
 
+RainbowKit powers wallet connection and account management. Installed browser wallets work without extra configuration. Set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to a WalletConnect Cloud project ID to add QR-based mobile wallet connections.
+
 ## Contract
 
 [`contracts/NFTMarketplace.sol`](contracts/NFTMarketplace.sol) is a non-custodial fixed-price marketplace using OpenZeppelin's `ReentrancyGuard`. It verifies ownership and approval both when listing and at purchase time, requires exact payment, and credits sellers to a pull-payment balance they withdraw with `withdrawProceeds()`.

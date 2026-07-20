@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
-  Check,
   CircleHelp,
   ExternalLink,
   Gavel,
@@ -14,30 +13,12 @@ import {
   X,
 } from "lucide-react";
 import {
-  createWalletClient,
-  custom,
-  defineChain,
   getAddress,
   parseEther,
 } from "viem";
-
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on?: (event: string, callback: (...args: unknown[]) => void) => void;
-      removeListener?: (event: string, callback: (...args: unknown[]) => void) => void;
-    };
-  }
-}
-
-const shibarium = defineChain({
-  id: 109,
-  name: "Shibarium",
-  nativeCurrency: { name: "BONE", symbol: "BONE", decimals: 18 },
-  rpcUrls: { default: { http: ["https://rpc.shibarium.shib.io"] } },
-  blockExplorers: { default: { name: "ShibariumScan", url: "https://shibariumscan.io" } },
-});
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
+import { shibarium } from "./web3-provider";
 
 const marketplaceAddress = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS as `0x${string}` | undefined;
 
@@ -68,79 +49,35 @@ function shortAddress(address: string) {
 }
 
 export function Marketplace() {
-  const [account, setAccount] = useState<`0x${string}` | null>(null);
+  const { address: account } = useAccount();
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showList, setShowList] = useState(false);
   const [status, setStatus] = useState("");
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!window.ethereum) return;
-    window.ethereum.request({ method: "eth_accounts" }).then((items) => {
-      const [first] = items as string[];
-      if (first) setAccount(getAddress(first));
-    });
-  }, []);
-
-  async function connect() {
-    if (!window.ethereum) {
-      setStatus("Install an EVM wallet such as MetaMask to continue.");
-      return;
-    }
-    try {
-      setStatus("Requesting wallet access…");
-      const client = createWalletClient({ chain: shibarium, transport: custom(window.ethereum) });
-      const [address] = await client.requestAddresses();
-      try {
-        await client.switchChain({ id: shibarium.id });
-      } catch {
-        await window.ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId: "0x6d",
-            chainName: "Shibarium",
-            nativeCurrency: { name: "BONE", symbol: "BONE", decimals: 18 },
-            rpcUrls: ["https://rpc.shibarium.shib.io"],
-            blockExplorerUrls: ["https://shibariumscan.io"],
-          }],
-        });
-      }
-      setAccount(address);
-      setStatus("");
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message.split("\n")[0] : "Wallet connection was cancelled.");
-    }
-  }
 
   async function listNft(nftAddress: string, tokenId: string, price: string) {
     if (!account) {
-      setShowList(false);
-      await connect();
+      setStatus("Connect a wallet before presenting a work.");
       return;
     }
-    if (!window.ethereum || !marketplaceAddress) {
+    if (!marketplaceAddress) {
       setStatus("The marketplace contract address is not configured yet. Add the Puppynet deployment address to enable listing.");
       return;
     }
     try {
       const nft = getAddress(nftAddress);
-      const client = createWalletClient({ account, chain: shibarium, transport: custom(window.ethereum) });
+      if (chainId !== shibarium.id) await switchChainAsync({ chainId: shibarium.id });
       setStatus("Step 1 of 2 · Approve the marketplace in your wallet.");
-      await client.writeContract({ address: nft, abi: erc721Abi, functionName: "approve", args: [marketplaceAddress, BigInt(tokenId)] });
+      await writeContractAsync({ address: nft, abi: erc721Abi, functionName: "approve", args: [marketplaceAddress, BigInt(tokenId)], chainId: shibarium.id });
       setStatus("Step 2 of 2 · Sign the listing transaction.");
-      const hash = await client.writeContract({ address: marketplaceAddress, abi: marketplaceAbi, functionName: "listItem", args: [nft, BigInt(tokenId), parseEther(price)] });
+      const hash = await writeContractAsync({ address: marketplaceAddress, abi: marketplaceAbi, functionName: "listItem", args: [nft, BigInt(tokenId), parseEther(price)], chainId: shibarium.id });
       setShowList(false);
       setStatus(`Listing submitted ${shortAddress(hash)}. It will appear after the indexer confirms it.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message.split("\n")[0] : "Listing was not completed.");
     }
-  }
-
-  async function copyAddress() {
-    if (!account) return;
-    await navigator.clipboard.writeText(account);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1400);
   }
 
   return (
@@ -159,9 +96,7 @@ export function Marketplace() {
         <div className="header-actions">
           <span className="network"><i /> Shibarium · 109</span>
           <button className="present-button" onClick={() => setShowList(true)}>Present a work</button>
-          <button className="wallet-button" onClick={account ? copyAddress : connect}>
-            {account ? (copied ? <><Check size={15} /> Copied</> : <><Wallet size={15} /> {shortAddress(account)}</>) : "Enter the court"}
-          </button>
+          <CourtWalletButton />
           <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             {menuOpen ? <X /> : <Menu />}
           </button>
@@ -230,6 +165,15 @@ export function Marketplace() {
   );
 }
 
+function CourtWalletButton() {
+  return <ConnectButton.Custom>{({ account, chain, mounted, openAccountModal, openChainModal, openConnectModal }) => {
+    const connected = mounted && account && chain;
+    if (!connected) return <button className="wallet-button" onClick={openConnectModal}>Enter the court</button>;
+    if (chain.unsupported) return <button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>;
+    return <button className="wallet-button" onClick={openAccountModal}><Wallet size={15} /> {account.displayName}</button>;
+  }}</ConnectButton.Custom>;
+}
+
 function ListingPanel({ onClose, onSubmit, account }: { onClose: () => void; onSubmit: (nft: string, tokenId: string, price: string) => void; account: string | null }) {
   const [nft, setNft] = useState("");
   const [tokenId, setTokenId] = useState("");
@@ -244,9 +188,7 @@ function ListingPanel({ onClose, onSubmit, account }: { onClose: () => void; onS
       <label className="field"><span>NFT contract address</span><input value={nft} onChange={(e) => setNft(e.target.value)} placeholder="0x…" autoComplete="off" /></label>
       <div className="field-row"><label className="field"><span>Token ID</span><input value={tokenId} onChange={(e) => setTokenId(e.target.value)} placeholder="Enter token ID" inputMode="numeric" /></label><label className="field"><span>Price in BONE</span><input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Enter amount" inputMode="decimal" /></label></div>
       <div className="listing-check"><ShieldCheck /><div><strong>Non-custodial by design</strong><p>Your NFT stays in your wallet until a collector buys it. Revoking approval invalidates the listing.</p></div></div>
-      <button className="confirm-buy" disabled={!!account && !valid} onClick={() => account ? onSubmit(nft, tokenId, price) : onSubmit("", "", "")}>
-        {account ? <>Approve & present <ArrowUpRight /></> : <>Connect wallet first <Wallet /></>}
-      </button>
+      {account ? <button className="confirm-buy" disabled={!valid} onClick={() => onSubmit(nft, tokenId, price)}>Approve & present <ArrowUpRight /></button> : <ConnectButton.Custom>{({ openConnectModal }) => <button className="confirm-buy" onClick={openConnectModal}>Connect wallet first <Wallet /></button>}</ConnectButton.Custom>}
     </section>
   </div>;
 }
