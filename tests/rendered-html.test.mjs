@@ -31,6 +31,7 @@ test("keeps the protocol fee fixed at two percent", async () => {
   const contract = await read("contracts/NFTMarketplace.sol");
   assert.match(contract, /MARKETPLACE_FEE_BPS = 200/);
   assert.match(contract, /BPS_DENOMINATOR = 10_000/);
+  assert.match(contract, /HOUSE_TREASURY = 0x6736d2eA9807297F0e56967361B9410854B86a5f/);
   assert.match(contract, /IERC2981/);
   assert.match(contract, /withdrawProceeds/);
 });

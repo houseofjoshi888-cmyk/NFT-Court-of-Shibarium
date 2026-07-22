@@ -18,9 +18,9 @@ RainbowKit powers wallet connection and account management. Installed browser wa
 
 ## Contract
 
-[`contracts/NFTMarketplace.sol`](contracts/NFTMarketplace.sol) is a non-custodial fixed-price marketplace using OpenZeppelin's `ReentrancyGuard` and two-step ownership. It verifies ownership and approval both when listing and at purchase time, requires exact payment, deducts a fixed 2% protocol fee, honors optional ERC-2981 royalties, and credits sellers, creators, and the treasury to pull-payment balances withdrawn with `withdrawProceeds()`.
+[`contracts/NFTMarketplace.sol`](contracts/NFTMarketplace.sol) is a non-custodial fixed-price marketplace using OpenZeppelin's `ReentrancyGuard`. It verifies ownership and approval both when listing and at purchase time, requires exact payment, deducts a fixed 2% protocol fee, honors optional ERC-2981 royalties, and credits sellers, creators, and the House of Joshi treasury to pull-payment balances withdrawn with `withdrawProceeds()`.
 
-Deploy the contract with the treasury wallet as `initialFeeRecipient` and verify it on Puppynet first, then configure the app with its address and deployment block. The production UI currently targets Shibarium mainnet (chain `109`).
+The 2% protocol fee is permanently credited to the House of Joshi treasury: `0x6736d2eA9807297F0e56967361B9410854B86a5f`. The contract has no constructor parameters. Verify it on Puppynet first, then configure the app with its address and deployment block. The production UI currently targets Shibarium mainnet (chain `109`).
 
 ## Data layer
 
