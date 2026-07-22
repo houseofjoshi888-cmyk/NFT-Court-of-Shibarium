@@ -75,6 +75,10 @@ type RuntimeEnv = {
 const CHUNK_SIZE = 8_000;
 const MAX_CHUNKS_PER_REQUEST = 8;
 const CONFIRMATIONS = 12;
+// Verified Shibarium mainnet deployment. Environment values may override these
+// defaults when a future marketplace deployment is released.
+const DEFAULT_MARKETPLACE_ADDRESS = "0x2C5F372746330465C3f4084CE6C6aBce22a48B4d";
+const DEFAULT_MARKETPLACE_DEPLOY_BLOCK = "18216976";
 
 type IndexedListing = {
   id: string;
@@ -248,8 +252,8 @@ async function syncWithoutDatabase(rpcUrl: string, address: string, deployBlock:
 
 export async function GET() {
   const runtime = env as unknown as RuntimeEnv;
-  const addressValue = runtime.MARKETPLACE_ADDRESS;
-  const deployBlockValue = runtime.MARKETPLACE_DEPLOY_BLOCK;
+  const addressValue = runtime.MARKETPLACE_ADDRESS ?? DEFAULT_MARKETPLACE_ADDRESS;
+  const deployBlockValue = runtime.MARKETPLACE_DEPLOY_BLOCK ?? DEFAULT_MARKETPLACE_DEPLOY_BLOCK;
   const rpcUrl = runtime.SHIBARIUM_RPC_URL ?? "https://rpc.shibarium.shib.io";
 
   if (!addressValue || !/^0x[a-fA-F0-9]{40}$/.test(addressValue) || !deployBlockValue || !/^\d+$/.test(deployBlockValue)) {

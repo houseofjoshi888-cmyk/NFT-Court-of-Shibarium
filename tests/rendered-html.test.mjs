@@ -23,6 +23,8 @@ test("uses live indexed data without demo listings", async () => {
   assert.match(marketplace, /fetch\("\/api\/indexer"/);
   assert.match(portal, /fetch\("\/api\/indexer"/);
   assert.match(indexer, /eth_getLogs/);
+  assert.match(indexer, /0x2C5F372746330465C3f4084CE6C6aBce22a48B4d/);
+  assert.match(indexer, /18216976/);
   assert.match(indexer, /configured: false, listings: \[\], activity: \[\]/);
   assert.doesNotMatch(`${marketplace}\n${portal}`, /demo listing|mock listing|sample listing/i);
 });

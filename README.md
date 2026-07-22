@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Set `MARKETPLACE_ADDRESS` and `MARKETPLACE_DEPLOY_BLOCK` to the deployed `NFTMarketplace` address and its deployment block. Until they are set, the marketplace remains a safe interactive preview and does not submit contract writes.
+The app is connected by default to the verified Shibarium mainnet `NFTMarketplace` deployment at `0x2C5F372746330465C3f4084CE6C6aBce22a48B4d` (block `18216976`). Set `MARKETPLACE_ADDRESS` and `MARKETPLACE_DEPLOY_BLOCK` only to override this configuration for a future deployment.
 
 RainbowKit powers wallet connection and account management. Installed browser wallets work without extra configuration. Set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to a WalletConnect Cloud project ID to add QR-based mobile wallet connections.
 
