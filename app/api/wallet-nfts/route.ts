@@ -10,7 +10,7 @@ const PAGE_SIZE = 50;
 type ExplorerNft = {
   id?: string;
   image_url?: string | null;
-  metadata?: { name?: string | null; image?: string | null } | null;
+  metadata?: { name?: string | null; image?: string | null; description?: string | null; external_url?: string | null; attributes?: Array<{ trait_type?: string | null; value?: string | number | boolean | null }> | null } | null;
   token?: { address_hash?: string; name?: string | null; symbol?: string | null } | null;
 };
 
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid wallet address." }, { status: 400 });
   }
 
-  const nfts: Array<{ contractAddress: string; tokenId: string; name: string | null; collection: string | null; imageUrl: string | null }> = [];
+  const nfts: Array<{ contractAddress: string; tokenId: string; name: string | null; collection: string | null; imageUrl: string | null; description: string | null; externalUrl: string | null; traits: Array<{ type: string; value: string }> }> = [];
   let pageParams: Record<string, string | number | null> | null = null;
 
   try {
@@ -57,6 +57,9 @@ export async function GET(request: NextRequest) {
           name: item.metadata?.name ?? null,
           collection: item.token?.name ?? item.token?.symbol ?? null,
           imageUrl: imageUrl(item.image_url ?? item.metadata?.image),
+          description: item.metadata?.description ?? null,
+          externalUrl: item.metadata?.external_url ?? null,
+          traits: (item.metadata?.attributes ?? []).flatMap(attribute => attribute.trait_type && attribute.value !== null && attribute.value !== undefined ? [{ type: attribute.trait_type, value: String(attribute.value) }] : []),
         });
       }
       pageParams = payload.next_page_params ?? null;
