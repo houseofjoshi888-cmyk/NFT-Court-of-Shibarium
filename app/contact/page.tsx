@@ -1,0 +1,2 @@
+import { InfoPage } from "../info-page";
+export default function ContactPage(){return <InfoPage eyebrow="CONTACT" title="Speak with the House" intro="For marketplace support, community, and House of Joshi updates." sections={[{heading:"Email",body:"support@thehouseofjoshi.com"},{heading:"X",body:"@thehouseofjoshi — https://x.com/thehouseofjoshi"},{heading:"Discord",body:"Join the community — https://discord.com/invite/uH9zVeAwDu"},{heading:"Instagram",body:"@thehouseofjoshi — https://www.instagram.com/thehouseofjoshi"}]}/>}

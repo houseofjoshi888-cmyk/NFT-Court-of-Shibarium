@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "A curated, non-custodial NFT marketplace for Shibarium. Discover and acquire digital works settled in BONE.",
     openGraph: { title: "The NFT Court of Shibarium", description: "Curated works. Permanent provenance. Settlement in BONE.", images: ["/og.png"], type: "website" },
     twitter: { card: "summary_large_image", title: "House of Joshi", description: "The NFT Court of Shibarium", images: ["/og.png"] },
+    icons: { icon: "/house-of-joshi.png", apple: "/house-of-joshi.png" },
   };
 }
 

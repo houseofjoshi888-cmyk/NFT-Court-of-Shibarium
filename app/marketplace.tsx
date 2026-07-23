@@ -18,6 +18,7 @@ import {
   parseEther,
 } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Image from "next/image";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { shibarium } from "./web3-provider";
 
@@ -250,11 +251,12 @@ export function Marketplace() {
       </section>
 
       <footer>
-        <div className="footer-brand"><span className="sigil">HJ</span><strong>HOUSE OF JOSHI</strong><p>An independent marketplace for Shibarium’s most considered digital works.</p></div>
+        <div className="footer-brand"><Image src="/house-of-joshi.png" alt="House of Joshi" width={36} height={36} className="footer-logo"/><strong>HOUSE OF JOSHI</strong><p>An independent marketplace for Shibarium’s most considered digital works.</p></div>
         <div><span className="footer-label">NETWORK</span><a href="https://shibariumscan.io" target="_blank" rel="noreferrer">ShibariumScan <ExternalLink size={13} /></a><span>Chain ID 109</span><span>Settlement in BONE</span><span>Protocol fee 2%</span></div>
-        <div><span className="footer-label">COURT</span><a href="/market">Market</a><a href="/sell">Sell</a><a href="/activity">Activity</a><a href="/account">Account</a></div>
-        <div><span className="footer-label">PROTOCOL</span><a href="https://docs.shib.io/shibarium" target="_blank" rel="noreferrer">Documentation <ExternalLink size={13} /></a><a href="https://rpc.shibarium.shib.io" target="_blank" rel="noreferrer">RPC endpoint <ExternalLink size={13} /></a></div>
-        <p className="copyright">© 2026 HOUSE OF JOSHI · ALL TRANSACTIONS ARE FINAL ONCHAIN.</p>
+        <div><span className="footer-label">COURT</span><a href="/market">Market</a><a href="/sell">Sell</a><a href="/activity">Activity</a><a href="/account">Account</a><a href="/faq">FAQ</a><a href="/about">About</a></div>
+        <div><span className="footer-label">HOUSE ECOSYSTEM</span><a href="https://kingdomwithin.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Kingdom Within</a><a href="https://swap.thehouseofjoshi.com/" target="_blank" rel="noreferrer">HOJ Swap</a><a href="https://www.nftlaunchpad.thehouseofjoshi.com/" target="_blank" rel="noreferrer">NFT Launchpad</a><a href="https://dreamweaver.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Dreamweaver</a></div>
+        <div><span className="footer-label">CONNECT</span><a href="/contact">Contact</a><a href="https://x.com/thehouseofjoshi" target="_blank" rel="noreferrer">X · @thehouseofjoshi</a><a href="https://discord.com/invite/uH9zVeAwDu" target="_blank" rel="noreferrer">Discord · Join the community</a><a href="https://www.instagram.com/thehouseofjoshi" target="_blank" rel="noreferrer">Instagram · @thehouseofjoshi</a></div>
+        <p className="copyright">© 2026 The House of Joshi. All rights reserved. · <a href="/terms">Terms &amp; Conditions</a> · <a href="/privacy">Privacy Policy</a></p>
       </footer>
 
       {status && <div className="toast" role="status"><CircleHelp size={18} /><span>{status}</span><button onClick={() => setStatus("")} aria-label="Dismiss"><X size={16} /></button></div>}
