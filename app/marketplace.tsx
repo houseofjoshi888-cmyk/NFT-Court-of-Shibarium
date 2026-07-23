@@ -182,7 +182,7 @@ export function Marketplace() {
     <main>
       <header className="site-header">
         <a className="wordmark" href="#top" aria-label="House of Joshi home">
-          <span className="sigil">HJ</span>
+          <Image src="/house-of-joshi.png" alt="House of Joshi" width={42} height={42} className="header-logo"/>
           <span>HOUSE OF JOSHI</span>
         </a>
         <nav className={menuOpen ? "nav open" : "nav"} aria-label="Primary navigation">
