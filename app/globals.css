@@ -2,6 +2,7 @@
 
 :root { --ink:#11110f; --paper:#e9e4d9; --paper-2:#d9d2c4; --amber:#c88632; --muted:#8a887f; --line:rgba(233,228,217,.18); --font-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; --font-sans:Inter,Avenir,"Helvetica Neue",Arial,sans-serif; --font-mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace; }
 * { box-sizing:border-box; }
+img,svg { max-width:100%; }
 html { scroll-behavior:smooth; }
 body { margin:0; background:var(--ink); color:var(--paper); font-family:var(--font-sans),sans-serif; }
 button,input,select { font:inherit; }
@@ -149,7 +150,7 @@ h1 em { color:var(--amber); font-weight:400; }
 .empty-activity { min-height:190px; display:flex; flex-direction:column; justify-content:center; border-bottom:1px solid var(--line); }
 .empty-activity span { font-family:var(--font-serif); font-size:30px; }
 .empty-activity p { color:#7f7c74; font-size:11px; margin:8px 0 0; }
-footer { padding:68px clamp(22px,4vw,68px) 28px; display:grid; grid-template-columns:2fr repeat(3,1fr); gap:40px; border-top:1px solid var(--line); }
+footer { padding:68px clamp(22px,4vw,68px) 28px; display:grid; grid-template-columns:1.8fr repeat(4,minmax(120px,1fr)); gap:32px; border-top:1px solid var(--line); }
 footer > div:not(.footer-brand) { display:flex; flex-direction:column; gap:10px; color:#88857d; font-size:11px; }
 footer a { display:flex; gap:5px; align-items:center; width:max-content; }
 footer a:hover { color:var(--paper); }
@@ -203,6 +204,8 @@ footer a:hover { color:var(--paper); }
   .indexed-lots { grid-template-columns:repeat(2,1fr); }
   .proof-strip { grid-template-columns:repeat(3,1fr); }
   .proof-strip .verified { grid-column:1/-1; border-top:1px solid var(--line); }
+  footer { grid-template-columns:repeat(3,1fr); }
+  .footer-brand { grid-column:1/-1; }
 }
 @media (max-width:700px) {
   .site-header { height:70px; }
@@ -234,9 +237,9 @@ footer a:hover { color:var(--paper); }
   .manifesto-notes { flex-direction:column; gap:40px; }
   .activity-row { grid-template-columns:70px 1fr auto; padding:15px 0; }
   .activity-row .mono,.activity-row strong { display:none; }
-  footer { grid-template-columns:1fr 1fr; }
+  footer { grid-template-columns:1fr 1fr; gap:30px 18px; }
   .footer-brand { grid-column:1/-1; }
-  footer > div:last-of-type { grid-column:1/-1; }
+  footer > div:last-of-type { grid-column:auto; }
   .purchase-panel { padding:32px 22px; }
 }
 @media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto}.artifact-hero{animation:none}*{transition:none!important} }
@@ -398,8 +401,9 @@ footer a:hover { color:var(--paper); }
 .info-content article { padding:34px 0; border-bottom:1px solid rgba(17,17,15,.16); display:grid; grid-template-columns:minmax(180px,.6fr) 1.4fr; gap:50px; }
 .info-content h2 { font-family:var(--font-serif); font-size:28px; font-weight:500; line-height:1; margin:0; }
 .info-content p { color:#5e5a53; font-family:var(--font-serif); font-size:18px; line-height:1.5; margin:0; white-space:pre-line; }
+.info-contact-link { align-self:start; color:var(--ink); font-family:var(--font-serif); font-size:18px; line-height:1.5; border-bottom:1px solid var(--amber); }
 .info-footer { background:var(--ink); color:#918d84; min-height:auto; padding:24px clamp(22px,5vw,90px); display:flex; align-items:center; justify-content:space-between; gap:18px; font-family:var(--font-mono); font-size:8px; letter-spacing:.07em; }
 .info-footer > div { display:flex; gap:16px; }
 
-@media(max-width:900px){.portal-header nav{display:none}.portal-grid{grid-template-columns:repeat(2,1fr)}.market-listings-grid{grid-template-columns:repeat(3,1fr)}.sell-layout{grid-template-columns:1fr}.account-balance{grid-template-columns:1fr;gap:14px}.protocol-grid{grid-template-columns:1fr}.protocol-grid .contract-record{grid-column:auto}.nft-detail{grid-template-columns:1fr 1fr}.nft-detail-image{min-height:380px}.portal-footer{grid-template-columns:repeat(2,1fr)}.footer-main{grid-column:1/-1}}
-@media(max-width:620px){.portal-header{height:68px}.portal-header .wordmark>span:last-child{display:none}.portal-hero{padding-top:38px}.portal-hero .back-link{margin-bottom:40px}.portal-hero>p{margin-left:0}.portal-grid{grid-template-columns:1fr}.portal-content{padding-top:28px}.collection-picker{align-items:flex-start;flex-direction:column}.collection-chips{justify-content:flex-start}.market-listings-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px}.portal-activity a{grid-template-columns:80px 1fr 18px;padding:15px 0}.portal-activity span:nth-child(3),.portal-activity span:nth-child(4){display:none}.sell-layout aside{padding:28px}.field-row{flex-direction:column;gap:0}.wallet-nft-grid{grid-template-columns:repeat(2,1fr)}.wallet-nft-grid.list .wallet-nft{grid-template-columns:48px minmax(0,1fr) 56px}.wallet-nft-grid.list .wallet-nft strong{grid-column:2;grid-row:2}.wallet-nft-grid.list .wallet-nft small{grid-column:3}.account-balance{padding:28px}.portal-footer{grid-template-columns:1fr;gap:26px}.footer-main{grid-column:auto}.portal-footer .footer-legal{grid-column:auto;align-items:flex-start;flex-direction:column}.portal-footer .footer-legal span{margin:0}.protocol-grid article{padding:28px}.nft-detail-backdrop{padding:0}.nft-detail{max-height:100vh;grid-template-columns:1fr}.nft-detail-image{min-height:300px}.nft-detail-copy{padding:30px 22px}.nft-detail-copy h2{font-size:38px}.info-page header nav{display:none}.info-hero{padding-top:48px}.info-content article{grid-template-columns:1fr;gap:12px}.info-footer{align-items:flex-start;flex-direction:column}.info-footer > div{flex-wrap:wrap}}
+@media(max-width:900px){.portal-header{gap:14px}.portal-header nav{display:flex;flex:1;gap:14px;justify-content:center;overflow-x:auto;white-space:nowrap}.portal-header .wallet-button{min-width:auto;padding:0 10px}.portal-grid{grid-template-columns:repeat(2,1fr)}.market-listings-grid{grid-template-columns:repeat(3,1fr)}.sell-layout{grid-template-columns:1fr}.account-balance{grid-template-columns:1fr;gap:14px}.protocol-grid{grid-template-columns:1fr}.protocol-grid .contract-record{grid-column:auto}.nft-detail{grid-template-columns:1fr 1fr}.nft-detail-image{min-height:380px}.portal-footer{grid-template-columns:repeat(2,1fr)}.footer-main{grid-column:1/-1}}
+@media(max-width:620px){.portal-header{height:auto;min-height:68px;flex-wrap:wrap;padding-top:10px;padding-bottom:8px}.portal-header .wordmark>span:last-child{display:none}.portal-header nav{order:3;width:100%;justify-content:flex-start;padding-top:3px;padding-bottom:2px}.portal-header .wallet-button{height:34px;font-size:8px}.portal-hero{padding-top:38px}.portal-hero .back-link{margin-bottom:40px}.portal-hero>p{margin-left:0}.portal-grid{grid-template-columns:1fr}.portal-content{padding-top:28px}.collection-picker{align-items:flex-start;flex-direction:column}.collection-chips{justify-content:flex-start;max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.collection-chips button{white-space:nowrap}.market-listings-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px}.portal-activity a{grid-template-columns:80px 1fr 18px;padding:15px 0}.portal-activity span:nth-child(3),.portal-activity span:nth-child(4){display:none}.sell-layout aside{padding:28px}.field-row{flex-direction:column;gap:0}.wallet-nft-grid{grid-template-columns:repeat(2,1fr)}.wallet-nft-grid.list .wallet-nft{grid-template-columns:48px minmax(0,1fr) 56px}.wallet-nft-grid.list .wallet-nft strong{grid-column:2;grid-row:2}.wallet-nft-grid.list .wallet-nft small{grid-column:3}.account-balance{padding:28px}.portal-footer{grid-template-columns:1fr;gap:26px}.footer-main{grid-column:auto}.portal-footer .footer-legal{grid-column:auto;align-items:flex-start;flex-direction:column}.portal-footer .footer-legal span{margin:0}.protocol-grid article{padding:28px}.nft-detail-backdrop{padding:0}.nft-detail{max-height:100vh;grid-template-columns:1fr}.nft-detail-image{min-height:300px}.nft-detail-copy{padding:30px 22px}.nft-detail-copy h2{font-size:38px}.info-page header nav{display:none}.info-hero{padding-top:48px}.info-content article{grid-template-columns:1fr;gap:12px}.info-footer{align-items:flex-start;flex-direction:column}.info-footer > div{flex-wrap:wrap}}

@@ -16,7 +16,9 @@ export const shibarium = defineChain({
   blockExplorers: { default: { name: "ShibariumScan", url: "https://shibariumscan.io" } },
 });
 
-const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+// Reown / WalletConnect project ID. Deployments may override this public ID with
+// NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID without changing the application code.
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "798a4c4e5870335d10cd2621358e0f77";
 const transport = { [shibarium.id]: http(shibarium.rpcUrls.default.http[0]) };
 
 const config = walletConnectProjectId
