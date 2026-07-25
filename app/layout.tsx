@@ -18,5 +18,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><Web3Provider>{children}</Web3Provider></body></html>;
+  return (
+    <html lang="en">
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-VV75NFVYLR"></script>
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-VV75NFVYLR');` }} />
+      </head>
+      <body>
+        <Web3Provider>{children}</Web3Provider>
+      </body>
+    </html>
+  );
 }
