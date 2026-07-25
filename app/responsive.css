@@ -1,0 +1,69 @@
+:root {
+  /* Fluid root font-size between ~14px and ~18px */
+  font-size: clamp(14px, 1.35vw + 12px, 18px);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Provide sensible defaults for the site's variable fonts */
+:root {
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+}
+
+/* Headings scale down on narrow screens */
+h1 { font-size: clamp(28px, 8vw, 96px); line-height: 1.05; }
+h2 { font-size: clamp(20px, 5.5vw, 64px); }
+
+/* Ensure base elements respect the fluid root size */
+html, body { font-size: 1rem; }
+
+/* Header adjustments for mobile */
+.site-header {
+  height: 64px;
+  padding: 0 clamp(12px, 4vw, 28px);
+}
+.wordmark { font-size: 12px; gap: 10px; }
+.header-logo { width: 36px; height: 36px; }
+
+/* Menu button visible on small screens; collapse nav */
+.menu-button { display: none; }
+@media (max-width: 900px) {
+  .menu-button { display: inline-flex; align-items:center; justify-content:center; height:40px; width:40px; }
+  .nav { display: none; } /* expect the app to toggle the nav open/closed */
+  .wallet-button { min-width: 120px; height:40px; font-size:12px; padding:0 10px; }
+
+  /* Stack hero grid into single column and reduce padding */
+  .hero-grid { display: grid; grid-template-columns: 1fr; min-height: auto; gap: 26px; }
+  .hero-copy { padding: 28px 4vw 20px 0; border-right: none; }
+
+  /* Make listing grids single column on phones */
+  .lots-grid, .indexed-lots, .market-listings-grid { grid-template-columns: 1fr; gap: 22px; }
+
+  /* Reduce heavy paddings on small screens */
+  .market-section { padding: 40px 4vw; }
+  .portal-hero, .portal-content, .portal-footer { padding-left: 4vw; padding-right: 4vw; }
+
+  /* Touch target sizing */
+  button, .wallet-button, .primary-action { min-height: 44px; }
+
+  /* Footer stacking */
+  footer { grid-template-columns: 1fr; gap: 20px; padding: 28px 4vw; }
+}
+
+/* Further adjustments for very small devices */
+@media (max-width: 520px) {
+  .wordmark { letter-spacing: 0.06em; }
+  .nav a { font-size: 11px; }
+  .hero-art { min-height: 320px; }
+  .hero-copy { padding: 20px 4vw; }
+  h1 { font-size: clamp(24px, 10vw, 48px); }
+  .lede, .section-heading p { font-size: clamp(13px, 3.6vw, 16px); }
+}
+
+/* Modal/overlay constraints so they fit mobile screens */
+.modal-backdrop { padding: 12px; }
+.purchase-panel { width: 100%; max-width: 520px; padding: 20px; box-sizing: border-box; }
+
+/* Ensure images are responsive */
+img, svg { max-width: 100%; height: auto; display: block; }
