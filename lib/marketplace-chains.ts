@@ -1,4 +1,14 @@
 export const marketplaceChains = {
+  1: {
+    id: 1,
+    slug: "ethereum",
+    name: "Ethereum",
+    currency: "ETH",
+    explorerUrl: "https://etherscan.io",
+    explorerApiUrl: "https://eth.blockscout.com/api/v2",
+    rpcUrl: "https://cloudflare-eth.com",
+    confirmations: 12,
+  },
   109: {
     id: 109,
     slug: "shibarium",

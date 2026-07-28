@@ -16,6 +16,9 @@ type RuntimeEnv = {
   DB?: D1Database;
   MARKETPLACE_ADDRESS?: string;
   MARKETPLACE_DEPLOY_BLOCK?: string;
+  ETHEREUM_MARKETPLACE_ADDRESS?: string;
+  ETHEREUM_MARKETPLACE_DEPLOY_BLOCK?: string;
+  ETHEREUM_RPC_URL?: string;
   SHIBARIUM_MARKETPLACE_ADDRESS?: string;
   SHIBARIUM_MARKETPLACE_DEPLOY_BLOCK?: string;
   SHIBARIUM_RPC_URL?: string;
@@ -83,6 +86,12 @@ const DEFAULT_MARKETPLACE_DEPLOY_BLOCK = "18216976";
 
 function chainConfig(runtime: RuntimeEnv, chainId: MarketplaceChainId) {
   const chain = getMarketplaceChain(chainId);
+  if (chainId === 1) return {
+    chain,
+    address: runtime.ETHEREUM_MARKETPLACE_ADDRESS,
+    deployBlock: runtime.ETHEREUM_MARKETPLACE_DEPLOY_BLOCK,
+    rpcUrl: runtime.ETHEREUM_RPC_URL ?? chain.rpcUrl,
+  };
   if (chainId === 109) return {
     chain,
     address: runtime.SHIBARIUM_MARKETPLACE_ADDRESS ?? runtime.MARKETPLACE_ADDRESS ?? DEFAULT_MARKETPLACE_ADDRESS,

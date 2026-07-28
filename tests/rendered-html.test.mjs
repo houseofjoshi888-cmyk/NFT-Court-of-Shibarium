@@ -37,7 +37,7 @@ test("isolates listings and activity by supported chain", async () => {
     read("db/schema.ts"),
   ]);
 
-  for (const chainId of ["109", "137", "8453", "4663"]) {
+  for (const chainId of ["1", "109", "137", "8453", "4663"]) {
     assert.match(chains, new RegExp(`${chainId}:`));
   }
   assert.match(indexer, /POLYGON_MARKETPLACE_ADDRESS/);

@@ -224,7 +224,7 @@ export function Marketplace() {
           <div className="hero-copy">
             <p className="kicker">A marketplace for objects with consequence.</p>
             <h1>THE NFT<br />COURT<br /><em>WITHOUT BORDERS</em></h1>
-            <p className="lede">Discover, acquire, and present singular works across Shibarium, Polygon, Base, and Robinhood—one court, with provenance written onchain.</p>
+            <p className="lede">Discover, acquire, and present singular works across Ethereum, Shibarium, Polygon, Base, and Robinhood—one court, with provenance written onchain.</p>
             <div className="hero-actions">
               <a className="primary-action" href="/market">Browse NFTs <ArrowDownRight size={18} /></a>
               <a className="text-action" href="/sell">List an NFT <ArrowUpRight size={16} /></a>
@@ -246,7 +246,7 @@ export function Marketplace() {
       <section className="market-section" id="market">
         <div className="section-heading">
           <div><span className="section-no">01 / MARKET</span><h2>WORKS BEFORE<br />THE COURT</h2></div>
-          <p>Browse by network without mixing currencies or provenance. Shibarium is live; Polygon, Base, and Robinhood open as their marketplace deployments are indexed.</p>
+          <p>Browse by network without mixing currencies or provenance. Shibarium is live; Ethereum, Polygon, Base, and Robinhood open as their marketplace deployments are indexed.</p>
         </div>
         {listings.length > 0 ? <div className="indexed-lots" id="collections">{listings.map((listing) => <IndexedListingCard key={listing.id} listing={listing} connected={!!account} onBuy={buyListing} />)}</div> : <div className="empty-market" id="collections">
           <span className="empty-index">{indexerReady === null ? `SYNCING ${selectedChain.name.toUpperCase()}` : indexerReady ? "NO ACTIVE LISTINGS" : `${selectedChain.name.toUpperCase()} DEPLOYMENT NEEDED`}</span>
@@ -268,8 +268,8 @@ export function Marketplace() {
       </section>
 
       <footer>
-        <div className="footer-brand"><Image src="/house-of-joshi.png" alt="House of Joshi" width={36} height={36} className="footer-logo"/><strong>HOUSE OF JOSHI</strong><p>An independent marketplace for considered digital works across four EVM networks.</p></div>
-        <div><span className="footer-label">NETWORKS</span><a href="https://shibariumscan.io" target="_blank" rel="noreferrer">Shibarium <ExternalLink size={13} /></a><a href="https://polygonscan.com" target="_blank" rel="noreferrer">Polygon <ExternalLink size={13} /></a><a href="https://basescan.org" target="_blank" rel="noreferrer">Base <ExternalLink size={13} /></a><a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noreferrer">Robinhood <ExternalLink size={13} /></a><span>Protocol fee 2%</span></div>
+        <div className="footer-brand"><Image src="/house-of-joshi.png" alt="House of Joshi" width={36} height={36} className="footer-logo"/><strong>HOUSE OF JOSHI</strong><p>An independent marketplace for considered digital works across five EVM networks.</p></div>
+        <div><span className="footer-label">NETWORKS</span><a href="https://etherscan.io" target="_blank" rel="noreferrer">Ethereum <ExternalLink size={13} /></a><a href="https://shibariumscan.io" target="_blank" rel="noreferrer">Shibarium <ExternalLink size={13} /></a><a href="https://polygonscan.com" target="_blank" rel="noreferrer">Polygon <ExternalLink size={13} /></a><a href="https://basescan.org" target="_blank" rel="noreferrer">Base <ExternalLink size={13} /></a><a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noreferrer">Robinhood <ExternalLink size={13} /></a><span>Protocol fee 2%</span></div>
         <div><span className="footer-label">COURT</span><a href="/market">Market</a><a href="/sell">Sell</a><a href="/activity">Activity</a><a href="/account">Account</a><a href="/faq">FAQ</a><a href="/about">About</a></div>
         <div><span className="footer-label">HOUSE ECOSYSTEM</span><a href="https://kingdomwithin.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Kingdom Within</a><a href="https://swap.thehouseofjoshi.com/" target="_blank" rel="noreferrer">HOJ Swap</a><a href="https://www.nftlaunchpad.thehouseofjoshi.com/" target="_blank" rel="noreferrer">NFT Launchpad</a><a href="https://dreamweaver.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Dreamweaver</a></div>
         <div><span className="footer-label">CONNECT</span><a href="/contact">Contact</a><a href="https://x.com/thehouseofjoshi" target="_blank" rel="noreferrer">X</a><a href="https://discord.com/invite/uH9zVeAwDu" target="_blank" rel="noreferrer">Discord</a><a href="https://www.instagram.com/thehouseofjoshi" target="_blank" rel="noreferrer">Instagram</a></div>
@@ -284,6 +284,7 @@ export function Marketplace() {
 
 const networkOptions = [
   { id: shibarium.id, name: "Shibarium", currency: "BONE", state: "MARKET LIVE", tone: "shibarium" },
+  { id: 1, name: "Ethereum", currency: "ETH", state: "WALLET READY", tone: "ethereum" },
   { id: polygon.id, name: "Polygon", currency: "POL", state: "WALLET READY", tone: "polygon" },
   { id: base.id, name: "Base", currency: "ETH", state: "WALLET READY", tone: "base" },
   { id: robinhood.id, name: "Robinhood", currency: "ETH", state: "WALLET READY", tone: "robinhood" },

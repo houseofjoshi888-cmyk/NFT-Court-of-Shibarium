@@ -1,6 +1,6 @@
 # House of Joshi — Multichain NFT Marketplace
 
-A polished, non-custodial ERC-721 marketplace for Shibarium, Polygon, Base, and Robinhood Chain. The web app switches the connected EVM wallet to the selected network, approves NFTs for sale, creates listings, and purchases listings in the network's native currency.
+A polished, non-custodial ERC-721 marketplace for Ethereum, Shibarium, Polygon, Base, and Robinhood Chain. The web app switches the connected EVM wallet to the selected network, approves NFTs for sale, creates listings, and purchases listings in the network's native currency.
 
 ## Local setup
 
@@ -16,9 +16,13 @@ The app is connected by default to the verified Shibarium mainnet `NFTMarketplac
 
 ## Multichain configuration
 
-Shibarium (109), Polygon (137), Base (8453), and Robinhood Chain (4663) are supported by the wallet, UI, indexer, database, metadata APIs, and transaction flows. Shibarium keeps its verified default deployment. The other networks remain read-only and show “deployment needed” until both values for that network are configured:
+Ethereum (1), Shibarium (109), Polygon (137), Base (8453), and Robinhood Chain (4663) are supported by the wallet, UI, indexer, database, metadata APIs, and transaction flows. Shibarium keeps its verified default deployment. The other networks remain read-only and show “deployment needed” until both values for that network are configured:
 
 ```env
+ETHEREUM_MARKETPLACE_ADDRESS=0x...
+ETHEREUM_MARKETPLACE_DEPLOY_BLOCK=...
+ETHEREUM_RPC_URL=https://cloudflare-eth.com
+
 SHIBARIUM_MARKETPLACE_ADDRESS=0x...
 SHIBARIUM_MARKETPLACE_DEPLOY_BLOCK=18216976
 SHIBARIUM_RPC_URL=https://...
@@ -36,6 +40,7 @@ ROBINHOOD_MARKETPLACE_DEPLOY_BLOCK=...
 ROBINHOOD_RPC_URL=https://rpc.mainnet.chain.robinhood.com
 
 # Optional Blockscout-compatible NFT API overrides
+ETHEREUM_EXPLORER_API_URL=https://eth.blockscout.com/api/v2
 SHIBARIUM_EXPLORER_API_URL=https://.../api/v2
 POLYGON_EXPLORER_API_URL=https://.../api/v2
 BASE_EXPLORER_API_URL=https://.../api/v2
@@ -52,11 +57,12 @@ GET /api/wallet-nfts?owner=0x...&chainId=137
 GET /api/nft?contract=0x...&tokenId=1&chainId=137
 ```
 
-### Deploying Polygon or Base
+### Deploying a marketplace
 
 The deployer wallet must hold enough native gas currency on the target network. Never put a private key in a committed file.
 
 ```bash
+DEPLOY_CHAIN_ID=1 DEPLOYER_PRIVATE_KEY=0x... npm run deploy:marketplace
 DEPLOY_CHAIN_ID=137 DEPLOYER_PRIVATE_KEY=0x... npm run deploy:marketplace
 DEPLOY_CHAIN_ID=8453 DEPLOYER_PRIVATE_KEY=0x... npm run deploy:marketplace
 DEPLOY_CHAIN_ID=4663 DEPLOYER_PRIVATE_KEY=0x... npm run deploy:marketplace

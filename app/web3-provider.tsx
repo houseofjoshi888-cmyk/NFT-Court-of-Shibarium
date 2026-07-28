@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { defineChain } from "viem";
-import { base, polygon } from "viem/chains";
+import { base, mainnet, polygon } from "viem/chains";
 
 export const shibarium = defineChain({
   id: 109,
@@ -28,9 +28,10 @@ export const robinhood = defineChain({
 // Reown / WalletConnect project ID. Deployments may override this public ID with
 // NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID without changing the application code.
 const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "798a4c4e5870335d10cd2621358e0f77";
-export const supportedChains = [shibarium, polygon, base, robinhood] as const;
+export const supportedChains = [shibarium, mainnet, polygon, base, robinhood] as const;
 const transport = {
   [shibarium.id]: http(shibarium.rpcUrls.default.http[0]),
+  [mainnet.id]: http(),
   [polygon.id]: http(),
   [base.id]: http(),
   [robinhood.id]: http(robinhood.rpcUrls.default.http[0]),
