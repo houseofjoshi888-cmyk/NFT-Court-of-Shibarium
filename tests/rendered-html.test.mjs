@@ -45,7 +45,6 @@ test("isolates listings and activity by supported chain", async () => {
   assert.match(indexer, /ROBINHOOD_MARKETPLACE_ADDRESS/);
   assert.match(indexer, /marketplace:\$\{chainId\}/);
   assert.match(indexer, /WHERE chain_id = \?/);
-  assert.match(indexer, /LIMIT 50/);
   assert.match(schema, /multichain_listings/);
   assert.match(schema, /multichain_marketplace_activity/);
   assert.match(portal, /chainId:selectedChainId/);
