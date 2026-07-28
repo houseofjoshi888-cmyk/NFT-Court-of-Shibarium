@@ -290,10 +290,10 @@ const networkOptions = [
 ] as const;
 
 function NetworkMenu() {
-  return <ConnectButton.Custom>{({ chain, openChainModal, mounted }) =>
-    <button className="network network-menu" onClick={openChainModal} type="button" aria-label="Choose network">
+  return <ConnectButton.Custom>{({ account, chain, openChainModal, openConnectModal, mounted }) =>
+    <button className="network network-menu" onClick={account ? openChainModal : openConnectModal} type="button" aria-label={account ? "Choose network" : "Connect wallet to choose a network"}>
       <i className={mounted && chain ? `chain-dot chain-${chain.id}` : "chain-dot"} />
-      <span>{mounted && chain ? chain.name : "Networks"}</span>
+      <span>{mounted && chain ? chain.name : "Connect network"}</span>
       <span className="network-chevron">⌄</span>
     </button>
   }</ConnectButton.Custom>;
@@ -302,19 +302,19 @@ function NetworkMenu() {
 function NetworkRail() {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
-  return <section className="network-rail" aria-label="Supported networks">
-    <div className="network-rail-intro"><Layers3 size={18} /><span>SELECT<br />NETWORK</span></div>
-    {networkOptions.map((network) => <button
-      type="button"
-      key={network.id}
-      className={`network-card ${network.tone} ${chainId === network.id ? "active" : ""}`}
-      onClick={() => switchChain({ chainId: network.id })}
-    >
-      <span className="network-mark" aria-hidden="true" />
-      <span className="network-card-copy"><small>{network.state}</small><strong>{network.name}</strong><em>Chain {network.id} · {network.currency}</em></span>
-      <ArrowUpRight size={16} />
-    </button>)}
-  </section>;
+  return <ConnectButton.Custom>{({account,openConnectModal})=><section className="network-rail" aria-label="Supported networks">
+      <div className="network-rail-intro"><Layers3 size={18} /><span>SELECT<br />NETWORK</span></div>
+      {networkOptions.map((network) => <button
+        type="button"
+        key={network.id}
+        className={`network-card ${network.tone} ${account && chainId === network.id ? "active" : ""}`}
+        onClick={() => account ? switchChain({ chainId: network.id }) : openConnectModal()}
+      >
+        <span className="network-mark" aria-hidden="true" />
+        <span className="network-card-copy"><small>{account ? network.state : "CONNECT WALLET"}</small><strong>{network.name}</strong><em>Chain {network.id} · {network.currency}</em></span>
+        <ArrowUpRight size={16} />
+      </button>)}
+    </section>}</ConnectButton.Custom>;
 }
 
 function IndexedListingCard({ listing, connected, onBuy }: { listing: IndexedListing; connected: boolean; onBuy: (listing: IndexedListing) => void }) {
