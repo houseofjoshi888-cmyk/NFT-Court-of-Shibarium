@@ -15,6 +15,13 @@
       "when": 1784579762281,
       "tag": "0001_fine_sasquatch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1785230745138,
+      "tag": "0002_previous_scourge",
+      "breakpoints": true
     }
   ]
 }

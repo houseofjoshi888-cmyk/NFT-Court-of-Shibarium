@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAddress } from "viem";
+import { getMarketplaceChain, isMarketplaceChainId } from "@/lib/marketplace-chains";
+import { env } from "@runtime-env";
 
 export const dynamic = "force-dynamic";
 
-const EXPLORER_API = "https://shibariumscan.io/api/v2";
 const MAX_PAGES = 4;
 const PAGE_SIZE = 50;
 
@@ -26,7 +27,12 @@ function imageUrl(value: string | null | undefined) {
 
 export async function GET(request: NextRequest) {
   const owner = request.nextUrl.searchParams.get("owner");
+  const chainId = Number(request.nextUrl.searchParams.get("chainId") ?? 109);
   if (!owner) return NextResponse.json({ error: "A wallet address is required." }, { status: 400 });
+  if (!isMarketplaceChainId(chainId)) return NextResponse.json({ error: "Unsupported chain." }, { status: 400 });
+  const chain = getMarketplaceChain(chainId);
+  const runtime = env as unknown as Record<string, string | undefined>;
+  const explorerApiUrl = runtime[`${chain.slug.toUpperCase()}_EXPLORER_API_URL`] ?? chain.explorerApiUrl;
 
   let address: string;
   try {
@@ -42,11 +48,11 @@ export async function GET(request: NextRequest) {
     for (let page = 0; page < MAX_PAGES; page += 1) {
       const params = new URLSearchParams({ token_type: "ERC-721", items_count: String(PAGE_SIZE) });
       for (const [key, value] of Object.entries(pageParams ?? {})) if (value !== null) params.set(key, String(value));
-      const response = await fetch(`${EXPLORER_API}/addresses/${address}/nft?${params}`, {
+      const response = await fetch(`${explorerApiUrl}/addresses/${address}/nft?${params}`, {
         headers: { accept: "application/json" },
         next: { revalidate: 30 },
       });
-      if (!response.ok) throw new Error(`ShibariumScan returned ${response.status}`);
+      if (!response.ok) throw new Error(`${chain.name} explorer returned ${response.status}`);
       const payload = await response.json() as ExplorerPage;
       for (const item of payload.items ?? []) {
         const contractAddress = item.token?.address_hash;
@@ -66,8 +72,8 @@ export async function GET(request: NextRequest) {
       if (!pageParams) break;
     }
   } catch {
-    return NextResponse.json({ error: "Could not load wallet NFTs from ShibariumScan." }, { status: 502 });
+    return NextResponse.json({ error: `Could not load wallet NFTs from the ${chain.name} explorer.` }, { status: 502 });
   }
 
-  return NextResponse.json({ owner: address, nfts }, { headers: { "Cache-Control": "private, max-age=30" } });
+  return NextResponse.json({ owner: address, chainId, nfts }, { headers: { "Cache-Control": "private, max-age=30" } });
 }

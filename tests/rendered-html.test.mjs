@@ -20,13 +20,36 @@ test("uses live indexed data without demo listings", async () => {
     read("app/api/indexer/route.ts"),
   ]);
 
-  assert.match(marketplace, /fetch\("\/api\/indexer"/);
-  assert.match(portal, /fetch\("\/api\/indexer"/);
+  assert.match(marketplace, /\/api\/indexer\?chainId=/);
+  assert.match(portal, /\/api\/indexer\?chainId=/);
   assert.match(indexer, /eth_getLogs/);
   assert.match(indexer, /0x2C5F372746330465C3f4084CE6C6aBce22a48B4d/);
   assert.match(indexer, /18216976/);
   assert.match(indexer, /configured: false, listings: \[\], activity: \[\]/);
   assert.doesNotMatch(`${marketplace}\n${portal}`, /demo listing|mock listing|sample listing/i);
+});
+
+test("isolates listings and activity by supported chain", async () => {
+  const [chains, indexer, portal, schema] = await Promise.all([
+    read("lib/marketplace-chains.ts"),
+    read("app/api/indexer/route.ts"),
+    read("app/portal.tsx"),
+    read("db/schema.ts"),
+  ]);
+
+  for (const chainId of ["109", "137", "8453", "4663"]) {
+    assert.match(chains, new RegExp(`${chainId}:`));
+  }
+  assert.match(indexer, /POLYGON_MARKETPLACE_ADDRESS/);
+  assert.match(indexer, /BASE_MARKETPLACE_ADDRESS/);
+  assert.match(indexer, /ROBINHOOD_MARKETPLACE_ADDRESS/);
+  assert.match(indexer, /marketplace:\$\{chainId\}/);
+  assert.match(indexer, /WHERE chain_id = \?/);
+  assert.match(schema, /multichain_listings/);
+  assert.match(schema, /multichain_marketplace_activity/);
+  assert.match(portal, /chainId:selectedChainId/);
+  assert.match(portal, /transactionUrl/);
+  assert.match(portal, /tokenUrl/);
 });
 
 test("keeps the protocol fee fixed at two percent", async () => {

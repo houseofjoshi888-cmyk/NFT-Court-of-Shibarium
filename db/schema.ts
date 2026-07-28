@@ -36,3 +36,38 @@ export const marketplaceActivity = sqliteTable("marketplace_activity", {
   blockNumber: integer("block_number").notNull(),
   logIndex: integer("log_index").notNull(),
 }, (table) => [index("activity_block_idx").on(table.blockNumber, table.logIndex)]);
+
+export const multichainListings = sqliteTable("multichain_listings", {
+  id: text("id").primaryKey(),
+  chainId: integer("chain_id").notNull(),
+  nftAddress: text("nft_address").notNull(),
+  tokenId: text("token_id").notNull(),
+  seller: text("seller").notNull(),
+  price: text("price").notNull(),
+  active: integer("active", { mode: "boolean" }).notNull(),
+  transactionHash: text("transaction_hash").notNull(),
+  createdBlock: integer("created_block").notNull(),
+  updatedBlock: integer("updated_block").notNull(),
+}, (table) => [
+  index("multichain_listings_chain_active_idx").on(table.chainId, table.active, table.updatedBlock),
+  index("multichain_listings_chain_seller_idx").on(table.chainId, table.seller),
+]);
+
+export const multichainMarketplaceActivity = sqliteTable("multichain_marketplace_activity", {
+  id: text("id").primaryKey(),
+  chainId: integer("chain_id").notNull(),
+  eventType: text("event_type").notNull(),
+  nftAddress: text("nft_address"),
+  tokenId: text("token_id"),
+  seller: text("seller"),
+  buyer: text("buyer"),
+  price: text("price"),
+  marketplaceFee: text("marketplace_fee"),
+  royaltyRecipient: text("royalty_recipient"),
+  royaltyAmount: text("royalty_amount"),
+  transactionHash: text("transaction_hash").notNull(),
+  blockNumber: integer("block_number").notNull(),
+  logIndex: integer("log_index").notNull(),
+}, (table) => [
+  index("multichain_activity_chain_block_idx").on(table.chainId, table.blockNumber, table.logIndex),
+]);

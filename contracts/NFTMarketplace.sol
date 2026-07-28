@@ -7,7 +7,7 @@ import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title House of Joshi Court Marketplace
-/// @notice A non-custodial, fixed-price ERC-721 marketplace settled in native BONE.
+/// @notice A non-custodial, fixed-price ERC-721 marketplace settled in the chain's native currency.
 /// @dev A fixed 2% protocol fee is deducted from the listed price. Optional ERC-2981
 /// royalties are credited separately. All recipients withdraw through pull payments.
 contract NFTMarketplace is ReentrancyGuard {
