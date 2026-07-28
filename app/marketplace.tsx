@@ -210,7 +210,7 @@ export function Marketplace() {
         </nav>
         <div className="header-actions">
           <NetworkMenu />
-          <button className="present-button" onClick={() => setShowList(true)}>Present a work</button>
+          <button className="present-button" onClick={() => setShowList(true)}>List an NFT</button>
           <CourtWalletButton />
           <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
             {menuOpen ? <X /> : <Menu />}
@@ -226,8 +226,8 @@ export function Marketplace() {
             <h1>THE NFT<br />COURT<br /><em>WITHOUT BORDERS</em></h1>
             <p className="lede">Discover, acquire, and present singular works across Shibarium, Polygon, Base, and Robinhood—one court, with provenance written onchain.</p>
             <div className="hero-actions">
-              <a className="primary-action" href="/market">Enter the market <ArrowDownRight size={18} /></a>
-              <a className="text-action" href="/protocol">Read the court notes <ArrowUpRight size={16} /></a>
+              <a className="primary-action" href="/market">Browse NFTs <ArrowDownRight size={18} /></a>
+              <a className="text-action" href="/sell">List an NFT <ArrowUpRight size={16} /></a>
             </div>
           </div>
           <div className="hero-art" aria-label="Abstract faceted marketplace artwork">
@@ -303,7 +303,7 @@ function NetworkRail() {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   return <section className="network-rail" aria-label="Supported networks">
-    <div className="network-rail-intro"><Layers3 size={18} /><span>CHOOSE<br />YOUR COURT</span></div>
+    <div className="network-rail-intro"><Layers3 size={18} /><span>SELECT<br />NETWORK</span></div>
     {networkOptions.map((network) => <button
       type="button"
       key={network.id}

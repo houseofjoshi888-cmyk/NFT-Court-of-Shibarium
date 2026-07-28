@@ -720,12 +720,53 @@ h1 em {
 .portal-hero .section-no { grid-column:1; align-self:end; }
 .portal-hero h1 { grid-column:1; margin-bottom:0; }
 .portal-hero > p { grid-column:2; grid-row:2/4; align-self:end; margin:0; }
+.network-context {
+  min-height:74px;
+  margin:0 clamp(34px,6vw,100px);
+  padding:0 18px;
+  display:grid;
+  grid-template-columns:1.2fr .8fr 1fr auto;
+  align-items:center;
+  gap:18px;
+  border:1px solid rgba(32,39,78,.13);
+  border-radius:9px;
+  background:rgba(255,255,255,.62);
+  box-shadow:0 14px 38px rgba(38,43,91,.07);
+}
+.network-context > div { min-width:0; }
+.network-context > div:first-child { display:flex; align-items:center; gap:12px; }
+.network-context p { display:flex; flex-direction:column; gap:3px; margin:0; }
+.network-context small { color:#747c93; font-family:var(--font-mono); font-size:7px; letter-spacing:.13em; }
+.network-context strong { color:#171a2e; font-family:var(--font-sans); font-size:12px; font-weight:650; }
+.network-context-dot { width:9px; height:9px; border-radius:50%; flex:none; background:#37bc72; box-shadow:0 0 0 5px rgba(55,188,114,.12); }
+.network-context.pending .network-context-dot { background:#f0a54a; box-shadow:0 0 0 5px rgba(240,165,74,.12); }
+.network-context > button {
+  min-height:40px;
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  border:1px solid rgba(23,28,58,.2);
+  border-radius:6px;
+  background:#11152a;
+  color:#f3f4fb;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  font-size:8px;
+}
+.network-context > button:hover { background:#242a4c; }
 .portal-content {
   max-width:1500px;
   margin:0 auto;
   padding:54px clamp(34px,6vw,100px) 110px;
 }
 .portal-footer { margin-left:0; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {
+  outline:3px solid rgba(87,217,228,.75);
+  outline-offset:3px;
+}
 
 @media(max-width:900px){.portal-header{gap:14px}.portal-header nav{display:flex;flex:1;gap:14px;justify-content:center;overflow-x:auto;white-space:nowrap}.portal-header .wallet-button{min-width:auto;padding:0 10px}.portal-grid{grid-template-columns:repeat(2,1fr)}.market-listings-grid{grid-template-columns:repeat(3,1fr)}.sell-layout{grid-template-columns:1fr}.account-balance{grid-template-columns:1fr;gap:14px}.protocol-grid{grid-template-columns:1fr}.protocol-grid .contract-record{grid-column:auto}.nft-detail{grid-template-columns:1fr 1fr}.nft-detail-image{min-height:380px}.portal-footer{grid-template-columns:repeat(2,1fr)}.footer-main{grid-column:1/-1}}
 @media(max-width:620px){.portal-header{height:auto;min-height:68px;flex-wrap:wrap;padding-top:10px;padding-bottom:8px}.portal-header .wordmark>span:last-child{display:none}.portal-header nav{order:3;width:100%;justify-content:flex-start;padding-top:3px;padding-bottom:2px}.portal-header .wallet-button{height:34px;font-size:8px}.portal-hero{padding-top:38px}.portal-hero .back-link{margin-bottom:40px}.portal-hero>p{margin-left:0}.portal-grid{grid-template-columns:1fr}.portal-content{padding-top:28px}.collection-picker{align-items:flex-start;flex-direction:column}.collection-chips{justify-content:flex-start;max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.collection-chips button{white-space:nowrap}.market-listings-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px}.portal-activity a{grid-template-columns:80px 1fr 18px;padding:15px 0}.portal-activity span:nth-child(3),.portal-activity span:nth-child(4){display:none}.sell-layout aside{padding:28px}.field-row{flex-direction:column;gap:0}.wallet-nft-grid{grid-template-columns:repeat(2,1fr)}.wallet-nft-grid.list .wallet-nft{grid-template-columns:48px minmax(0,1fr) 56px}.wallet-nft-grid.list .wallet-nft strong{grid-column:2;grid-row:2}.wallet-nft-grid.list .wallet-nft small{grid-column:3}.account-balance{padding:28px}.portal-footer{grid-template-columns:1fr;gap:26px}.footer-main{grid-column:auto}.portal-footer .footer-legal{grid-column:auto;align-items:flex-start;flex-direction:column}.portal-footer .footer-legal span{margin:0}.protocol-grid article{padding:28px}.nft-detail-backdrop{padding:0}.nft-detail{max-height:100vh;grid-template-columns:1fr}.nft-detail-image{min-height:300px}.nft-detail-copy{padding:30px 22px}.nft-detail-copy h2{font-size:38px}.info-page header nav{display:none}.info-hero{padding-top:48px}.info-content article{grid-template-columns:1fr;gap:12px}.info-footer{align-items:flex-start;flex-direction:column}.info-footer > div{flex-wrap:wrap}}
@@ -742,6 +783,7 @@ h1 em {
   .portal-header nav a{min-height:38px;display:flex;padding:0 9px}
   .portal-header-actions{width:auto;margin:0;padding:0;border:0;flex-direction:row}
   .portal-header-actions .network-menu,.portal-header-actions .wallet-button{width:auto}
+  .network-context{grid-template-columns:1fr 1fr 1fr auto}
 }
 @media(max-width:700px){
   .hero-grid{grid-template-columns:1fr;gap:0}
@@ -759,5 +801,8 @@ h1 em {
   .portal-hero{min-height:auto;display:block;padding:42px 22px}
   .portal-hero .back-link{margin-bottom:45px}
   .portal-hero>p{margin-top:24px}
+  .network-context{margin:0 22px;padding:14px;grid-template-columns:1fr 1fr;gap:14px}
+  .network-context>div:nth-child(3){display:none}
+  .network-context>button{grid-column:1/-1;width:100%}
   .portal-content{padding:30px 22px 80px}
 }
