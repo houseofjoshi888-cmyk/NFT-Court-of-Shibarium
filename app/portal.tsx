@@ -91,7 +91,7 @@ export function Portal({ view }: { view:View }) {
   const [section,title,description]=labels[view];
 
   return <main className="portal-page">
-    <PortalHeader />
+    <PortalHeader view={view} />
     <section className="portal-hero"><Link href="/" className="back-link"><ArrowLeft size={14}/> House of Joshi</Link><span className="section-no">{section}</span><h1>{title}</h1><p>{description}</p></section>
     <section className="portal-content">
       {view==="market"&&<MarketView data={data} loading={loading} account={address} onBuy={buy} onCancel={cancel}/>}
@@ -107,7 +107,7 @@ export function Portal({ view }: { view:View }) {
   </main>;
 }
 
-function PortalHeader(){return <header className="portal-header"><Link href="/" className="wordmark"><Image src="/house-of-joshi.png" alt="House of Joshi" width={42} height={42} className="header-logo"/><span>HOUSE OF JOSHI</span></Link><nav><Link href="/market">Market</Link><Link href="/sell">Sell</Link><Link href="/activity">Activity</Link><Link href="/account">Account</Link><Link href="/protocol">Protocol</Link></nav><div className="portal-header-actions"><PortalNetworkButton/><CourtConnect/></div></header>}
+function PortalHeader({view}:{view:View}){return <header className="portal-header"><Link href="/" className="wordmark"><Image src="/house-of-joshi.png" alt="House of Joshi" width={42} height={42} className="header-logo"/><span>HOUSE OF JOSHI</span></Link><span className="portal-nav-label">MARKETPLACE</span><nav><Link className={view==="market"?"active":""} href="/market"><i>01</i> Market</Link><Link className={view==="sell"?"active":""} href="/sell"><i>02</i> Sell</Link><Link className={view==="activity"?"active":""} href="/activity"><i>03</i> Activity</Link><Link className={view==="account"?"active":""} href="/account"><i>04</i> Account</Link><Link className={view==="protocol"?"active":""} href="/protocol"><i>05</i> Protocol</Link></nav><div className="portal-header-actions"><PortalNetworkButton/><CourtConnect/></div></header>}
 function PortalNetworkButton(){return <ConnectButton.Custom>{({chain,openChainModal})=><button className="network network-menu" type="button" onClick={openChainModal}><i className={chain?`chain-${chain.id}`:""}/>{chain?.name??"Networks"}<span className="network-chevron">⌄</span></button>}</ConnectButton.Custom>}
 function CourtConnect(){return <ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=>!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</ConnectButton.Custom>}
 

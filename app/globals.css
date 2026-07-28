@@ -571,5 +571,193 @@ h1 em {
 .info-contact-link { border-color:var(--violet); }
 .toast { border-radius:8px; box-shadow:0 22px 70px rgba(0,0,0,.45); }
 
+/* Spatial layout */
+.site-header {
+  width:min(1600px,100%);
+  margin:0 auto;
+}
+.hero {
+  width:min(1600px,100%);
+  margin:0 auto;
+  padding-inline:clamp(22px,5vw,88px);
+}
+.hero-grid {
+  grid-template-columns:minmax(0,.82fr) minmax(500px,1.18fr);
+  gap:clamp(28px,4vw,72px);
+  min-height:640px;
+  border-top:0;
+  align-items:stretch;
+}
+.hero-copy {
+  border-right:0;
+  padding:74px 0 68px;
+  justify-content:center;
+}
+.hero-copy h1 { font-size:clamp(68px,7.2vw,116px); max-width:760px; }
+.hero-art {
+  margin:30px 0 40px;
+  border-radius:12px;
+  min-height:560px;
+}
+.hero-art::before { inset:18px; border-radius:7px; }
+.network-rail {
+  min-height:auto;
+  border-top:0;
+  grid-template-columns:160px repeat(4,1fr);
+  gap:8px;
+  padding:10px 0 18px;
+  background:transparent;
+}
+.network-rail-intro { padding:0 16px; }
+.network-card {
+  min-height:92px;
+  border:1px solid rgba(188,197,255,.12);
+  border-radius:8px;
+  background:rgba(255,255,255,.025);
+  padding:17px;
+}
+.network-card.active { box-shadow:inset 0 -2px var(--network-color),0 12px 30px rgba(0,0,0,.16); }
+.proof-strip {
+  min-height:90px;
+  margin-top:8px;
+  border:1px solid var(--line);
+  border-radius:8px 8px 0 0;
+  overflow:hidden;
+}
+.proof-strip > div { padding-block:20px 16px; }
+.market-section {
+  padding-inline:max(clamp(22px,5vw,88px),calc((100vw - 1600px)/2 + 88px));
+}
+.section-heading {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:60px;
+}
+.empty-market {
+  align-items:flex-start;
+  text-align:left;
+  padding-left:clamp(0px,8vw,130px);
+}
+.empty-market h3,.empty-market p { max-width:650px; }
+.manifesto,.activity-section,footer {
+  padding-inline:max(clamp(22px,5vw,88px),calc((100vw - 1600px)/2 + 88px));
+}
+.portal-page {
+  padding-left:236px;
+  min-height:100vh;
+}
+.portal-header {
+  position:fixed;
+  inset:0 auto 0 0;
+  width:236px;
+  height:100vh;
+  padding:30px 22px 24px;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  z-index:70;
+  border-right:1px solid var(--line);
+  border-bottom:0;
+}
+.portal-header .wordmark {
+  align-items:center;
+  padding-bottom:30px;
+  border-bottom:1px solid var(--line);
+}
+.portal-header .wordmark > span { line-height:1.35; }
+.portal-nav-label {
+  display:block;
+  margin:34px 10px 13px;
+  color:#626b86;
+  font-family:var(--font-mono);
+  font-size:7px;
+  letter-spacing:.18em;
+}
+.portal-header nav {
+  width:100%;
+  flex-direction:column;
+  gap:4px;
+}
+.portal-header nav a {
+  min-height:44px;
+  display:grid;
+  grid-template-columns:30px 1fr;
+  align-items:center;
+  padding:0 11px;
+  border-radius:6px;
+  color:#858da7;
+}
+.portal-header nav a i {
+  color:#4f5874;
+  font-family:var(--font-mono);
+  font-size:7px;
+  font-style:normal;
+}
+.portal-header nav a:hover,.portal-header nav a.active {
+  background:rgba(137,124,255,.1);
+  color:#f1f2fb;
+}
+.portal-header nav a.active i { color:#9e94ff; }
+.portal-header-actions {
+  width:100%;
+  margin-top:auto;
+  padding-top:20px;
+  border-top:1px solid var(--line);
+  flex-direction:column;
+  align-items:stretch;
+}
+.portal-header-actions .network-menu,.portal-header-actions .wallet-button { width:100%; min-width:0; }
+.portal-hero {
+  min-height:360px;
+  padding:58px clamp(34px,6vw,100px) 52px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,.55fr);
+  grid-template-rows:auto 1fr;
+  column-gap:60px;
+  align-items:end;
+}
+.portal-hero .back-link { grid-column:1/-1; align-self:start; margin-bottom:70px; }
+.portal-hero .section-no { grid-column:1; align-self:end; }
+.portal-hero h1 { grid-column:1; margin-bottom:0; }
+.portal-hero > p { grid-column:2; grid-row:2/4; align-self:end; margin:0; }
+.portal-content {
+  max-width:1500px;
+  margin:0 auto;
+  padding:54px clamp(34px,6vw,100px) 110px;
+}
+.portal-footer { margin-left:0; }
+
 @media(max-width:900px){.portal-header{gap:14px}.portal-header nav{display:flex;flex:1;gap:14px;justify-content:center;overflow-x:auto;white-space:nowrap}.portal-header .wallet-button{min-width:auto;padding:0 10px}.portal-grid{grid-template-columns:repeat(2,1fr)}.market-listings-grid{grid-template-columns:repeat(3,1fr)}.sell-layout{grid-template-columns:1fr}.account-balance{grid-template-columns:1fr;gap:14px}.protocol-grid{grid-template-columns:1fr}.protocol-grid .contract-record{grid-column:auto}.nft-detail{grid-template-columns:1fr 1fr}.nft-detail-image{min-height:380px}.portal-footer{grid-template-columns:repeat(2,1fr)}.footer-main{grid-column:1/-1}}
 @media(max-width:620px){.portal-header{height:auto;min-height:68px;flex-wrap:wrap;padding-top:10px;padding-bottom:8px}.portal-header .wordmark>span:last-child{display:none}.portal-header nav{order:3;width:100%;justify-content:flex-start;padding-top:3px;padding-bottom:2px}.portal-header .wallet-button{height:34px;font-size:8px}.portal-hero{padding-top:38px}.portal-hero .back-link{margin-bottom:40px}.portal-hero>p{margin-left:0}.portal-grid{grid-template-columns:1fr}.portal-content{padding-top:28px}.collection-picker{align-items:flex-start;flex-direction:column}.collection-chips{justify-content:flex-start;max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.collection-chips button{white-space:nowrap}.market-listings-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px}.portal-activity a{grid-template-columns:80px 1fr 18px;padding:15px 0}.portal-activity span:nth-child(3),.portal-activity span:nth-child(4){display:none}.sell-layout aside{padding:28px}.field-row{flex-direction:column;gap:0}.wallet-nft-grid{grid-template-columns:repeat(2,1fr)}.wallet-nft-grid.list .wallet-nft{grid-template-columns:48px minmax(0,1fr) 56px}.wallet-nft-grid.list .wallet-nft strong{grid-column:2;grid-row:2}.wallet-nft-grid.list .wallet-nft small{grid-column:3}.account-balance{padding:28px}.portal-footer{grid-template-columns:1fr;gap:26px}.footer-main{grid-column:auto}.portal-footer .footer-legal{grid-column:auto;align-items:flex-start;flex-direction:column}.portal-footer .footer-legal span{margin:0}.protocol-grid article{padding:28px}.nft-detail-backdrop{padding:0}.nft-detail{max-height:100vh;grid-template-columns:1fr}.nft-detail-image{min-height:300px}.nft-detail-copy{padding:30px 22px}.nft-detail-copy h2{font-size:38px}.info-page header nav{display:none}.info-hero{padding-top:48px}.info-content article{grid-template-columns:1fr;gap:12px}.info-footer{align-items:flex-start;flex-direction:column}.info-footer > div{flex-wrap:wrap}}
+
+@media(max-width:1100px){
+  .hero-grid{grid-template-columns:1fr 46%;gap:28px}
+  .network-rail{grid-template-columns:repeat(2,1fr)}
+  .network-rail-intro{display:none}
+  .portal-page{padding-left:0;padding-top:76px}
+  .portal-header{position:fixed;inset:0 0 auto;width:100%;height:76px;padding:0 clamp(22px,4vw,46px);flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line)}
+  .portal-header .wordmark{padding:0;border:0}
+  .portal-nav-label,.portal-header nav a i{display:none}
+  .portal-header nav{width:auto;flex:1;flex-direction:row;justify-content:center;gap:8px}
+  .portal-header nav a{min-height:38px;display:flex;padding:0 9px}
+  .portal-header-actions{width:auto;margin:0;padding:0;border:0;flex-direction:row}
+  .portal-header-actions .network-menu,.portal-header-actions .wallet-button{width:auto}
+}
+@media(max-width:700px){
+  .hero-grid{grid-template-columns:1fr;gap:0}
+  .hero-copy{padding:48px 0}
+  .hero-art{margin:0 0 28px;min-height:440px}
+  .network-rail{display:flex;margin:0 -22px;padding-left:22px}
+  .network-card{flex:0 0 220px}
+  .proof-strip{margin-inline:-22px;border-radius:0}
+  .section-heading{display:block}
+  .empty-market{padding-left:0}
+  .portal-page{padding-top:118px}
+  .portal-header{height:118px;flex-wrap:wrap;padding-block:10px}
+  .portal-header nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto}
+  .portal-header-actions .network-menu{display:none}
+  .portal-hero{min-height:auto;display:block;padding:42px 22px}
+  .portal-hero .back-link{margin-bottom:45px}
+  .portal-hero>p{margin-top:24px}
+  .portal-content{padding:30px 22px 80px}
+}
