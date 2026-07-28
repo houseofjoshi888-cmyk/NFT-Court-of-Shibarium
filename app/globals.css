@@ -763,8 +763,194 @@ h1 em {
   padding:54px clamp(34px,6vw,100px) 110px;
 }
 .portal-footer { margin-left:0; }
+
+/* Royal obsidian marketplace */
+:root {
+  --ink:#050402;
+  --paper:#0b0905;
+  --paper-2:#171109;
+  --amber:#d4af37;
+  --muted:#9a8965;
+  --line:rgba(212,175,55,.2);
+  --violet:#d4af37;
+  --cyan:#f0d77b;
+  --surface:#0c0904;
+  --surface-2:#171108;
+}
+body {
+  background:
+    radial-gradient(circle at 14% -8%,rgba(173,123,24,.18),transparent 34rem),
+    radial-gradient(circle at 90% 16%,rgba(224,190,89,.08),transparent 30rem),
+    #050402;
+}
+.site-header,.portal-header,.info-page header { background:rgba(5,4,2,.9); border-color:rgba(212,175,55,.2); }
+.nav,.portal-header nav { color:#aa9a78; }
+.nav a:first-child::after { background:linear-gradient(90deg,#8c6819,#f0d77b,#8c6819); }
+.wallet-button,.primary-action,.confirm-buy {
+  background:linear-gradient(110deg,#8b6417,#e0ba45 48%,#f3dc89);
+  color:#090602;
+  box-shadow:0 10px 28px rgba(142,101,20,.2);
+}
+.wallet-button:hover,.primary-action:hover { background:linear-gradient(110deg,#b88b2b,#f0d77b); color:#090602; }
+.hero { background-image:linear-gradient(rgba(212,175,55,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.025) 1px,transparent 1px); }
+.eyebrow,.section-no { color:#d8b84d; }
+h1 em {
+  background:linear-gradient(105deg,#9b701d 4%,#f5df91 48%,#bd8c25 96%);
+  background-clip:text;
+  -webkit-background-clip:text;
+}
+.kicker,.lede { color:#b3a27f; }
+.hero-art {
+  background:
+    radial-gradient(circle at 50% 50%,rgba(179,125,22,.28),transparent 34%),
+    radial-gradient(circle at 64% 32%,rgba(239,210,119,.11),transparent 28%),
+    #070502;
+}
+.hero-art::before { border-color:rgba(212,175,55,.35); box-shadow:inset 0 0 75px rgba(157,108,16,.09); }
+.hero-art::after { background:linear-gradient(transparent,rgba(240,207,103,.7),transparent); }
+.artifact-hero { background:linear-gradient(138deg,#a27823 0 18%,#171006 19% 45%,#f0d77b 46% 51%,#2a1e0b 52% 72%,#d2a63a 73%); filter:drop-shadow(0 32px 55px rgba(0,0,0,.8)); }
+.artifact .one { background:linear-gradient(35deg,transparent 47%,rgba(250,220,125,.9) 49%,transparent 50%); }
+.artifact .two { background:linear-gradient(120deg,transparent 39%,rgba(255,244,204,.3) 40%,transparent 41%); }
+.artifact .three { background:linear-gradient(70deg,transparent 64%,rgba(202,150,42,.7) 65%,transparent 66%); }
+.glow { background:#c58d1d; }
+.network-card { background:rgba(18,13,6,.72); border-color:rgba(212,175,55,.18); }
+.network-card:hover { background:rgba(212,175,55,.07); }
+.network-card.active { background:linear-gradient(180deg,rgba(212,175,55,.1),rgba(12,9,4,.75)); }
+.proof-strip { background:#080602; }
+.market-section,.portal-page,.info-page {
+  background:
+    radial-gradient(circle at 82% 3%,rgba(196,143,30,.08),transparent 30rem),
+    #080602;
+  color:#f2e6c5;
+}
+.section-heading,.collection-picker,.wallet-nfts-head { border-color:rgba(212,175,55,.2); }
+.section-heading p,.market-listing p,.portal-empty p,.account-empty,.protocol-grid p,.info-hero p,.info-content p,.nft-description { color:#a99976; }
+.empty-market p,.indexed-meta > p,.collection-address { color:#93815e; }
+.empty-market button { background:#d4af37; color:#080602; border-radius:5px; }
+.empty-market button:hover { background:#efd574; }
+.indexed-meta button { border-color:rgba(212,175,55,.35); color:#e0bf55; }
+.indexed-meta button:hover { background:#d4af37; color:#080602; }
+.indexed-art,.market-listing-art,.portal-token {
+  background:
+    radial-gradient(circle at 55% 40%,rgba(200,148,38,.28),transparent 24%),
+    radial-gradient(circle at 42% 62%,rgba(240,215,123,.09),transparent 28%),
+    linear-gradient(145deg,#171006,#050402);
+  box-shadow:0 18px 45px rgba(0,0,0,.42);
+}
+.indexed-art::before,.indexed-art::after,.market-listing-art::before,.market-listing-art::after,.portal-token::before,.portal-token::after { border-color:rgba(212,175,55,.48); }
+.indexed-art strong,.market-listing-art strong,.portal-token strong { color:#ddba4d; }
+.manifesto { background:radial-gradient(circle at 50% 50%,rgba(181,128,22,.13),transparent 38rem),#050402; }
+.manifesto blockquote em { color:#e7c75f; }
+.activity-section,.portal-footer,footer,.info-footer { background:#050402; }
+.portal-hero,.info-hero { background:linear-gradient(135deg,rgba(176,124,20,.09),rgba(5,4,2,.25)); }
+.network-context { background:rgba(16,11,5,.92); border-color:rgba(212,175,55,.22); box-shadow:0 14px 38px rgba(0,0,0,.25); }
+.network-context small { color:#8e7c58; }
+.network-context strong { color:#f0e3bd; }
+.network-context > button { border-color:rgba(212,175,55,.3); background:linear-gradient(110deg,#6f4e10,#c99a2d); color:#fff4cf; }
+.network-context > button:hover { background:linear-gradient(110deg,#8c661b,#ddb849); }
+.portal-header nav a:hover,.portal-header nav a.active { background:rgba(212,175,55,.09); color:#f5e7bf; }
+.portal-header nav a.active i { color:#dfba4b; }
+.portal-nav-label { color:#75633e; }
+.market-toolbar {
+  min-height:64px;
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) auto 190px;
+  align-items:center;
+  gap:16px;
+  padding:10px 0 14px;
+  border-bottom:1px solid rgba(212,175,55,.18);
+}
+.market-toolbar label {
+  height:42px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 13px;
+  border:1px solid rgba(212,175,55,.22);
+  border-radius:7px;
+  background:#100c06;
+  color:#bfa768;
+}
+.market-toolbar input { width:100%; border:0; outline:0; background:transparent; color:#f1e5c3; font-size:12px; }
+.market-toolbar input::placeholder { color:#77694c; }
+.market-toolbar > span { color:#8f7d58; font-family:var(--font-mono); font-size:9px; white-space:nowrap; }
+.market-toolbar > span strong { color:#d8b64a; }
+.market-toolbar select {
+  height:42px;
+  border:1px solid rgba(212,175,55,.22);
+  border-radius:7px;
+  outline:0;
+  background:#100c06;
+  color:#e9dcb8;
+  padding:0 12px;
+  font-size:10px;
+  cursor:pointer;
+}
+.market-browser { display:grid; grid-template-columns:190px minmax(0,1fr); gap:22px; padding-top:20px; align-items:start; }
+.market-filter-panel {
+  position:sticky;
+  top:20px;
+  padding:14px;
+  border:1px solid rgba(212,175,55,.18);
+  border-radius:8px;
+  background:#0e0a05;
+}
+.market-filter-panel > div { display:flex; justify-content:space-between; padding:4px 4px 14px; border-bottom:1px solid rgba(212,175,55,.14); }
+.market-filter-panel > div span,.market-filter-panel p { color:#d4af37; font-family:var(--font-mono); font-size:7px; letter-spacing:.14em; }
+.market-filter-panel > div small { color:#806e4d; font-family:var(--font-mono); font-size:7px; }
+.market-filter-panel p { margin:20px 4px 8px; }
+.market-filter-panel button {
+  width:100%;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  border:0;
+  border-radius:5px;
+  background:transparent;
+  color:#ad9c78;
+  padding:0 8px;
+  font-family:var(--font-mono);
+  font-size:8px;
+  cursor:pointer;
+}
+.market-filter-panel button span { overflow:hidden; text-overflow:ellipsis; }
+.market-filter-panel button em { color:#6f6249; font-style:normal; }
+.market-filter-panel button:hover,.market-filter-panel button.active { background:rgba(212,175,55,.1); color:#f1dfaa; }
+.market-results { min-width:0; }
+.market-listings-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:18px 10px; padding-top:0; }
+.market-listing { padding:7px; border:1px solid rgba(212,175,55,.15); border-radius:9px; background:#0e0a05; transition:transform .2s,border-color .2s,box-shadow .2s; }
+.market-listing:hover { transform:translateY(-3px); border-color:rgba(212,175,55,.45); box-shadow:0 16px 34px rgba(0,0,0,.35); }
+.market-listing-art { border-radius:6px; box-shadow:none; }
+.market-listing > div { padding:10px 3px 2px; }
+.market-listing h2 { color:#f0e3bd; font-size:16px; }
+.market-listing > div > small { color:#786a4d; }
+.market-listing > div > button { border-color:rgba(212,175,55,.28); color:#d8b94f; }
+.market-listing > div > button:hover { background:#d4af37; color:#080602; }
+.market-no-results { min-height:420px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#bca876; }
+.market-no-results h2 { margin:16px 0 4px; color:#f0e3bd; font-family:var(--font-serif); font-size:30px; }
+.market-no-results p { color:#887858; }
+.market-no-results button { margin-top:12px; border:1px solid #d4af37; border-radius:5px; background:transparent; color:#d4af37; padding:10px 14px; cursor:pointer; }
+.collection-chips button,.layout-toggle,.wallet-nft { border-color:rgba(212,175,55,.2); }
+.collection-chips button.active,.collection-chips button:hover,.layout-toggle button.active { background:#d4af37; color:#080602; }
+.wallet-nft { background:#0e0a05; color:#f1e5c3; }
+.wallet-nft:hover { border-color:#d4af37; box-shadow:0 10px 24px rgba(0,0,0,.3); }
+.sell-layout form input { background:#100c06; border-color:rgba(212,175,55,.3); color:#f1e5c3; }
+.sell-layout aside,.account-balance,.protocol-grid .contract-record { background:linear-gradient(145deg,#151006,#060402); border:1px solid rgba(212,175,55,.2); }
+.nft-detail { background:#0d0904; color:#f1e5c3; border:1px solid rgba(212,175,55,.25); }
+.nft-detail-close { background:#0d0904; color:#e6c65d; border-color:rgba(212,175,55,.3); }
+.nft-traits article { background:#181107; }
+.nft-detail-actions button,.nft-detail-actions a { border-color:rgba(212,175,55,.35); color:#e0bf55; }
+.nft-detail-actions button { background:#d4af37; color:#080602; }
+.protocol-grid { background:rgba(212,175,55,.17); border-color:rgba(212,175,55,.17); }
+.protocol-grid article { background:#0d0904; }
+.info-content article { border-color:rgba(212,175,55,.18); }
+.info-contact-link { color:#e1c45f; border-color:#d4af37; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { outline-color:rgba(231,199,95,.9); }
+
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {
-  outline:3px solid rgba(87,217,228,.75);
+  outline:3px solid rgba(231,199,95,.9);
   outline-offset:3px;
 }
 
@@ -805,4 +991,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible {
   .network-context>div:nth-child(3){display:none}
   .network-context>button{grid-column:1/-1;width:100%}
   .portal-content{padding:30px 22px 80px}
+}
+@media(max-width:1450px) and (min-width:901px){
+  .market-listings-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .market-toolbar{grid-template-columns:minmax(220px,1fr) auto}
+  .market-toolbar select{grid-column:1/-1;width:100%}
+  .market-browser{grid-template-columns:1fr}
+  .market-filter-panel{position:static;display:flex;align-items:center;gap:6px;overflow-x:auto;padding:9px}
+  .market-filter-panel>div,.market-filter-panel p{display:none}
+  .market-filter-panel button{width:auto;min-width:max-content;padding-inline:12px}
+}
+@media(max-width:620px){
+  .market-toolbar{grid-template-columns:1fr}
+  .market-toolbar>span{grid-row:2}
+  .market-toolbar select{grid-column:auto}
+  .market-listings-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 8px}
 }

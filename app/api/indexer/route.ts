@@ -237,7 +237,7 @@ async function syncWithoutDatabase(chainId: MarketplaceChainId, chainName: strin
   }
   const decoded = decodeLogs(chainId, logs);
   return {
-    listings: [...decoded.listings.values()].sort((a, b) => b.updatedBlock - a.updatedBlock).slice(0, 48),
+    listings: [...decoded.listings.values()].sort((a, b) => b.updatedBlock - a.updatedBlock).slice(0, 50),
     activity: decoded.activity.sort((a, b) => b.blockNumber - a.blockNumber || b.logIndex - a.logIndex).slice(0, 30),
     sync: { safeLatest, syncedThrough: safeLatest, caughtUp: fromBlock === deployBlock, logsProcessed: logs.length },
     syncError: fromBlock > deployBlock ? `Stateless indexer is limited to the latest ${maximumRange.toLocaleString()} blocks.` : null,
@@ -273,7 +273,7 @@ export async function GET(request: Request) {
     syncError = error instanceof Error ? error.message : "Indexer sync failed";
   }
   const [listingsResult, activityResult] = await runtime.DB.batch([
-    runtime.DB.prepare("SELECT id, chain_id AS chainId, nft_address AS nftAddress, token_id AS tokenId, seller, price, transaction_hash AS transactionHash, created_block AS createdBlock, updated_block AS updatedBlock FROM multichain_listings WHERE chain_id = ? AND active = 1 ORDER BY updated_block DESC LIMIT 48").bind(requestedChainId),
+    runtime.DB.prepare("SELECT id, chain_id AS chainId, nft_address AS nftAddress, token_id AS tokenId, seller, price, transaction_hash AS transactionHash, created_block AS createdBlock, updated_block AS updatedBlock FROM multichain_listings WHERE chain_id = ? AND active = 1 ORDER BY updated_block DESC LIMIT 50").bind(requestedChainId),
     runtime.DB.prepare("SELECT id, chain_id AS chainId, event_type AS eventType, nft_address AS nftAddress, token_id AS tokenId, seller, buyer, price, marketplace_fee AS marketplaceFee, royalty_recipient AS royaltyRecipient, royalty_amount AS royaltyAmount, transaction_hash AS transactionHash, block_number AS blockNumber, log_index AS logIndex FROM multichain_marketplace_activity WHERE chain_id = ? ORDER BY block_number DESC, log_index DESC LIMIT 30").bind(requestedChainId),
   ]);
   return Response.json({ ...baseResponse, configured: true, marketplaceAddress: address, listings: listingsResult.results, activity: activityResult.results, sync: syncResult, syncError }, { headers: { "cache-control": "public, max-age=15, stale-while-revalidate=45" } });
