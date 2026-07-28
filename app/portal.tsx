@@ -3,7 +3,6 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ArrowLeft, ArrowUpRight, ChevronDown, ExternalLink, Grid2X2, List, Search, ShieldCheck, SlidersHorizontal, Wallet, X } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, getAddress, parseEther, zeroAddress } from "viem";
 import { useAccount, useChainId, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
@@ -91,7 +90,6 @@ export function Portal({ view }: { view:View }) {
   const [section,title,description]=labels[view];
 
   return <main className={`portal-page portal-${view}`}>
-    <PortalHeader view={view} />
     <section className="portal-hero"><Link href="/" className="back-link"><ArrowLeft size={14}/> House of Joshi</Link><span className="section-no">{section}</span><h1>{title}</h1><p>{description}</p></section>
     <NetworkContext chainId={selectedChainId} configured={data.configured} />
     <section className="portal-content">
@@ -103,15 +101,11 @@ export function Portal({ view }: { view:View }) {
       {view==="account"&&<AccountView connected={!!address} configured={!!data.marketplaceAddress} listings={mine} proceeds={proceeds ?? 0n} onCancel={cancel} onWithdraw={withdraw} currency={selectedChain.currency}/>}
       {view==="protocol"&&<ProtocolView/>}
     </section>
-    <PortalFooter />
     {status&&<div className="toast" role="status"><ShieldCheck size={18}/><span>{status}</span><button onClick={()=>setStatus("")}><X size={16}/></button></div>}
   </main>;
 }
 
-function PortalHeader({view}:{view:View}){return <header className="portal-header"><Link href="/" className="wordmark"><Image src="/house-of-joshi.png" alt="House of Joshi" width={42} height={42} className="header-logo"/><span>HOUSE OF JOSHI</span></Link><span className="portal-nav-label">MARKETPLACE</span><nav><Link aria-current={view==="market"?"page":undefined} className={view==="market"?"active":""} href="/market"><i>01</i> Browse</Link><Link aria-current={view==="sell"?"page":undefined} className={view==="sell"?"active":""} href="/sell"><i>02</i> Sell NFT</Link><Link aria-current={view==="activity"?"page":undefined} className={view==="activity"?"active":""} href="/activity"><i>03</i> Activity</Link><Link aria-current={view==="account"?"page":undefined} className={view==="account"?"active":""} href="/account"><i>04</i> My account</Link><Link aria-current={view==="protocol"?"page":undefined} className={view==="protocol"?"active":""} href="/protocol"><i>05</i> How it works</Link></nav><div className="portal-header-actions"><PortalNetworkButton/><CourtConnect/></div></header>}
-function PortalNetworkButton(){return <ConnectButton.Custom>{({account,chain,openChainModal,openConnectModal})=><button className="network network-menu" type="button" onClick={account?openChainModal:openConnectModal}><i className={chain?`chain-${chain.id}`:""}/>{chain?.name??"Connect network"}<span className="network-chevron">⌄</span></button>}</ConnectButton.Custom>}
 function NetworkContext({chainId,configured}:{chainId:MarketplaceChainId;configured:boolean}){const chain=getMarketplaceChain(chainId);return <section className={`network-context ${configured?"ready":"pending"}`} aria-label="Current marketplace network"><div><span className="network-context-dot"/><p><small>CURRENT NETWORK</small><strong>{chain.name}</strong></p></div><div><p><small>PAYMENTS</small><strong>{chain.currency}</strong></p></div><div><p><small>MARKET STATUS</small><strong>{configured?"Ready to trade":"Coming soon"}</strong></p></div><ConnectButton.Custom>{({account,openChainModal,openConnectModal})=><button type="button" onClick={account?openChainModal:openConnectModal}>{account?"Switch network":"Connect to choose"} <ArrowUpRight size={14}/></button>}</ConnectButton.Custom></section>}
-function CourtConnect(){return <ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=>!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</ConnectButton.Custom>}
 
 function MarketView({data,loading,account,onBuy,onCancel}:{data:IndexerData;loading:boolean;account?:`0x${string}`;onBuy:(x:Listing)=>void;onCancel:(x:Listing)=>void}){
   const[collection,setCollection]=useState("all");
@@ -196,4 +190,3 @@ function AccountView({connected,configured,listings,proceeds,onCancel,onWithdraw
 function ProtocolView(){return <div className="protocol-grid"><article><span>01</span><h2>Non-custodial</h2><p>Listed NFTs stay in the owner’s wallet. The marketplace transfers only after exact payment and valid approval.</p></article><article><span>02</span><h2>Fixed 2% fee</h2><p>The buyer pays the displayed listing price. Two percent is permanently credited to the House of Joshi treasury; the remainder goes to the seller after royalties.</p></article><article><span>03</span><h2>Creator royalties</h2><p>Collections implementing ERC-2981 receive royalties in the selected chain’s native settlement currency.</p></article><article><span>04</span><h2>Chain isolation</h2><p>Listings, proceeds, activity, and settlement remain isolated by network; assets and currencies are never silently mixed.</p></article></div>}
 
 function Empty({eyebrow,title,detail,action}:{eyebrow:string;title:string;detail:string;action?:React.ReactNode}){return <div className="portal-empty"><span>{eyebrow}</span><h2>{title}</h2><p>{detail}</p>{action}</div>}
-function PortalFooter(){return <footer className="portal-footer"><div className="footer-main"><Link href="/" className="wordmark"><Image src="/house-of-joshi.png" alt="House of Joshi" width={36} height={36} className="footer-logo"/><span>HOUSE OF JOSHI</span></Link><p>Curated, non-custodial NFT trading across Shibarium, Polygon, Base, and Robinhood.</p></div><div><span>MARKETPLACE</span><Link href="/market">Market</Link><Link href="/sell">Sell</Link><Link href="/activity">Activity</Link><Link href="/faq">FAQ</Link><Link href="/about">About</Link></div><div><span>HOUSE ECOSYSTEM</span><a href="https://kingdomwithin.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Kingdom Within</a><a href="https://swap.thehouseofjoshi.com/" target="_blank" rel="noreferrer">HOJ Swap</a><a href="https://www.nftlaunchpad.thehouseofjoshi.com/" target="_blank" rel="noreferrer">NFT Launchpad</a><a href="https://dreamweaver.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Dreamweaver</a></div><div><span>CONNECT</span><Link href="/contact">Contact</Link><a href="https://x.com/thehouseofjoshi" target="_blank" rel="noreferrer">X</a><a href="https://discord.com/invite/uH9zVeAwDu" target="_blank" rel="noreferrer">Discord</a><a href="https://www.instagram.com/thehouseofjoshi" target="_blank" rel="noreferrer">Instagram</a></div><div className="footer-legal"><span>© 2026 The House of Joshi. All rights reserved.</span><Link href="/terms">Terms &amp; Conditions</Link><Link href="/privacy">Privacy Policy</Link></div></footer>}

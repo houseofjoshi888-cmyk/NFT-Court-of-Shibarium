@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Web3Provider } from "./web3-provider";
+import { GlobalFooter, GlobalHeader } from "./site-chrome";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -18,5 +19,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><Web3Provider>{children}</Web3Provider></body></html>;
+  return <html lang="en"><body><Web3Provider><GlobalHeader/>{children}<GlobalFooter/></Web3Provider></body></html>;
 }

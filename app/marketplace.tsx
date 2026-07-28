@@ -5,10 +5,8 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   CircleHelp,
-  ExternalLink,
   Gavel,
   Layers3,
-  Menu,
   ShieldCheck,
   Wallet,
   X,
@@ -19,7 +17,6 @@ import {
   parseEther,
 } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Image from "next/image";
 import { base, polygon } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { robinhood, shibarium } from "./web3-provider";
@@ -106,7 +103,6 @@ export function Marketplace() {
   const selectedChain = getMarketplaceChain(selectedChainId);
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [showList, setShowList] = useState(false);
   const [status, setStatus] = useState("");
   const [listings, setListings] = useState<IndexedListing[]>([]);
@@ -196,28 +192,6 @@ export function Marketplace() {
 
   return (
     <main>
-      <header className="site-header">
-        <a className="wordmark" href="#top" aria-label="House of Joshi home">
-          <Image src="/house-of-joshi.png" alt="House of Joshi" width={42} height={42} className="header-logo"/>
-          <span>HOUSE OF JOSHI</span>
-        </a>
-        <nav className={menuOpen ? "nav open" : "nav"} aria-label="Primary navigation">
-          <a href="/market">Market</a>
-          <a href="/sell">Sell</a>
-          <a href="/activity">Activity</a>
-          <a href="/account">Account</a>
-          <a href="/protocol">Protocol</a>
-        </nav>
-        <div className="header-actions">
-          <NetworkMenu />
-          <button className="present-button" onClick={() => setShowList(true)}>List an NFT</button>
-          <CourtWalletButton />
-          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
-            {menuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
-      </header>
-
       <section className="hero" id="top">
         <div className="eyebrow"><span>MULTICHAIN MARKETPLACE</span><span>CURATED · NON-CUSTODIAL · ONCHAIN</span></div>
         <div className="hero-grid">
@@ -267,15 +241,6 @@ export function Marketplace() {
         {activity.length > 0 ? <div className="activity-list">{activity.map((item) => <ActivityRow key={item.id} item={item} />)}</div> : <div className="empty-activity"><span>{indexerReady === null ? "Synchronizing confirmed blocks." : "No indexed activity yet."}</span><p>Verified listing, sale, cancellation, and withdrawal events will appear here.</p></div>}
       </section>
 
-      <footer>
-        <div className="footer-brand"><Image src="/house-of-joshi.png" alt="House of Joshi" width={36} height={36} className="footer-logo"/><strong>HOUSE OF JOSHI</strong><p>An independent marketplace for considered digital works across five EVM networks.</p></div>
-        <div><span className="footer-label">NETWORKS</span><a href="https://etherscan.io" target="_blank" rel="noreferrer">Ethereum <ExternalLink size={13} /></a><a href="https://shibariumscan.io" target="_blank" rel="noreferrer">Shibarium <ExternalLink size={13} /></a><a href="https://polygonscan.com" target="_blank" rel="noreferrer">Polygon <ExternalLink size={13} /></a><a href="https://basescan.org" target="_blank" rel="noreferrer">Base <ExternalLink size={13} /></a><a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noreferrer">Robinhood <ExternalLink size={13} /></a><span>Protocol fee 2%</span></div>
-        <div><span className="footer-label">COURT</span><a href="/market">Market</a><a href="/sell">Sell</a><a href="/activity">Activity</a><a href="/account">Account</a><a href="/faq">FAQ</a><a href="/about">About</a></div>
-        <div><span className="footer-label">HOUSE ECOSYSTEM</span><a href="https://kingdomwithin.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Kingdom Within</a><a href="https://swap.thehouseofjoshi.com/" target="_blank" rel="noreferrer">HOJ Swap</a><a href="https://www.nftlaunchpad.thehouseofjoshi.com/" target="_blank" rel="noreferrer">NFT Launchpad</a><a href="https://dreamweaver.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Dreamweaver</a></div>
-        <div><span className="footer-label">CONNECT</span><a href="/contact">Contact</a><a href="https://x.com/thehouseofjoshi" target="_blank" rel="noreferrer">X</a><a href="https://discord.com/invite/uH9zVeAwDu" target="_blank" rel="noreferrer">Discord</a><a href="https://www.instagram.com/thehouseofjoshi" target="_blank" rel="noreferrer">Instagram</a></div>
-        <p className="copyright">© 2026 The House of Joshi. All rights reserved. · <a href="/terms">Terms &amp; Conditions</a> · <a href="/privacy">Privacy Policy</a></p>
-      </footer>
-
       {status && <div className="toast" role="status"><CircleHelp size={18} /><span>{status}</span><button onClick={() => setStatus("")} aria-label="Dismiss"><X size={16} /></button></div>}
       {showList && <ListingPanel onClose={() => setShowList(false)} onSubmit={listNft} account={account ?? null} chainId={selectedChainId} configured={!!marketplaceAddress} />}
     </main>
@@ -289,16 +254,6 @@ const networkOptions = [
   { id: base.id, name: "Base", currency: "ETH", state: "WALLET READY", tone: "base" },
   { id: robinhood.id, name: "Robinhood", currency: "ETH", state: "WALLET READY", tone: "robinhood" },
 ] as const;
-
-function NetworkMenu() {
-  return <ConnectButton.Custom>{({ account, chain, openChainModal, openConnectModal, mounted }) =>
-    <button className="network network-menu" onClick={account ? openChainModal : openConnectModal} type="button" aria-label={account ? "Choose network" : "Connect wallet to choose a network"}>
-      <i className={mounted && chain ? `chain-dot chain-${chain.id}` : "chain-dot"} />
-      <span>{mounted && chain ? chain.name : "Connect network"}</span>
-      <span className="network-chevron">⌄</span>
-    </button>
-  }</ConnectButton.Custom>;
-}
 
 function NetworkRail() {
   const chainId = useChainId();
@@ -344,15 +299,6 @@ function ActivityRow({ item }: { item: IndexedActivity }) {
     <strong>{item.price ? `${formatEther(BigInt(item.price))} ${chain.currency}` : "—"}</strong>
     <span>Block {item.blockNumber}</span>
   </a>;
-}
-
-function CourtWalletButton() {
-  return <ConnectButton.Custom>{({ account, chain, mounted, openAccountModal, openChainModal, openConnectModal }) => {
-    const connected = mounted && account && chain;
-    if (!connected) return <button className="wallet-button" onClick={openConnectModal}>Enter the court</button>;
-    if (chain.unsupported) return <button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>;
-    return <button className="wallet-button" onClick={openAccountModal}><Wallet size={15} /> {account.displayName}</button>;
-  }}</ConnectButton.Custom>;
 }
 
 function ListingPanel({ onClose, onSubmit, account, chainId, configured }: { onClose: () => void; onSubmit: (nft: string, tokenId: string, price: string) => void; account: string | null; chainId: MarketplaceChainId; configured: boolean }) {
