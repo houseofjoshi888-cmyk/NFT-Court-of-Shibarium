@@ -1,25 +1,29 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Activity, BookOpen, CircleHelp, Compass, ExternalLink, Gavel, LayoutDashboard, ShieldCheck, Store, UserRound, Wallet } from "lucide-react";
+import { Activity, BookOpen, CircleHelp, ExternalLink, Gavel, Gem, Headphones, LayoutDashboard, Repeat2, Rocket, Sparkles, UserRound, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navigation = [
+const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutDashboard; external?:boolean }> = [
   { href: "/", label: "Court", icon: LayoutDashboard },
-  { href: "/market", label: "Explore", icon: Compass },
-  { href: "/sell", label: "Sell NFT", icon: Store },
+  { href: "/collections", label: "Collections", icon: Gem },
+  { href: "/drops", label: "Drops", icon: Sparkles },
+  { href: "https://swap.thehouseofjoshi.com/", label: "Swap", icon: Repeat2, external: true },
   { href: "/activity", label: "Activity", icon: Activity },
-  { href: "/account", label: "My assets", icon: UserRound },
-] as const;
+  { href: "https://www.nftlaunchpad.thehouseofjoshi.com/", label: "Launchpad", icon: Rocket, external: true },
+  { href: "/profile", label: "Profile", icon: UserRound },
+  { href: "/resources", label: "Resources", icon: BookOpen },
+  { href: "/support", label: "Support", icon: Headphones },
+];
 
 export function GlobalHeader() {
   const pathname = usePathname();
   return <>
     <aside className="court-sidebar">
       <Link href="/" className="court-brand"><span className="court-brand-mark"><Gavel size={22}/></span><span><strong>HOUSE OF JOSHI</strong><small>NFT COURT</small></span></Link>
-      <nav aria-label="Court navigation">{navigation.map(({href,label,icon:Icon})=><Link key={href} href={href} className={pathname===href?"active":""} aria-current={pathname===href?"page":undefined}><Icon size={16}/><span>{label}</span></Link>)}</nav>
-      <div className="court-sidebar-secondary"><Link href="/protocol"><ShieldCheck size={15}/> How it works</Link><Link href="/faq"><CircleHelp size={15}/> Help center</Link><Link href="/about"><BookOpen size={15}/> About the court</Link></div>
+      <nav aria-label="Court navigation">{navigation.map(({href,label,icon:Icon,...item})=>item.external?<a key={href} href={href} target="_blank" rel="noreferrer"><Icon size={16}/><span>{label}</span></a>:<Link key={href} href={href} className={pathname===href?"active":""} aria-current={pathname===href?"page":undefined}><Icon size={16}/><span>{label}</span></Link>)}</nav>
+      <div className="court-sidebar-secondary"><Link href="/protocol"><CircleHelp size={15}/> How it works</Link><Link href="/help-centre"><CircleHelp size={15}/> Help centre</Link><Link href="/about"><BookOpen size={15}/> About the court</Link></div>
       <div className="court-pass"><small>COURT ACCESS</small><strong>Multichain · Open</strong><p>Collect and list verified ERC-721 works across five networks.</p><Link href="/sell">Present a work</Link></div>
     </aside>
     <header className="court-topbar">

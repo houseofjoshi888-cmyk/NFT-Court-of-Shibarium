@@ -1901,3 +1901,109 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible { outline-color:#d8bc69; }
+
+/* Collection, drops, resource, and support directories. */
+.directory-page {
+  min-height:calc(100vh - 72px);
+  padding:0 clamp(20px,4vw,64px) 72px;
+  background:#060606;
+  color:#f4f0e7;
+}
+.directory-hero {
+  min-height:310px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:58px 0 44px;
+  border-bottom:1px solid rgba(199,164,74,.2);
+}
+.directory-hero>span {
+  color:#c7a44a;
+  font-family:var(--font-mono);
+  font-size:8px;
+  letter-spacing:.17em;
+}
+.directory-hero h1 {
+  margin:18px 0 14px;
+  color:#f4f0e7;
+  font-family:var(--font-serif);
+  font-size:clamp(46px,6vw,82px);
+  font-weight:500;
+  line-height:.9;
+  letter-spacing:-.045em;
+}
+.directory-hero p {
+  max-width:640px;
+  margin:0;
+  color:#aaa397;
+  font-family:var(--font-serif);
+  font-size:17px;
+  line-height:1.5;
+}
+.directory-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  padding:28px 0;
+}
+.directory-card {
+  min-height:270px;
+  display:flex;
+  flex-direction:column;
+  padding:26px;
+  border:1px solid rgba(199,164,74,.18);
+  background:#0c0c0a;
+  color:#f4f0e7;
+  transition:border-color .2s,background .2s;
+}
+.directory-card[href]:hover { border-color:rgba(199,164,74,.5); background:#11100d; }
+.directory-card>div { display:flex; align-items:center; gap:9px; color:#c7a44a; }
+.directory-card>div span {
+  font-family:var(--font-mono);
+  font-size:8px;
+  letter-spacing:.14em;
+}
+.directory-card h2 {
+  margin:42px 0 10px;
+  color:#f4f0e7;
+  font-family:var(--font-serif);
+  font-size:31px;
+  font-weight:500;
+}
+.directory-card p { margin:0; color:#aaa397; font-size:12px; line-height:1.55; }
+.directory-card-action {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:auto;
+  padding-top:28px;
+  color:#c7a44a;
+  font-size:8px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.directory-card.pending .directory-card-action { color:#847e73; }
+
+@media(min-width:981px){
+  .court-sidebar nav {
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    scrollbar-width:none;
+  }
+  .court-sidebar nav::-webkit-scrollbar { display:none; }
+  .court-sidebar nav a { min-height:48px; }
+}
+@media(max-width:980px){
+  .court-sidebar nav {
+    justify-content:flex-start;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .court-sidebar nav::-webkit-scrollbar { display:none; }
+  .court-sidebar nav a { flex:0 0 72px; }
+}
+@media(max-width:800px){
+  .directory-grid { grid-template-columns:1fr; }
+  .directory-card { min-height:220px; }
+}

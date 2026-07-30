@@ -5,7 +5,6 @@ import {
   ArrowUpRight,
   CircleHelp,
   Gavel,
-  Layers3,
   ShieldCheck,
   Wallet,
   X,
@@ -201,8 +200,6 @@ export function Marketplace() {
         <div className="court-welcome-mark" aria-hidden="true"><Gavel/></div>
       </section>
 
-      <NetworkRail />
-
       <div className="court-dashboard-grid">
         <section className="court-live-panel">
           <div className="court-panel-heading"><div><span>ACTIVE WORKS</span><small>{selectedChain.name}</small></div><a href="/market">View all <ArrowUpRight size={13}/></a></div>
@@ -238,24 +235,6 @@ const networkOptions = [
   { id: base.id, name: "Base", currency: "ETH", state: "WALLET READY", tone: "base" },
   { id: robinhood.id, name: "Robinhood", currency: "ETH", state: "WALLET READY", tone: "robinhood" },
 ] as const;
-
-function NetworkRail() {
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
-  return <ConnectButton.Custom>{({account,openConnectModal})=><section className="network-rail" aria-label="Supported networks">
-      <div className="network-rail-intro"><Layers3 size={18} /><span>SELECT<br />NETWORK</span></div>
-      {networkOptions.map((network) => <button
-        type="button"
-        key={network.id}
-        className={`network-card ${network.tone} ${account && chainId === network.id ? "active" : ""}`}
-        onClick={() => account ? switchChain({ chainId: network.id }) : openConnectModal()}
-      >
-        <span className="network-mark" aria-hidden="true" />
-        <span className="network-card-copy"><small>{account ? network.state : "CONNECT WALLET"}</small><strong>{network.name}</strong><em>Chain {network.id} · {network.currency}</em></span>
-        <ArrowUpRight size={16} />
-      </button>)}
-    </section>}</ConnectButton.Custom>;
-}
 
 function IndexedListingCard({ listing, connected, onBuy }: { listing: IndexedListing; connected: boolean; onBuy: (listing: IndexedListing) => void }) {
   const price = formatEther(BigInt(listing.price));

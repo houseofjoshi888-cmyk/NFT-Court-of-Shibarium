@@ -91,7 +91,6 @@ export function Portal({ view }: { view:View }) {
 
   return <main className={`portal-page portal-${view}`}>
     <section className="portal-hero"><Link href="/" className="back-link"><ArrowLeft size={14}/> House of Joshi</Link><span className="section-no">{section}</span><h1>{title}</h1><p>{description}</p></section>
-    <NetworkContext chainId={selectedChainId} configured={data.configured} />
     <section className="portal-content">
       {view==="market"&&<MarketView data={data} loading={loading} account={address} onBuy={buy} onCancel={cancel}/>}
       {view==="sell" && (
@@ -104,8 +103,6 @@ export function Portal({ view }: { view:View }) {
     {status&&<div className="toast" role="status"><ShieldCheck size={18}/><span>{status}</span><button onClick={()=>setStatus("")}><X size={16}/></button></div>}
   </main>;
 }
-
-function NetworkContext({chainId,configured}:{chainId:MarketplaceChainId;configured:boolean}){const chain=getMarketplaceChain(chainId);return <section className={`network-context ${configured?"ready":"pending"}`} aria-label="Current marketplace network"><div><span className="network-context-dot"/><p><small>CURRENT NETWORK</small><strong>{chain.name}</strong></p></div><div><p><small>PAYMENTS</small><strong>{chain.currency}</strong></p></div><div><p><small>MARKET STATUS</small><strong>{configured?"Ready to trade":"Coming soon"}</strong></p></div><ConnectButton.Custom>{({account,openChainModal,openConnectModal})=><button type="button" onClick={account?openChainModal:openConnectModal}>{account?"Switch network":"Connect to choose"} <ArrowUpRight size={14}/></button>}</ConnectButton.Custom></section>}
 
 function MarketView({data,loading,account,onBuy,onCancel}:{data:IndexerData;loading:boolean;account?:`0x${string}`;onBuy:(x:Listing)=>void;onCancel:(x:Listing)=>void}){
   const[collection,setCollection]=useState("all");

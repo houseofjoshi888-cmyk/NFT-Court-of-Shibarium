@@ -29,6 +29,25 @@ test("uses live indexed data without demo listings", async () => {
   assert.doesNotMatch(`${marketplace}\n${portal}`, /demo listing|mock listing|sample listing/i);
 });
 
+test("ships the requested court destinations and keeps network choice in the wallet bar", async () => {
+  const [chrome, marketplace, portal, collections] = await Promise.all([
+    read("app/site-chrome.tsx"),
+    read("app/marketplace.tsx"),
+    read("app/portal.tsx"),
+    read("app/collections/page.tsx"),
+  ]);
+
+  for (const route of ["/collections", "/drops", "/activity", "/profile", "/resources", "/support"]) {
+    assert.match(chrome, new RegExp(route.replace("/", "\\/")));
+  }
+  assert.match(chrome, /https:\/\/swap\.thehouseofjoshi\.com\//);
+  assert.match(chrome, /https:\/\/www\.nftlaunchpad\.thehouseofjoshi\.com\//);
+  assert.match(collections, /Malkuta Mandalas/);
+  assert.match(chrome, /court-network-button/);
+  assert.doesNotMatch(marketplace, /<NetworkRail/);
+  assert.doesNotMatch(portal, /<NetworkContext/);
+});
+
 test("isolates listings and activity by supported chain", async () => {
   const [chains, indexer, portal, schema] = await Promise.all([
     read("lib/marketplace-chains.ts"),
