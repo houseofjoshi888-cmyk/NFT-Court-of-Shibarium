@@ -1653,6 +1653,10 @@ body { padding:124px 0 0 232px; background:#050402; }
   height:100%;
   object-fit:contain;
 }
+.official-chain-1 img {
+  filter:grayscale(1) brightness(0) invert(82%);
+  opacity:.96;
+}
 .official-chain-109 img {
   width:auto;
   max-width:none;
