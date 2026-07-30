@@ -23,7 +23,7 @@ export function GlobalHeader() {
       <div className="court-pass"><small>COURT ACCESS</small><strong>Multichain · Open</strong><p>Collect and list verified ERC-721 works across five networks.</p><Link href="/sell">Present a work</Link></div>
     </aside>
     <header className="court-topbar">
-      <div className="court-topbar-title"><span>VERIFIED · CURATED · ONCHAIN</span><strong>{pathname==="/"?"COURT OVERVIEW":navigation.find(item=>item.href===pathname)?.label.toUpperCase()??"HOUSE OF JOSHI"}</strong></div>
+      <Link href="/" className="court-topbar-brand"><Gavel size={18}/><span><strong>HOUSE OF JOSHI</strong><small>NFT COURT</small></span></Link>
       <div className="court-topbar-actions"><ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=><><button className="court-network-button" type="button" onClick={account?openChainModal:openConnectModal}><i className={chain?`chain-${chain.id}`:""}/><span>{chain?.name??"Choose network"}</span></button>{!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</>}</ConnectButton.Custom></div>
     </header>
   </>;

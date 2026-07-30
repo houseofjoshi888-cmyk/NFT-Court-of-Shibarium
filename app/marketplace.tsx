@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  ArrowDownRight,
   ArrowUpRight,
   CircleHelp,
   Gavel,
@@ -190,56 +189,41 @@ export function Marketplace() {
     }
   }
 
+  const soldActivity = activity.filter((item) => item.eventType === "sold");
+  const totalVolume = soldActivity.reduce((sum, item) => sum + BigInt(item.price ?? "0"), 0n);
+  const recentListings = listings.slice(0, 5);
+  const recentSales = soldActivity.slice(0, 5);
+
   return (
-    <main>
-      <section className="hero" id="top">
-        <div className="eyebrow"><span>MULTICHAIN MARKETPLACE</span><span>CURATED · NON-CUSTODIAL · ONCHAIN</span></div>
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <p className="kicker">A marketplace for objects with consequence.</p>
-            <h1>THE NFT<br />COURT<br /><em>WITHOUT BORDERS</em></h1>
-            <p className="lede">Discover, acquire, and present singular works across Ethereum, Shibarium, Polygon, Base, and Robinhood—one court, with provenance written onchain.</p>
-            <div className="hero-actions">
-              <a className="primary-action" href="/market">Browse NFTs <ArrowDownRight size={18} /></a>
-              <a className="text-action" href="/sell">List an NFT <ArrowUpRight size={16} /></a>
-            </div>
-          </div>
-          <div className="hero-art" aria-label="Abstract faceted marketplace artwork">
-            <div className="artifact artifact-hero"><div className="facet one" /><div className="facet two" /><div className="facet three" /><span className="glow" /></div>
-          </div>
-        </div>
-        <NetworkRail />
-        <div className="proof-strip">
-          <div><strong>ERC-721</strong><span>Asset standard</span></div>
-          <div><strong>5</strong><span>Supported networks</span></div>
-          <div><strong>NATIVE</strong><span>BONE · POL · ETH</span></div>
-          <div className="verified"><ShieldCheck /><span><b>Chain-specific settlement</b>Every sale resolves on its origin network</span></div>
-        </div>
+    <main className="court-dashboard">
+      <section className="court-welcome">
+        <div><span>VERIFIED · CURATED · ONCHAIN</span><h1>Welcome to the Court</h1><p>Discover, collect, and present exceptional NFTs across multiple chains. Every listing below comes from the confirmed onchain record.</p></div>
+        <div className="court-welcome-mark" aria-hidden="true"><Gavel/></div>
       </section>
 
-      <section className="market-section" id="market">
-        <div className="section-heading">
-          <div><span className="section-no">01 / MARKET</span><h2>WORKS BEFORE<br />THE COURT</h2></div>
-          <p>Browse by network without mixing currencies or provenance. Shibarium is live; Ethereum, Polygon, Base, and Robinhood open as their marketplace deployments are indexed.</p>
-        </div>
-        {listings.length > 0 ? <div className="indexed-lots" id="collections">{listings.map((listing) => <IndexedListingCard key={listing.id} listing={listing} connected={!!account} onBuy={buyListing} />)}</div> : <div className="empty-market" id="collections">
-          <span className="empty-index">{indexerReady === null ? `SYNCING ${selectedChain.name.toUpperCase()}` : indexerReady ? "NO ACTIVE LISTINGS" : `${selectedChain.name.toUpperCase()} DEPLOYMENT NEEDED`}</span>
-          <h3>{indexerReady === null ? <>Reading the<br />onchain record.</> : indexerReady ? <>The court is awaiting<br />its first presentation.</> : <>Connect the contract<br />to open the court.</>}</h3>
-          <p>{indexerError || (indexerReady ? "No active marketplace listings were found in the confirmed event record." : "Listings will appear only after the deployed marketplace address and block are configured.")}</p>
-          <button onClick={() => setShowList(true)}>Present a work <ArrowUpRight size={16} /></button>
-        </div>}
-      </section>
+      <NetworkRail />
 
-      <section className="manifesto" id="about">
-        <span className="section-no">02 / THE RECORD</span>
-        <blockquote>“Ownership should be obvious.<br />Provenance should be permanent.<br /><em>The work should speak first.</em>”</blockquote>
-        <div className="manifesto-notes"><p>House of Joshi is a non-custodial venue. The marketplace never holds your work; approved transfers settle directly between collector and owner.</p><div className="settlement-mark"><Gavel /><span>ONE COURT<br /><b>FIVE CHAINS</b></span></div></div>
-      </section>
+      <div className="court-dashboard-grid">
+        <section className="court-live-panel">
+          <div className="court-panel-heading"><div><span>ACTIVE WORKS</span><small>{selectedChain.name}</small></div><a href="/market">View all <ArrowUpRight size={13}/></a></div>
+          {listings.length > 0?<div className="court-dashboard-cards">{listings.slice(0,3).map(listing=><IndexedListingCard key={listing.id} listing={listing} connected={!!account} onBuy={buyListing}/>)}</div>:<div className="court-dashboard-empty"><strong>{indexerReady===null?"Synchronizing the court.":indexerReady?"No active works are listed.":`${selectedChain.name} marketplace is not configured.`}</strong><p>{indexerError||(indexerReady?"New verified listings will appear here after confirmation.":"Deploy and configure the marketplace contract to activate this network.")}</p><button onClick={()=>setShowList(true)}>Present a work <ArrowUpRight size={14}/></button></div>}
+        </section>
 
-      <section className="activity-section" id="activity">
-        <span className="section-no">03 / RECENT JUDGMENTS</span>
-        {activity.length > 0 ? <div className="activity-list">{activity.map((item) => <ActivityRow key={item.id} item={item} />)}</div> : <div className="empty-activity"><span>{indexerReady === null ? "Synchronizing confirmed blocks." : "No indexed activity yet."}</span><p>Verified listing, sale, cancellation, and withdrawal events will appear here.</p></div>}
-      </section>
+        <aside className="court-status-panel">
+          <div className="court-panel-heading"><span>COURT STATUS</span></div>
+          <dl><div><dt>Marketplace</dt><dd>{indexerReady===null?"Syncing":indexerReady?"Live":"Not configured"}</dd></div><div><dt>Active listings</dt><dd>{listings.length}</dd></div><div><dt>Confirmed sales</dt><dd>{soldActivity.length}</dd></div><div><dt>Recorded volume</dt><dd>{formatEther(totalVolume)} {selectedChain.currency}</dd></div></dl>
+        </aside>
+
+        <section className="court-record-panel">
+          <div className="court-panel-heading"><span>RECENT LISTINGS</span><a href="/activity">View activity <ArrowUpRight size={13}/></a></div>
+          {recentListings.length?<div className="court-record-table"><div className="court-record-head"><span>ITEM</span><span>SELLER</span><span>PRICE</span><span>BLOCK</span></div>{recentListings.map(item=><a key={item.id} href={transactionUrl(item.chainId,item.transactionHash)} target="_blank" rel="noreferrer"><span><b>#{item.tokenId}</b><small>{shortAddress(item.nftAddress)}</small></span><span>{shortAddress(item.seller)}</span><strong>{formatEther(BigInt(item.price))} {selectedChain.currency}</strong><span>{item.updatedBlock}</span></a>)}</div>:<div className="court-compact-empty">No confirmed listings yet.</div>}
+        </section>
+
+        <aside className="court-side-stack">
+          <section className="court-network-panel"><div className="court-panel-heading"><span>NETWORK STATUS</span></div>{networkOptions.map(network=><div key={network.id}><i className={network.tone}/><span>{network.name}</span><small>{network.id===selectedChainId?(indexerReady?"Marketplace live":"Selected"):"Supported"}</small></div>)}</section>
+          <section className="court-sales-panel"><div className="court-panel-heading"><span>RECENT SALES</span></div>{recentSales.length?recentSales.map(item=><a key={item.id} href={transactionUrl(item.chainId,item.transactionHash)} target="_blank" rel="noreferrer"><span>#{item.tokenId}</span><strong>{formatEther(BigInt(item.price??"0"))} {selectedChain.currency}</strong></a>):<p>No confirmed sales yet.</p>}</section>
+        </aside>
+      </div>
 
       {status && <div className="toast" role="status"><CircleHelp size={18} /><span>{status}</span><button onClick={() => setStatus("")} aria-label="Dismiss"><X size={16} /></button></div>}
       {showList && <ListingPanel onClose={() => setShowList(false)} onSubmit={listNft} account={account ?? null} chainId={selectedChainId} configured={!!marketplaceAddress} />}
@@ -286,19 +270,6 @@ function IndexedListingCard({ listing, connected, onBuy }: { listing: IndexedLis
       {connected ? <button onClick={() => onBuy(listing)}>Acquire <ArrowUpRight size={15} /></button> : <ConnectButton.Custom>{({ openConnectModal }) => <button onClick={openConnectModal}>Connect to acquire <Wallet size={15} /></button>}</ConnectButton.Custom>}
     </div>
   </article>;
-}
-
-function ActivityRow({ item }: { item: IndexedActivity }) {
-  const subject = item.nftAddress && item.tokenId ? `${shortAddress(item.nftAddress)} · #${item.tokenId}` : item.seller ? shortAddress(item.seller) : "Marketplace";
-  const participant = item.buyer ?? item.seller;
-  const chain = getMarketplaceChain(item.chainId);
-  return <a className="activity-row" href={transactionUrl(item.chainId, item.transactionHash)} target="_blank" rel="noreferrer">
-    <span className={`activity-type ${item.eventType}`}>{item.eventType.toUpperCase()}</span>
-    <span>{subject}</span>
-    <span className="mono">{participant ? shortAddress(participant) : "Onchain"}</span>
-    <strong>{item.price ? `${formatEther(BigInt(item.price))} ${chain.currency}` : "—"}</strong>
-    <span>Block {item.blockNumber}</span>
-  </a>;
 }
 
 function ListingPanel({ onClose, onSubmit, account, chainId, configured }: { onClose: () => void; onSubmit: (nft: string, tokenId: string, price: string) => void; account: string | null; chainId: MarketplaceChainId; configured: boolean }) {
