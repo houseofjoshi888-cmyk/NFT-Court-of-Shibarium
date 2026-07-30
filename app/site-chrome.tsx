@@ -34,5 +34,14 @@ export function GlobalHeader() {
 }
 
 export function GlobalFooter() {
-  return <footer className="court-footer"><div><span>SECURE &amp; TRUSTLESS</span><p>All marketplace actions settle onchain from your wallet.</p></div><div><span>PROVENANCE VERIFIED</span><p>Every work remains linked to its original contract and network.</p></div><div><span>MULTICHAIN COURT</span><p>Ethereum, Shibarium, Polygon, Base, and Robinhood Chain.</p></div><div className="court-footer-links"><span className="court-copyright">© 2026 The House of Joshi- NFT Marketplace All rights reserved.</span><nav aria-label="Footer navigation"><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link><a href="https://x.com/thehouseofjoshi" target="_blank" rel="noreferrer">X <ExternalLink size={11}/></a></nav></div></footer>;
+  return <footer className="court-footer">
+    <div className="court-footer-main">
+      <section className="court-footer-brand"><Link href="/"><Gavel size={18}/><span><strong>HOUSE OF JOSHI</strong><small>NFT COURT</small></span></Link><p>The premier multichain NFT marketplace. Built for collectors. Governed by the court.</p></section>
+      <nav aria-label="Marketplace footer links"><span>MARKETPLACE</span><Link href="/market">Explore</Link><Link href="/collections">Collections</Link><Link href="/drops">Drops</Link></nav>
+      <nav aria-label="Resource footer links"><span>RESOURCES</span><Link href="/learn">Learn</Link><Link href="/protocol">Court Pass</Link><Link href="/help-centre">Help Centre</Link></nav>
+      <nav aria-label="Company footer links"><span>COMPANY</span><Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/support">Support</Link></nav>
+      <nav aria-label="Social footer links"><span>FOLLOW</span><a href="https://x.com/thehouseofjoshi" target="_blank" rel="noreferrer">X <ExternalLink size={10}/></a><a href="https://discord.com/invite/uH9zVeAwDu" target="_blank" rel="noreferrer">Discord <ExternalLink size={10}/></a><a href="https://www.instagram.com/thehouseofjoshi" target="_blank" rel="noreferrer">Instagram <ExternalLink size={10}/></a></nav>
+    </div>
+    <div className="court-footer-legal"><span>© 2026 The House of Joshi- NFT Marketplace All rights reserved.</span><nav aria-label="Legal footer links"><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></nav></div>
+  </footer>;
 }
