@@ -5,13 +5,15 @@ import { env } from "@runtime-env";
 
 export const dynamic = "force-dynamic";
 
-const MAX_PAGES = 4;
+const MAX_PAGES = 20;
 const PAGE_SIZE = 50;
 
 type ExplorerNft = {
   id?: string;
+  value?: string | null;
+  token_type?: string | null;
   image_url?: string | null;
-  metadata?: { name?: string | null; image?: string | null; description?: string | null; external_url?: string | null; attributes?: Array<{ trait_type?: string | null; value?: string | number | boolean | null }> | null } | null;
+  metadata?: { name?: string | null; image?: string | null; image_url?: string | null; description?: string | null; external_url?: string | null; attributes?: Array<{ trait_type?: string | null; value?: string | number | boolean | null }> | null } | null;
   token?: { address_hash?: string; name?: string | null; symbol?: string | null } | null;
 };
 
@@ -41,12 +43,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid wallet address." }, { status: 400 });
   }
 
-  const nfts: Array<{ contractAddress: string; tokenId: string; name: string | null; collection: string | null; imageUrl: string | null; description: string | null; externalUrl: string | null; traits: Array<{ type: string; value: string }> }> = [];
+  const nfts = new Map<string, { contractAddress: string; tokenId: string; name: string | null; collection: string | null; imageUrl: string | null; description: string | null; externalUrl: string | null; traits: Array<{ type: string; value: string }> }>();
   let pageParams: Record<string, string | number | null> | null = null;
 
   try {
     for (let page = 0; page < MAX_PAGES; page += 1) {
-      const params = new URLSearchParams({ token_type: "ERC-721", items_count: String(PAGE_SIZE) });
+      const params = new URLSearchParams({ type: "ERC-721", items_count: String(PAGE_SIZE) });
       for (const [key, value] of Object.entries(pageParams ?? {})) if (value !== null) params.set(key, String(value));
       const response = await fetch(`${explorerApiUrl}/addresses/${address}/nft?${params}`, {
         headers: { accept: "application/json" },
@@ -57,12 +59,13 @@ export async function GET(request: NextRequest) {
       for (const item of payload.items ?? []) {
         const contractAddress = item.token?.address_hash;
         if (!contractAddress || item.id === undefined) continue;
-        nfts.push({
+        const key = `${contractAddress.toLowerCase()}:${item.id}`;
+        nfts.set(key, {
           contractAddress,
           tokenId: item.id,
           name: item.metadata?.name ?? null,
           collection: item.token?.name ?? item.token?.symbol ?? null,
-          imageUrl: imageUrl(item.image_url ?? item.metadata?.image),
+          imageUrl: imageUrl(item.image_url ?? item.metadata?.image_url ?? item.metadata?.image),
           description: item.metadata?.description ?? null,
           externalUrl: item.metadata?.external_url ?? null,
           traits: (item.metadata?.attributes ?? []).flatMap(attribute => attribute.trait_type && attribute.value !== null && attribute.value !== undefined ? [{ type: attribute.trait_type, value: String(attribute.value) }] : []),
@@ -75,5 +78,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: `Could not load wallet NFTs from the ${chain.name} explorer.` }, { status: 502 });
   }
 
-  return NextResponse.json({ owner: address, chainId, nfts }, { headers: { "Cache-Control": "private, max-age=30" } });
+  return NextResponse.json({ owner: address, chainId, nfts: [...nfts.values()] }, { headers: { "Cache-Control": "private, max-age=30" } });
 }
