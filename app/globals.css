@@ -1569,6 +1569,21 @@ body { padding:72px 0 0 232px; background:#050402; }
   cursor:pointer; font-size:9px; letter-spacing:.08em; text-transform:uppercase;
 }
 .court-network-button i { width:7px; height:7px; border-radius:50%; background:#d4af37; }
+.court-network-button.symbol-only {
+  width:40px;
+  padding:0;
+  justify-content:center;
+}
+.court-network-button.symbol-only .chain-symbol {
+  width:20px;
+  height:20px;
+  display:block;
+  border-radius:50%;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:contain;
+}
+.court-network-button.symbol-only i { width:14px; height:14px; }
 .court-network-button .chain-1{background:#627eea}.court-network-button .chain-137{background:#8b5cf6}.court-network-button .chain-8453{background:#3578ff}.court-network-button .chain-4663{background:#00c805}
 .court-footer {
   min-height:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
