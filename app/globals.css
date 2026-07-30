@@ -403,6 +403,20 @@ footer a:hover { color:var(--paper); }
 .account-section { padding-top:70px; }
 .account-grid { margin-top:28px; }
 .account-empty { color:#6e6a62; font-family:var(--font-serif); font-size:22px; border-top:1px solid rgba(17,17,15,.2); margin-top:20px; padding-top:35px; }
+.profile-wallet-section { margin-bottom:38px; }
+.profile-wallet-section .wallet-nfts-head { padding-bottom:14px; }
+.profile-wallet-section .wallet-nfts-head>div:first-child>span { color:#d4af37; }
+.profile-wallet-section .wallet-nfts-message { min-height:120px; display:grid; place-items:center; margin:0; text-align:center; }
+.profile-nft-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
+.profile-nft-grid .wallet-nft { min-width:0; }
+.profile-nft-grid .wallet-nft-image { background-color:#11100d; }
+@media(max-width:1250px){.profile-nft-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:900px){.profile-nft-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){
+  .profile-wallet-section{margin-bottom:28px}
+  .profile-nft-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+}
+@media(max-width:380px){.profile-nft-grid{grid-template-columns:1fr}}
 .protocol-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:rgba(17,17,15,.15); border:1px solid rgba(17,17,15,.15); }
 .protocol-grid article { min-height:300px; background:var(--paper); padding:38px; }
 .protocol-grid article > span { color:var(--amber); font-family:var(--font-mono); font-size:9px; }
