@@ -1,10 +1,11 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Activity, BookOpen, CircleHelp, ExternalLink, Gem, Headphones, LayoutDashboard, Network, Repeat2, Rocket, Sparkles, UserRound, Wallet } from "lucide-react";
+import { Activity, BookOpen, CircleHelp, ExternalLink, Gem, Headphones, LayoutDashboard, Menu, Network, Repeat2, Rocket, Sparkles, UserRound, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ChainLogo } from "./chain-logo";
 
 const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutDashboard; external?:boolean }> = [
@@ -21,6 +22,13 @@ const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutD
 
 export function GlobalHeader() {
   const pathname = usePathname();
+  const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
+  useEffect(()=>{
+    if(!mobileMenuOpen)return;
+    const previous=document.body.style.overflow;
+    document.body.style.overflow="hidden";
+    return()=>{document.body.style.overflow=previous};
+  },[mobileMenuOpen]);
   return <>
     <aside className="court-sidebar">
       <Link href="/" className="court-brand"><Image className="court-brand-logo" src="/house-of-joshi-logo.png" alt="House of Joshi NFT Marketplace" width={48} height={48} priority unoptimized/><span><strong>HOUSE OF JOSHI</strong><small>NFT MARKETPLACE</small></span></Link>
@@ -30,7 +38,7 @@ export function GlobalHeader() {
     </aside>
     <header className="court-topbar">
       <Link href="/" className="court-topbar-brand"><Image className="court-topbar-logo" src="/house-of-joshi-logo.png" alt="" width={34} height={34} priority unoptimized/><span><strong>HOUSE OF JOSHI</strong><small>NFT MARKETPLACE</small></span></Link>
-      <div className="court-topbar-actions"><ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=><><button className="court-network-button symbol-only" type="button" onClick={account?openChainModal:openConnectModal} aria-label={chain?`Change network. Current network: ${chain.name}`:"Choose network"} title={chain?.name??"Choose network"}>{chain?<ChainLogo chainId={chain.id}/>:<Network size={17}/>}</button>{!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</>}</ConnectButton.Custom></div>
+      <div className="court-topbar-actions"><button className="court-mobile-menu-button" type="button" onClick={()=>setMobileMenuOpen(open=>!open)} aria-label={mobileMenuOpen?"Close menu":"Open menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-marketplace-menu">{mobileMenuOpen?<X size={19}/>:<Menu size={19}/>}</button><ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=><><button className="court-network-button symbol-only" type="button" onClick={account?openChainModal:openConnectModal} aria-label={chain?`Change network. Current network: ${chain.name}`:"Choose network"} title={chain?.name??"Choose network"}>{chain?<ChainLogo chainId={chain.id}/>:<Network size={17}/>}</button>{!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</>}</ConnectButton.Custom></div>
     </header>
     <div className="supported-chain-strip" aria-label="Supported blockchain networks">
       <span>SUPPORTED CHAINS</span>
@@ -39,6 +47,10 @@ export function GlobalHeader() {
       <div title="Polygon"><ChainLogo chainId={137}/><small>Polygon</small></div>
       <div title="Base"><ChainLogo chainId={8453}/><small>Base</small></div>
       <div title="Robinhood Chain"><ChainLogo chainId={4663}/><small>Robinhood</small></div>
+    </div>
+    <div id="mobile-marketplace-menu" className={`court-mobile-menu ${mobileMenuOpen?"open":""}`} aria-hidden={!mobileMenuOpen}>
+      <nav aria-label="Mobile marketplace navigation">{navigation.map(({href,label,icon:Icon,...item})=>item.external?<a key={href} href={href} target="_blank" rel="noreferrer" onClick={()=>setMobileMenuOpen(false)}><Icon size={18}/><span>{label}</span><ExternalLink size={13}/></a>:<Link key={href} href={href} className={pathname===href?"active":""} aria-current={pathname===href?"page":undefined} onClick={()=>setMobileMenuOpen(false)}><Icon size={18}/><span>{label}</span></Link>)}</nav>
+      <div><Link href="/protocol" onClick={()=>setMobileMenuOpen(false)}>How it works</Link><Link href="/help-centre" onClick={()=>setMobileMenuOpen(false)}>Help centre</Link><Link href="/about" onClick={()=>setMobileMenuOpen(false)}>About marketplace</Link></div>
     </div>
   </>;
 }
