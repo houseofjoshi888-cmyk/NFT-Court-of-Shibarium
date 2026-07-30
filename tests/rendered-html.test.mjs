@@ -30,11 +30,12 @@ test("uses live indexed data without demo listings", async () => {
 });
 
 test("ships the requested court destinations and keeps network choice in the wallet bar", async () => {
-  const [chrome, marketplace, portal, collections] = await Promise.all([
+  const [chrome, marketplace, portal, collections, malkutaApi] = await Promise.all([
     read("app/site-chrome.tsx"),
     read("app/marketplace.tsx"),
     read("app/portal.tsx"),
-    read("app/collections/page.tsx"),
+    read("app/collections/collections-browser.tsx"),
+    read("app/api/malkuta/route.ts"),
   ]);
 
   for (const route of ["/collections", "/drops", "/activity", "/profile", "/resources", "/support"]) {
@@ -43,6 +44,8 @@ test("ships the requested court destinations and keeps network choice in the wal
   assert.match(chrome, /https:\/\/swap\.thehouseofjoshi\.com\//);
   assert.match(chrome, /https:\/\/www\.nftlaunchpad\.thehouseofjoshi\.com\//);
   assert.match(collections, /Malkuta Mandalas/);
+  assert.match(collections, /\/api\/indexer\?chainId=/);
+  assert.match(malkutaApi, /kingdomwithin\.thehouseofjoshi\.com\/api\/epoch\?scope=all/);
   assert.match(chrome, /court-network-button/);
   assert.doesNotMatch(marketplace, /<NetworkRail/);
   assert.doesNotMatch(portal, /<NetworkContext/);
