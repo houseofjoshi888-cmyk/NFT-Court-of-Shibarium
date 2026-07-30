@@ -1513,7 +1513,7 @@ body { padding-top:76px; color:#fff; }
 }
 
 /* Layout C — Onchain Court. Uses only live application content. */
-body { padding:72px 0 0 232px; background:#050402; }
+body { padding:124px 0 0 232px; background:#050402; }
 .global-header,.global-footer { display:none; }
 .court-sidebar {
   position:fixed; inset:0 auto 0 0; z-index:110; width:232px;
@@ -1595,6 +1595,48 @@ body { padding:72px 0 0 232px; background:#050402; }
 }
 .court-network-button.symbol-only i { width:14px; height:14px; }
 .court-network-button .chain-1{background:#627eea}.court-network-button .chain-137{background:#8b5cf6}.court-network-button .chain-8453{background:#3578ff}.court-network-button .chain-4663{background:#00c805}
+.supported-chain-strip {
+  position:fixed;
+  inset:72px 0 auto 232px;
+  z-index:104;
+  height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(18px,3vw,42px);
+  padding:0 clamp(18px,3vw,42px);
+  border-bottom:1px solid rgba(199,164,74,.15);
+  background:rgba(8,8,7,.96);
+  backdrop-filter:blur(16px);
+}
+.supported-chain-strip>span {
+  color:#817b71;
+  font-family:var(--font-mono);
+  font-size:7px;
+  letter-spacing:.15em;
+}
+.supported-chain-strip>div { display:flex; align-items:center; gap:7px; color:#aaa397; }
+.supported-chain-strip small { font-size:8px; letter-spacing:.04em; }
+.chain-logo {
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#11100d;
+  color:#f4f0e7;
+  font-family:Arial,sans-serif;
+  font-size:11px;
+  font-style:normal;
+  font-weight:700;
+  box-shadow:0 0 0 1px rgba(255,255,255,.14);
+}
+.ethereum-logo { color:#d8d5ff; font-size:12px; }
+.shibarium-logo { background:#bf2d24; color:#fff; }
+.polygon-logo { background:#8247e5; color:#fff; font-size:16px; }
+.base-logo { position:relative; background:#0052ff; }
+.base-logo:after { content:""; width:11px; height:11px; border-radius:50%; background:#fff; }
+.robinhood-logo { background:#c3f53c; color:#090a08; }
 .court-footer {
   min-height:auto;
   display:block;
@@ -1673,13 +1715,14 @@ body { padding:72px 0 0 232px; background:#050402; }
 .market-section,.activity-section,.manifesto { border-top:1px solid rgba(212,175,55,.18); }
 
 @media(max-width:980px){
-  body{padding:72px 0 74px}
+  body{padding:124px 0 74px}
   .court-sidebar{inset:auto 0 0;width:100%;height:74px;padding:7px 10px;flex-direction:row;border:1px solid rgba(212,175,55,.2);border-width:1px 0 0}
   .court-brand,.court-sidebar-secondary,.court-pass{display:none}
   .court-sidebar nav{width:100%;margin:0;flex-direction:row;justify-content:space-around}
   .court-sidebar nav a{min-width:58px;min-height:58px;flex-direction:column;justify-content:center;gap:5px;padding:0 7px;font-size:7px}
   .court-sidebar nav a.active{box-shadow:inset 0 -2px #d4af37}
   .court-topbar{inset:0 0 auto;height:72px}
+  .supported-chain-strip{left:0}
 }
 @media(max-width:620px){
   .court-topbar{padding-inline:14px}
@@ -1687,6 +1730,10 @@ body { padding:72px 0 0 232px; background:#050402; }
   .court-topbar-title strong{font-size:9px}
   .court-network-button{padding-inline:10px}
   .court-network-button span{display:none}
+  .supported-chain-strip{justify-content:flex-start;gap:18px;overflow-x:auto;scrollbar-width:none}
+  .supported-chain-strip::-webkit-scrollbar{display:none}
+  .supported-chain-strip>span{display:none}
+  .supported-chain-strip>div{flex:0 0 auto}
   .court-topbar-actions .wallet-button{min-width:auto;padding-inline:10px}
   .hero{padding-inline:14px}.hero-grid{border:0}.hero-copy{padding-left:0}
   .court-footer>div{padding:24px 20px}
@@ -1704,6 +1751,7 @@ body { padding-left:96px; }
 }
 .court-sidebar nav a.active { box-shadow:inset 2px 0 #d4af37; }
 .court-topbar { left:96px; }
+.supported-chain-strip { left:96px; }
 .court-topbar-brand { display:flex; align-items:center; gap:10px; color:#fff; }
 .court-topbar-brand>svg { color:#d4af37; }
 .court-topbar-brand>span { display:flex; flex-direction:column; gap:2px; }
@@ -1818,6 +1866,7 @@ body { padding-left:96px; }
 @media(max-width:980px){
   body{padding-left:0}
   .court-topbar{left:0}
+  .supported-chain-strip{left:0}
   .court-dashboard{padding:16px}
 }
 @media(max-width:700px){

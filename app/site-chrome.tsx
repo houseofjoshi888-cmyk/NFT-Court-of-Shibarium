@@ -31,6 +31,14 @@ export function GlobalHeader() {
       <Link href="/" className="court-topbar-brand"><Image className="court-topbar-logo" src="/house-of-joshi.png" alt="" width={34} height={34}/><span><strong>HOUSE OF JOSHI</strong><small>NFT COURT</small></span></Link>
       <div className="court-topbar-actions"><ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=><><button className="court-network-button symbol-only" type="button" onClick={account?openChainModal:openConnectModal} aria-label={chain?`Change network. Current network: ${chain.name}`:"Choose network"} title={chain?.name??"Choose network"}>{chain?.iconUrl?<span className="chain-symbol" style={{backgroundImage:`url(${chain.iconUrl})`}}/>:chain?<i className={`chain-${chain.id}`}/>:<Network size={17}/>}</button>{!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</>}</ConnectButton.Custom></div>
     </header>
+    <div className="supported-chain-strip" aria-label="Supported blockchain networks">
+      <span>SUPPORTED CHAINS</span>
+      <div title="Ethereum"><i className="chain-logo ethereum-logo">◆</i><small>Ethereum</small></div>
+      <div title="Shibarium"><i className="chain-logo shibarium-logo">S</i><small>Shibarium</small></div>
+      <div title="Polygon"><i className="chain-logo polygon-logo">∞</i><small>Polygon</small></div>
+      <div title="Base"><i className="chain-logo base-logo"/><small>Base</small></div>
+      <div title="Robinhood Chain"><i className="chain-logo robinhood-logo">R</i><small>Robinhood</small></div>
+    </div>
   </>;
 }
 
