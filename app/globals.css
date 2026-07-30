@@ -1757,3 +1757,147 @@ body { padding-left:96px; }
   .court-record-head span:nth-child(2),.court-record-head span:nth-child(4),
   .court-record-table>a>span:nth-child(2),.court-record-table>a>span:nth-child(4){display:none}
 }
+
+/* Restrained royal palette: black foundations, antique gold accents, warm white copy. */
+:root {
+  --ink:#060606;
+  --paper:#f4f0e7;
+  --paper-2:#ddd6c8;
+  --amber:#c7a44a;
+  --muted:#a8a196;
+  --line:rgba(199,164,74,.18);
+  --violet:#c7a44a;
+  --cyan:#f4f0e7;
+  --surface:#0b0b0a;
+  --surface-2:#11100d;
+}
+body {
+  background:#060606;
+  color:#f4f0e7;
+}
+.court-sidebar,
+.court-footer>div,
+.activity-section,
+.portal-footer,
+footer,
+.info-footer { background:#080807; }
+.court-topbar { background:rgba(6,6,6,.96); }
+.court-dashboard,
+.portal-page,
+.info-page { background:#060606; }
+.court-welcome,
+.court-live-panel,
+.court-status-panel,
+.court-record-panel,
+.court-network-panel,
+.court-sales-panel,
+.court-dashboard-cards .indexed-card { background:#0c0c0a; }
+.portal-hero,
+.info-hero {
+  background:linear-gradient(90deg,rgba(199,164,74,.045),transparent 52%),#090908;
+}
+.court-dashboard {
+  background:
+    radial-gradient(circle at 92% 2%,rgba(199,164,74,.035),transparent 30rem),
+    #060606;
+}
+.court-welcome h1,
+.court-welcome p,
+.court-dashboard-empty strong,
+.court-dashboard-empty p,
+.court-panel-heading small,
+.court-panel-heading a,
+.court-status-panel dt,
+.court-status-panel dd,
+.court-record-table>a,
+.court-record-table b,
+.court-record-table strong,
+.court-record-table small,
+.court-compact-empty,
+.court-network-panel span,
+.court-network-panel small,
+.court-sales-panel>a,
+.court-sales-panel p,
+.court-footer p,
+.court-footer-links span,
+.court-footer-links a { color:#f4f0e7; }
+.court-dashboard-empty p,
+.court-status-panel dt,
+.court-record-table small,
+.court-network-panel small,
+.court-sales-panel p { color:#aaa397; }
+.court-welcome span,
+.court-panel-heading>span,
+.court-panel-heading>div>span,
+.court-brand small,
+.court-topbar-brand small,
+.court-footer>div>span { color:#c7a44a; }
+.court-brand-mark,
+.court-welcome-mark { border-color:rgba(199,164,74,.46); color:#c7a44a; }
+.court-sidebar nav a svg,
+.court-sidebar-secondary a svg,
+.court-topbar-brand>svg { color:#c7a44a; }
+.court-sidebar nav a:hover,
+.court-sidebar nav a.active { background:rgba(199,164,74,.075); }
+.court-dashboard .network-card {
+  --network-color:#c7a44a;
+  background:#0a0a09;
+  border-color:rgba(199,164,74,.16);
+}
+.court-dashboard .network-card:hover,
+.court-dashboard .network-card.active {
+  background:#11100d;
+  transform:none;
+}
+.court-dashboard .network-card small { color:#c7a44a; }
+.court-dashboard .network-card strong { color:#f4f0e7; }
+.court-dashboard .network-card em,
+.court-dashboard .network-card>svg { color:#928b80; }
+.court-dashboard .network-mark {
+  border-color:#c7a44a;
+  box-shadow:none;
+}
+.court-network-button i,
+.court-network-button .chain-1,
+.court-network-button .chain-137,
+.court-network-button .chain-8453,
+.court-network-button .chain-4663,
+.court-network-panel i,
+.court-network-panel i.ethereum,
+.court-network-panel i.polygon,
+.court-network-panel i.base,
+.court-network-panel i.robinhood { background:#c7a44a; }
+.indexed-art,
+.market-listing-art,
+.portal-token {
+  background:
+    radial-gradient(circle at 52% 42%,rgba(199,164,74,.16),transparent 28%),
+    linear-gradient(145deg,#14130f,#080808);
+  box-shadow:0 16px 38px rgba(0,0,0,.28);
+}
+.indexed-art::before,
+.indexed-art::after,
+.market-listing-art::before,
+.market-listing-art::after,
+.portal-token::before,
+.portal-token::after { border-color:rgba(199,164,74,.34); }
+.indexed-art strong,
+.market-listing-art strong,
+.portal-token strong { color:#c7a44a; }
+.wallet-button,
+.primary-action,
+.confirm-buy {
+  background:#c7a44a;
+  color:#090908;
+  box-shadow:none;
+}
+.wallet-button:hover,
+.primary-action:hover {
+  background:#dbc06f;
+  color:#090908;
+  transform:none;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible { outline-color:#d8bc69; }
