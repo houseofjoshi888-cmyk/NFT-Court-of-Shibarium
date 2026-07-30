@@ -197,7 +197,7 @@ export function Marketplace() {
     <main className="court-dashboard">
       <section className="court-welcome">
         <div><span>VERIFIED · CURATED · ONCHAIN</span><h1>Welcome to the Marketplace</h1><p>Discover, collect, and present exceptional NFTs across multiple chains. Every listing below comes from the confirmed onchain record.</p></div>
-        <div className="court-welcome-mark" aria-hidden="true"><Image src="/house-of-joshi.png" alt="" width={110} height={110}/></div>
+        <div className="court-welcome-mark" aria-hidden="true"><Image src="/house-of-joshi-logo.png" alt="" width={110} height={110} priority unoptimized/></div>
       </section>
 
       <div className="court-dashboard-grid">
