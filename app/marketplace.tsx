@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
   CircleHelp,
-  Gavel,
   ShieldCheck,
   Wallet,
   X,
@@ -15,6 +14,7 @@ import {
   parseEther,
 } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Image from "next/image";
 import { base, polygon } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { robinhood, shibarium } from "./web3-provider";
@@ -196,18 +196,18 @@ export function Marketplace() {
   return (
     <main className="court-dashboard">
       <section className="court-welcome">
-        <div><span>VERIFIED · CURATED · ONCHAIN</span><h1>Welcome to the Court</h1><p>Discover, collect, and present exceptional NFTs across multiple chains. Every listing below comes from the confirmed onchain record.</p></div>
-        <div className="court-welcome-mark" aria-hidden="true"><Gavel/></div>
+        <div><span>VERIFIED · CURATED · ONCHAIN</span><h1>Welcome to the Marketplace</h1><p>Discover, collect, and present exceptional NFTs across multiple chains. Every listing below comes from the confirmed onchain record.</p></div>
+        <div className="court-welcome-mark" aria-hidden="true"><Image src="/house-of-joshi.png" alt="" width={110} height={110}/></div>
       </section>
 
       <div className="court-dashboard-grid">
         <section className="court-live-panel">
           <div className="court-panel-heading"><div><span>ACTIVE WORKS</span><small>{selectedChain.name}</small></div><a href="/market">View all <ArrowUpRight size={13}/></a></div>
-          {listings.length > 0?<div className="court-dashboard-cards">{listings.slice(0,3).map(listing=><IndexedListingCard key={listing.id} listing={listing} connected={!!account} onBuy={buyListing}/>)}</div>:<div className="court-dashboard-empty"><strong>{indexerReady===null?"Synchronizing the court.":indexerReady?"No active works are listed.":`${selectedChain.name} marketplace is not configured.`}</strong><p>{indexerError||(indexerReady?"New verified listings will appear here after confirmation.":"Deploy and configure the marketplace contract to activate this network.")}</p><button onClick={()=>setShowList(true)}>Present a work <ArrowUpRight size={14}/></button></div>}
+          {listings.length > 0?<div className="court-dashboard-cards">{listings.slice(0,3).map(listing=><IndexedListingCard key={listing.id} listing={listing} connected={!!account} onBuy={buyListing}/>)}</div>:<div className="court-dashboard-empty"><strong>{indexerReady===null?"Synchronizing the marketplace.":indexerReady?"No active works are listed.":`${selectedChain.name} marketplace is not configured.`}</strong><p>{indexerError||(indexerReady?"New verified listings will appear here after confirmation.":"Deploy and configure the marketplace contract to activate this network.")}</p><button onClick={()=>setShowList(true)}>Present a work <ArrowUpRight size={14}/></button></div>}
         </section>
 
         <aside className="court-status-panel">
-          <div className="court-panel-heading"><span>COURT STATUS</span></div>
+          <div className="court-panel-heading"><span>MARKETPLACE STATUS</span></div>
           <dl><div><dt>Marketplace</dt><dd>{indexerReady===null?"Syncing":indexerReady?"Live":"Not configured"}</dd></div><div><dt>Active listings</dt><dd>{listings.length}</dd></div><div><dt>Confirmed sales</dt><dd>{soldActivity.length}</dd></div><div><dt>Recorded volume</dt><dd>{formatEther(totalVolume)} {selectedChain.currency}</dd></div></dl>
         </aside>
 

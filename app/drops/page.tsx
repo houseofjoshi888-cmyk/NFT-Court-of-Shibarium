@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function DropsPage(){
   return <main className="drops-page">
-    <section className="drops-hero"><span>DROPS</span><h1>Upcoming from the Court</h1><p>Official House of Joshi releases, presented only when their details are confirmed.</p></section>
+    <section className="drops-hero"><span>DROPS</span><h1>Upcoming collections</h1><p>Official House of Joshi releases, presented only when their details are confirmed.</p></section>
     <section className="featured-drop">
       <div className="featured-drop-art"><Image src="/one-minute-of-you.png" alt="One Minute of You — Your Movement Made Eternal" width={1254} height={1254} priority/></div>
       <div className="featured-drop-copy">

@@ -10,10 +10,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return {
     metadataBase: new URL(`${protocol}://${host}`),
-    title: "House of Joshi — The Multichain NFT Court",
+    title: "House of Joshi — Multichain NFT Marketplace",
     description: "A curated, non-custodial NFT marketplace across Ethereum, Shibarium, Polygon, Base, and Robinhood Chain.",
-    openGraph: { title: "The Multichain NFT Court", description: "Curated works. Permanent provenance. Chain-specific settlement.", images: ["/og.png"], type: "website" },
-    twitter: { card: "summary_large_image", title: "House of Joshi", description: "The Multichain NFT Court", images: ["/og.png"] },
+    openGraph: { title: "House of Joshi NFT Marketplace", description: "Curated works. Permanent provenance. Chain-specific settlement.", images: ["/og.png"], type: "website" },
+    twitter: { card: "summary_large_image", title: "House of Joshi", description: "The Multichain NFT Marketplace", images: ["/og.png"] },
     icons: { icon: "/house-of-joshi.png", apple: "/house-of-joshi.png" },
   };
 }

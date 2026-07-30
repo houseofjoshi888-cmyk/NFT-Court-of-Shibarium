@@ -1532,9 +1532,9 @@ body { padding:124px 0 0 232px; background:#050402; }
 .court-brand-logo,.court-topbar-logo,.court-footer-logo {
   display:block;
   flex:none;
-  border-radius:50%;
+  border-radius:0;
   object-fit:cover;
-  box-shadow:0 0 0 1px rgba(199,164,74,.28);
+  box-shadow:none;
 }
 .court-brand-logo { width:48px; height:48px; }
 .court-topbar-logo { width:34px; height:34px; }
@@ -1786,10 +1786,10 @@ body { padding-left:96px; }
 .court-welcome p { margin:0; color:#fff; font-family:var(--font-serif); font-size:15px; line-height:1.45; }
 .court-welcome-mark {
   width:92px; height:92px; position:relative; z-index:1; flex:none;
-  display:grid; place-items:center; border:1px solid rgba(212,175,55,.3);
-  color:#d4af37; transform:rotate(45deg);
+  display:grid; place-items:center; border:0;
+  color:#d4af37; transform:none;
 }
-.court-welcome-mark svg { width:40px; height:40px; transform:rotate(-45deg); }
+.court-welcome-mark img { width:92px; height:92px; display:block; object-fit:cover; }
 .court-dashboard .network-rail {
   grid-template-columns:120px repeat(5,1fr); margin:12px 0; padding:0;
 }

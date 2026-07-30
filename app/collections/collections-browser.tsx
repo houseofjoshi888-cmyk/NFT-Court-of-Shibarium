@@ -51,7 +51,7 @@ export function CollectionsBrowser(){
 
   return <main className="collections-page">
     <section className="collections-hero">
-      <div><span>VERIFIED COLLECTIONS</span><h1>Collections of the Court</h1><p>Minted works and active marketplace listings, organized by their onchain network.</p></div>
+      <div><span>VERIFIED COLLECTIONS</span><h1>Marketplace Collections</h1><p>Minted works and active marketplace listings, organized by their onchain network.</p></div>
       <a href="https://kingdomwithin.thehouseofjoshi.com/" target="_blank" rel="noreferrer">Visit Kingdom Within <ExternalLink size={14}/></a>
     </section>
 
