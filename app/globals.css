@@ -1584,14 +1584,11 @@ body { padding:124px 0 0 232px; background:#050402; }
   padding:0;
   justify-content:center;
 }
-.court-network-button.symbol-only .chain-symbol {
+.court-network-button.symbol-only .chain-symbol,
+.court-network-button.symbol-only .official-chain-logo {
   width:20px;
   height:20px;
   display:block;
-  border-radius:50%;
-  background-position:center;
-  background-repeat:no-repeat;
-  background-size:contain;
 }
 .court-network-button.symbol-only i { width:14px; height:14px; }
 .court-network-button .chain-1{background:#627eea}.court-network-button .chain-137{background:#8b5cf6}.court-network-button .chain-8453{background:#3578ff}.court-network-button .chain-4663{background:#00c805}
@@ -1617,26 +1614,14 @@ body { padding:124px 0 0 232px; background:#050402; }
 }
 .supported-chain-strip>div { display:flex; align-items:center; gap:7px; color:#aaa397; }
 .supported-chain-strip small { font-size:8px; letter-spacing:.04em; }
-.chain-logo {
+.official-chain-logo {
   width:22px;
   height:22px;
-  display:grid;
-  place-items:center;
+  display:block;
+  flex:0 0 auto;
   border-radius:50%;
-  background:#11100d;
-  color:#f4f0e7;
-  font-family:Arial,sans-serif;
-  font-size:11px;
-  font-style:normal;
-  font-weight:700;
-  box-shadow:0 0 0 1px rgba(255,255,255,.14);
+  box-shadow:0 0 0 1px rgba(255,255,255,.16),0 2px 8px rgba(0,0,0,.35);
 }
-.ethereum-logo { color:#d8d5ff; font-size:12px; }
-.shibarium-logo { background:#bf2d24; color:#fff; }
-.polygon-logo { background:#8247e5; color:#fff; font-size:16px; }
-.base-logo { position:relative; background:#0052ff; }
-.base-logo:after { content:""; width:11px; height:11px; border-radius:50%; background:#fff; }
-.robinhood-logo { background:#c3f53c; color:#090a08; }
 .court-footer {
   min-height:auto;
   display:block;
