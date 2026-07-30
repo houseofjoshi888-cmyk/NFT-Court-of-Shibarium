@@ -1511,3 +1511,109 @@ body { padding-top:76px; color:#fff; }
   .global-footer-legal{flex-direction:column!important;align-items:flex-start!important}
   .global-footer-legal span{margin:0 0 6px!important}
 }
+
+/* Layout C — Onchain Court. Uses only live application content. */
+body { padding:72px 0 0 232px; background:#050402; }
+.global-header,.global-footer { display:none; }
+.court-sidebar {
+  position:fixed; inset:0 auto 0 0; z-index:110; width:232px;
+  display:flex; flex-direction:column; padding:18px 14px;
+  border-right:1px solid rgba(212,175,55,.2); background:#070502; color:#fff;
+}
+.court-brand {
+  min-height:64px; display:flex; align-items:center; gap:12px;
+  padding:0 8px 18px; border-bottom:1px solid rgba(212,175,55,.17);
+}
+.court-brand-mark {
+  width:42px; height:42px; display:grid; place-items:center;
+  border:1px solid #d4af37; color:#d4af37; transform:rotate(45deg);
+}
+.court-brand-mark svg { transform:rotate(-45deg); }
+.court-brand>span:last-child { display:flex; flex-direction:column; gap:3px; }
+.court-brand strong { color:#fff; font-size:11px; letter-spacing:.12em; }
+.court-brand small { color:#d4af37; font-family:var(--font-mono); font-size:7px; letter-spacing:.18em; }
+.court-sidebar nav { display:flex; flex-direction:column; gap:4px; margin-top:26px; }
+.court-sidebar nav a,.court-sidebar-secondary a {
+  min-height:43px; display:flex; align-items:center; gap:12px; padding:0 12px;
+  border-radius:5px; color:#fff; font-size:10px; letter-spacing:.06em;
+}
+.court-sidebar nav a svg,.court-sidebar-secondary a svg { color:#d4af37; }
+.court-sidebar nav a:hover,.court-sidebar nav a.active { background:rgba(212,175,55,.11); }
+.court-sidebar nav a.active { box-shadow:inset 2px 0 #d4af37; }
+.court-sidebar-secondary {
+  display:flex; flex-direction:column; gap:2px; margin-top:24px; padding-top:20px;
+  border-top:1px solid rgba(212,175,55,.15);
+}
+.court-sidebar-secondary a { min-height:38px; font-size:9px; }
+.court-pass {
+  margin-top:auto; padding:16px; border:1px solid rgba(212,175,55,.27);
+  border-radius:6px; background:linear-gradient(145deg,rgba(212,175,55,.1),rgba(10,7,2,.5));
+}
+.court-pass small { color:#d4af37; font-family:var(--font-mono); font-size:7px; letter-spacing:.14em; }
+.court-pass strong { display:block; margin:7px 0; color:#fff; font-size:11px; }
+.court-pass p { margin:0 0 13px; color:#fff; font-size:10px; line-height:1.45; }
+.court-pass a { display:block; padding-top:10px; border-top:1px solid rgba(212,175,55,.2); color:#d4af37; font-size:9px; text-transform:uppercase; letter-spacing:.1em; }
+.court-topbar {
+  position:fixed; inset:0 0 auto 232px; z-index:105; height:72px;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  padding:0 clamp(18px,3vw,42px); border-bottom:1px solid rgba(212,175,55,.2);
+  background:rgba(5,4,2,.96); backdrop-filter:blur(18px);
+}
+.court-topbar-title { display:flex; flex-direction:column; gap:4px; }
+.court-topbar-title span { color:#d4af37; font-family:var(--font-mono); font-size:7px; letter-spacing:.16em; }
+.court-topbar-title strong { color:#fff; font-size:12px; letter-spacing:.1em; }
+.court-topbar-actions { display:flex; align-items:center; gap:9px; }
+.court-network-button {
+  height:40px; display:flex; align-items:center; gap:9px; padding:0 13px;
+  border:1px solid rgba(212,175,55,.27); background:#100c06; color:#fff;
+  cursor:pointer; font-size:9px; letter-spacing:.08em; text-transform:uppercase;
+}
+.court-network-button i { width:7px; height:7px; border-radius:50%; background:#d4af37; }
+.court-network-button .chain-1{background:#627eea}.court-network-button .chain-137{background:#8b5cf6}.court-network-button .chain-8453{background:#3578ff}.court-network-button .chain-4663{background:#00c805}
+.court-footer {
+  min-height:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  padding:1px; border-top:1px solid rgba(212,175,55,.18);
+  background:rgba(212,175,55,.18); color:#fff;
+}
+.court-footer>div { min-height:120px; padding:28px; background:#070502; }
+.court-footer>div>span { color:#d4af37; font-family:var(--font-mono); font-size:8px; letter-spacing:.13em; }
+.court-footer p { max-width:290px; margin:10px 0 0; color:#fff; font-size:11px; line-height:1.5; }
+.court-footer-links {
+  grid-column:1/-1; min-height:auto!important; display:flex; align-items:center;
+  gap:18px; padding-block:18px!important;
+}
+.court-footer-links span { margin-right:auto; color:#fff!important; }
+.court-footer-links a { display:flex; align-items:center; gap:4px; color:#fff; font-size:9px; }
+
+.portal-page,.info-page { background:#050402; }
+.portal-hero,.info-hero { border-bottom:1px solid rgba(212,175,55,.18); background:linear-gradient(90deg,rgba(212,175,55,.06),transparent 55%),#090702; }
+.portal-content,.info-content { max-width:1700px; margin-inline:auto; }
+.hero { max-width:none; padding:26px clamp(22px,4vw,64px) 0; }
+.hero-grid { min-height:570px; border:1px solid rgba(212,175,55,.18); background:#080602; }
+.hero-copy { padding-left:clamp(28px,4vw,64px); }
+.hero-art { margin:0; border-radius:0; min-height:570px; }
+.network-rail { padding-inline:clamp(22px,4vw,64px); background:#070502; }
+.proof-strip { margin:0; border-radius:0; }
+.market-section,.activity-section,.manifesto { border-top:1px solid rgba(212,175,55,.18); }
+
+@media(max-width:980px){
+  body{padding:72px 0 74px}
+  .court-sidebar{inset:auto 0 0;width:100%;height:74px;padding:7px 10px;flex-direction:row;border:1px solid rgba(212,175,55,.2);border-width:1px 0 0}
+  .court-brand,.court-sidebar-secondary,.court-pass{display:none}
+  .court-sidebar nav{width:100%;margin:0;flex-direction:row;justify-content:space-around}
+  .court-sidebar nav a{min-width:58px;min-height:58px;flex-direction:column;justify-content:center;gap:5px;padding:0 7px;font-size:7px}
+  .court-sidebar nav a.active{box-shadow:inset 0 -2px #d4af37}
+  .court-topbar{inset:0 0 auto;height:72px}
+  .court-footer{grid-template-columns:1fr}
+  .court-footer-links{grid-column:auto;flex-wrap:wrap}
+}
+@media(max-width:620px){
+  .court-topbar{padding-inline:14px}
+  .court-topbar-title span{display:none}
+  .court-topbar-title strong{font-size:9px}
+  .court-network-button{padding-inline:10px}
+  .court-network-button span{display:none}
+  .court-topbar-actions .wallet-button{min-width:auto;padding-inline:10px}
+  .hero{padding-inline:14px}.hero-grid{border:0}.hero-copy{padding-left:0}
+  .court-footer>div{padding:24px 20px}
+}

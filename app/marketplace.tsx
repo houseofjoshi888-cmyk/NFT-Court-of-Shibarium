@@ -211,7 +211,7 @@ export function Marketplace() {
         <NetworkRail />
         <div className="proof-strip">
           <div><strong>ERC-721</strong><span>Asset standard</span></div>
-          <div><strong>4</strong><span>Supported networks</span></div>
+          <div><strong>5</strong><span>Supported networks</span></div>
           <div><strong>NATIVE</strong><span>BONE · POL · ETH</span></div>
           <div className="verified"><ShieldCheck /><span><b>Chain-specific settlement</b>Every sale resolves on its origin network</span></div>
         </div>
@@ -233,7 +233,7 @@ export function Marketplace() {
       <section className="manifesto" id="about">
         <span className="section-no">02 / THE RECORD</span>
         <blockquote>“Ownership should be obvious.<br />Provenance should be permanent.<br /><em>The work should speak first.</em>”</blockquote>
-        <div className="manifesto-notes"><p>House of Joshi is a non-custodial venue. The marketplace never holds your work; approved transfers settle directly between collector and owner.</p><div className="settlement-mark"><Gavel /><span>ONE COURT<br /><b>FOUR CHAINS</b></span></div></div>
+        <div className="manifesto-notes"><p>House of Joshi is a non-custodial venue. The marketplace never holds your work; approved transfers settle directly between collector and owner.</p><div className="settlement-mark"><Gavel /><span>ONE COURT<br /><b>FIVE CHAINS</b></span></div></div>
       </section>
 
       <section className="activity-section" id="activity">
