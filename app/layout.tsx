@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Web3Provider } from "./web3-provider";
@@ -17,6 +17,15 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: { icon: "/house-of-joshi-logo.png", apple: "/house-of-joshi-logo.png" },
   };
 }
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#060606",
+  colorScheme: "dark",
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en"><body><Web3Provider><GlobalHeader/>{children}<GlobalFooter/></Web3Provider></body></html>;
