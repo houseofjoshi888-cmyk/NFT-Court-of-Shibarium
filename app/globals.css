@@ -1529,6 +1529,16 @@ body { padding:72px 0 0 232px; background:#050402; }
   border:1px solid #d4af37; color:#d4af37; transform:rotate(45deg);
 }
 .court-brand-mark svg { transform:rotate(-45deg); }
+.court-brand-logo,.court-topbar-logo,.court-footer-logo {
+  display:block;
+  flex:none;
+  border-radius:50%;
+  object-fit:cover;
+  box-shadow:0 0 0 1px rgba(199,164,74,.28);
+}
+.court-brand-logo { width:48px; height:48px; }
+.court-topbar-logo { width:34px; height:34px; }
+.court-footer-logo { width:38px; height:38px; }
 .court-brand>span:last-child { display:flex; flex-direction:column; gap:3px; }
 .court-brand strong { color:#fff; font-size:11px; letter-spacing:.12em; }
 .court-brand small { color:#d4af37; font-family:var(--font-mono); font-size:7px; letter-spacing:.18em; }
