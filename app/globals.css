@@ -2611,3 +2611,106 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
     transition-duration:.01ms!important;
   }
 }
+
+/* Keep Present a Work aligned with the shared royal marketplace system. */
+.portal-sell {
+  min-height:calc(100vh - 124px);
+  background:
+    radial-gradient(circle at 88% 4%,rgba(199,164,74,.045),transparent 30rem),
+    #060606;
+}
+.portal-sell .portal-hero {
+  min-height:310px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:58px clamp(20px,4vw,64px) 44px;
+  border-bottom:1px solid rgba(199,164,74,.2);
+  background:linear-gradient(90deg,rgba(199,164,74,.045),transparent 52%),#090908;
+}
+.portal-sell .portal-hero .back-link {
+  margin-bottom:auto;
+  color:#aaa397;
+}
+.portal-sell .portal-hero .back-link:hover { color:#f4f0e7; }
+.portal-sell .portal-hero h1 {
+  margin:18px 0 14px;
+  color:#f4f0e7;
+  font-size:clamp(46px,6vw,82px);
+  font-weight:500;
+  line-height:.9;
+  letter-spacing:-.045em;
+}
+.portal-sell .portal-hero>p {
+  max-width:660px;
+  margin:0;
+  color:#aaa397;
+  font-size:17px;
+  line-height:1.5;
+}
+.portal-sell .portal-content {
+  padding:34px clamp(20px,4vw,64px) 78px;
+}
+.portal-sell .sell-layout {
+  grid-template-columns:minmax(0,1fr) minmax(270px,340px);
+  gap:clamp(28px,4vw,58px);
+}
+.portal-sell .sell-layout form,
+.portal-sell .sell-layout aside {
+  border:1px solid rgba(199,164,74,.18);
+  background:#0c0c0a;
+}
+.portal-sell .sell-layout form { padding:clamp(22px,3vw,36px); }
+.portal-sell .sell-layout aside {
+  position:sticky;
+  top:146px;
+  padding:30px;
+  background:linear-gradient(145deg,#11100d,#080808);
+}
+.portal-sell .wallet-nfts-head,
+.portal-sell .listing-fields,
+.portal-sell .listing-price-panel,
+.portal-sell .sell-layout dl div {
+  border-color:rgba(199,164,74,.18);
+}
+.portal-sell .wallet-nft,
+.portal-sell .sell-layout input {
+  border-color:rgba(199,164,74,.2);
+  background:#090908;
+  color:#f4f0e7;
+}
+.portal-sell .wallet-nft:hover,
+.portal-sell .wallet-nft.selected,
+.portal-sell .sell-layout input:focus { border-color:#c7a44a; }
+.portal-sell .wallet-nft-image.empty {
+  background:linear-gradient(145deg,#171610,#0a0a09);
+}
+.portal-sell .sell-layout form>button {
+  border:1px solid #c7a44a;
+  background:#c7a44a;
+  color:#090908;
+}
+.portal-sell .sell-layout form>button:hover:not(:disabled) { background:#dbc06f; }
+.portal-sell .sell-layout form>button span,
+.portal-sell .sell-layout form>button svg { color:#090908; }
+.portal-sell .sell-layout form>button:disabled {
+  border-color:rgba(199,164,74,.25);
+  background:#15140f;
+  color:#777268;
+}
+
+@media(max-width:900px){
+  .portal-sell .sell-layout { grid-template-columns:1fr; }
+  .portal-sell .sell-layout aside { position:static; }
+}
+@media(max-width:700px){
+  .portal-sell .portal-hero {
+    min-height:240px;
+    padding:42px 20px 34px;
+  }
+  .portal-sell .portal-hero h1 { font-size:clamp(40px,13vw,62px); }
+  .portal-sell .portal-hero>p { font-size:15px; }
+  .portal-sell .portal-content { padding:24px 16px 60px; }
+  .portal-sell .sell-layout form,
+  .portal-sell .sell-layout aside { padding:22px 18px; }
+}
