@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(`${protocol}://${host}`),
     title: "House of Joshi — Multichain NFT Marketplace",
-    description: "A curated, non-custodial NFT marketplace across Ethereum, Shibarium, Polygon, Base, and Robinhood Chain.",
+    description: "A curated, non-custodial NFT marketplace across Ethereum, Shibarium, Polygon, Base, Robinhood Chain, Zora, and ApeChain.",
     openGraph: { title: "House of Joshi NFT Marketplace", description: "Curated works. Permanent provenance. Chain-specific settlement.", images: [{ url:"/social-share-cover.png", width:1200, height:630, alt:"The House of Joshi Multichain NFT Marketplace" }], type: "website" },
     twitter: { card: "summary_large_image", title: "House of Joshi", description: "The Multichain NFT Marketplace", images: ["/social-share-cover.png"] },
     icons: { icon: "/house-of-joshi-logo.png", apple: "/house-of-joshi-logo.png" },

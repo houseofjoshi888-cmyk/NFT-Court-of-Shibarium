@@ -49,6 +49,26 @@ export const marketplaceChains = {
     rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
     confirmations: 12,
   },
+  33139: {
+    id: 33139,
+    slug: "apechain",
+    name: "ApeChain",
+    currency: "APE",
+    explorerUrl: "https://apescan.io",
+    explorerApiUrl: "https://apechain.calderaexplorer.xyz/api/v2",
+    rpcUrl: "https://rpc.apechain.com/http",
+    confirmations: 12,
+  },
+  7777777: {
+    id: 7777777,
+    slug: "zora",
+    name: "Zora",
+    currency: "ETH",
+    explorerUrl: "https://explorer.zora.energy",
+    explorerApiUrl: "https://explorer.zora.energy/api/v2",
+    rpcUrl: "https://rpc.zora.energy",
+    confirmations: 12,
+  },
 } as const;
 
 export type MarketplaceChainId = keyof typeof marketplaceChains;
@@ -69,6 +89,6 @@ export function transactionUrl(chainId: MarketplaceChainId, hash: string) {
 
 export function tokenUrl(chainId: MarketplaceChainId, address: string, tokenId: string) {
   const chain = marketplaceChains[chainId];
-  if (chainId === 109 || chainId === 4663) return `${chain.explorerUrl}/token/${address}/instance/${tokenId}`;
+  if (chainId === 109 || chainId === 4663 || chainId === 7777777) return `${chain.explorerUrl}/token/${address}/instance/${tokenId}`;
   return `${chain.explorerUrl}/token/${address}?a=${tokenId}`;
 }

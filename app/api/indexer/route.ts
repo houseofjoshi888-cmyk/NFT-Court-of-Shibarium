@@ -31,6 +31,12 @@ type RuntimeEnv = {
   ROBINHOOD_MARKETPLACE_ADDRESS?: string;
   ROBINHOOD_MARKETPLACE_DEPLOY_BLOCK?: string;
   ROBINHOOD_RPC_URL?: string;
+  ZORA_MARKETPLACE_ADDRESS?: string;
+  ZORA_MARKETPLACE_DEPLOY_BLOCK?: string;
+  ZORA_RPC_URL?: string;
+  APECHAIN_MARKETPLACE_ADDRESS?: string;
+  APECHAIN_MARKETPLACE_DEPLOY_BLOCK?: string;
+  APECHAIN_RPC_URL?: string;
 };
 
 const marketplaceEvents = [
@@ -110,11 +116,23 @@ function chainConfig(runtime: RuntimeEnv, chainId: MarketplaceChainId) {
     deployBlock: runtime.BASE_MARKETPLACE_DEPLOY_BLOCK,
     rpcUrl: runtime.BASE_RPC_URL ?? chain.rpcUrl,
   };
-  return {
+  if (chainId === 4663) return {
     chain,
     address: runtime.ROBINHOOD_MARKETPLACE_ADDRESS,
     deployBlock: runtime.ROBINHOOD_MARKETPLACE_DEPLOY_BLOCK,
     rpcUrl: runtime.ROBINHOOD_RPC_URL ?? chain.rpcUrl,
+  };
+  if (chainId === 7777777) return {
+    chain,
+    address: runtime.ZORA_MARKETPLACE_ADDRESS,
+    deployBlock: runtime.ZORA_MARKETPLACE_DEPLOY_BLOCK,
+    rpcUrl: runtime.ZORA_RPC_URL ?? chain.rpcUrl,
+  };
+  return {
+    chain,
+    address: runtime.APECHAIN_MARKETPLACE_ADDRESS,
+    deployBlock: runtime.APECHAIN_MARKETPLACE_DEPLOY_BLOCK,
+    rpcUrl: runtime.APECHAIN_RPC_URL ?? chain.rpcUrl,
   };
 }
 

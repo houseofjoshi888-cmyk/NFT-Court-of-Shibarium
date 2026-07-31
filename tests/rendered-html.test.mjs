@@ -59,12 +59,14 @@ test("isolates listings and activity by supported chain", async () => {
     read("db/schema.ts"),
   ]);
 
-  for (const chainId of ["1", "109", "137", "8453", "4663"]) {
+  for (const chainId of ["1", "109", "137", "8453", "4663", "33139", "7777777"]) {
     assert.match(chains, new RegExp(`${chainId}:`));
   }
   assert.match(indexer, /POLYGON_MARKETPLACE_ADDRESS/);
   assert.match(indexer, /BASE_MARKETPLACE_ADDRESS/);
   assert.match(indexer, /ROBINHOOD_MARKETPLACE_ADDRESS/);
+  assert.match(indexer, /ZORA_MARKETPLACE_ADDRESS/);
+  assert.match(indexer, /APECHAIN_MARKETPLACE_ADDRESS/);
   assert.match(indexer, /marketplace:\$\{chainId\}/);
   assert.match(indexer, /WHERE chain_id = \?/);
   assert.match(schema, /multichain_listings/);

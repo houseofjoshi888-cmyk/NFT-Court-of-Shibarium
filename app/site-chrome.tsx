@@ -34,7 +34,7 @@ export function GlobalHeader() {
       <Link href="/" className="court-brand"><Image className="court-brand-logo" src="/house-of-joshi-logo.png" alt="House of Joshi NFT Marketplace" width={48} height={48} priority unoptimized/><span><strong>HOUSE OF JOSHI</strong><small>NFT MARKETPLACE</small></span></Link>
       <nav aria-label="Marketplace navigation">{navigation.map(({href,label,icon:Icon,...item})=>item.external?<a key={href} href={href} target="_blank" rel="noreferrer"><Icon size={16}/><span>{label}</span></a>:<Link key={href} href={href} className={pathname===href?"active":""} aria-current={pathname===href?"page":undefined}><Icon size={16}/><span>{label}</span></Link>)}</nav>
       <div className="court-sidebar-secondary"><Link href="/protocol"><CircleHelp size={15}/> How it works</Link><Link href="/help-centre"><CircleHelp size={15}/> Help centre</Link><Link href="/about"><BookOpen size={15}/> About marketplace</Link></div>
-      <div className="court-pass"><small>MARKETPLACE ACCESS</small><strong>Multichain · Open</strong><p>Collect and list verified ERC-721 works across five networks.</p><Link href="/sell">Present a work</Link></div>
+      <div className="court-pass"><small>MARKETPLACE ACCESS</small><strong>Multichain · Open</strong><p>Collect and list verified ERC-721 works across seven networks.</p><Link href="/sell">Present a work</Link></div>
     </aside>
     <header className="court-topbar">
       <Link href="/" className="court-topbar-brand"><Image className="court-topbar-logo" src="/house-of-joshi-logo.png" alt="" width={34} height={34} priority unoptimized/><span><strong>HOUSE OF JOSHI</strong><small>NFT MARKETPLACE</small></span></Link>
@@ -47,6 +47,8 @@ export function GlobalHeader() {
       <div title="Polygon"><ChainLogo chainId={137}/><small>Polygon</small></div>
       <div title="Base"><ChainLogo chainId={8453}/><small>Base</small></div>
       <div title="Robinhood Chain"><ChainLogo chainId={4663}/><small>Robinhood</small></div>
+      <div title="Zora"><ChainLogo chainId={7777777}/><small>Zora</small></div>
+      <div title="ApeChain"><ChainLogo chainId={33139}/><small>ApeChain</small></div>
     </div>
     <div id="mobile-marketplace-menu" className={`court-mobile-menu ${mobileMenuOpen?"open":""}`} aria-hidden={!mobileMenuOpen}>
       <nav aria-label="Mobile marketplace navigation">{navigation.map(({href,label,icon:Icon,...item})=>item.external?<a key={href} href={href} target="_blank" rel="noreferrer" onClick={()=>setMobileMenuOpen(false)}><Icon size={18}/><span>{label}</span><ExternalLink size={13}/></a>:<Link key={href} href={href} className={pathname===href?"active":""} aria-current={pathname===href?"page":undefined} onClick={()=>setMobileMenuOpen(false)}><Icon size={18}/><span>{label}</span></Link>)}</nav>

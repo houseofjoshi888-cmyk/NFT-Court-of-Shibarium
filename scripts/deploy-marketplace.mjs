@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import solc from "solc";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { base, mainnet, polygon } from "viem/chains";
+import { apeChain, base, mainnet, polygon, zora } from "viem/chains";
 
 const shibarium = {
   id: 109,
@@ -18,13 +18,13 @@ const robinhood = {
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: { default: { http: ["https://rpc.mainnet.chain.robinhood.com"] } },
 };
-const chains = new Map([[1, mainnet], [109, shibarium], [137, polygon], [8453, base], [4663, robinhood]]);
+const chains = new Map([[1, mainnet], [109, shibarium], [137, polygon], [8453, base], [4663, robinhood], [7777777, zora], [33139, apeChain]]);
 const chainId = Number(process.env.DEPLOY_CHAIN_ID);
 const chain = chains.get(chainId);
 const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
 const rpcUrl = process.env.DEPLOY_RPC_URL ?? chain?.rpcUrls.default.http[0];
 
-if (!chain) throw new Error("DEPLOY_CHAIN_ID must be 1, 109, 137, 8453, or 4663.");
+if (!chain) throw new Error("DEPLOY_CHAIN_ID must be 1, 109, 137, 8453, 4663, 33139, or 7777777.");
 
 const sourcePath = resolve("contracts/NFTMarketplace.sol");
 const source = await readFile(sourcePath, "utf8");
