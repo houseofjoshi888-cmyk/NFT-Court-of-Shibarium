@@ -15,10 +15,8 @@ import {
 } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
-import { base, polygon } from "viem/chains";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
-import { robinhood, shibarium } from "./web3-provider";
-import { getMarketplaceChain, isMarketplaceChainId, transactionUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
+import { getMarketplaceChain, isMarketplaceChainId, marketplaceChains, transactionUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
 
 const marketplaceAbi = [
   {
@@ -228,13 +226,13 @@ export function Marketplace() {
   );
 }
 
-const networkOptions = [
-  { id: shibarium.id, name: "Shibarium", currency: "BONE", state: "MARKET LIVE", tone: "shibarium" },
-  { id: 1, name: "Ethereum", currency: "ETH", state: "WALLET READY", tone: "ethereum" },
-  { id: polygon.id, name: "Polygon", currency: "POL", state: "WALLET READY", tone: "polygon" },
-  { id: base.id, name: "Base", currency: "ETH", state: "WALLET READY", tone: "base" },
-  { id: robinhood.id, name: "Robinhood", currency: "ETH", state: "WALLET READY", tone: "robinhood" },
-] as const;
+const networkOptions = Object.values(marketplaceChains).map(network => ({
+  id: network.id,
+  name: network.name,
+  currency: network.currency,
+  state: "MARKET LIVE",
+  tone: network.slug,
+}));
 
 function IndexedListingCard({ listing, connected, onBuy }: { listing: IndexedListing; connected: boolean; onBuy: (listing: IndexedListing) => void }) {
   const price = formatEther(BigInt(listing.price));
