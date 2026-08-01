@@ -31,14 +31,16 @@ function short(value:string) { return `${value.slice(0,6)}…${value.slice(-4)}`
 
 function useIndexer(chainId:MarketplaceChainId) {
   const chain=getMarketplaceChain(chainId);
-  const [data,setData] = useState<IndexerData>({ chainId,chain:chain.name,currency:chain.currency,explorerUrl:chain.explorerUrl,configured:false,listings:[],activity:[] });
+  const fallback=useMemo<IndexerData>(()=>({chainId,chain:chain.name,currency:chain.currency,explorerUrl:chain.explorerUrl,configured:true,marketplaceAddress:chain.marketplaceAddress,listings:[],activity:[]}),[chainId,chain]);
+  const [data,setData] = useState<IndexerData>(fallback);
   const [loading,setLoading] = useState(true);
   const refresh=useCallback(async function refresh() {
     try { const response=await fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}); const body=await response.json() as IndexerData;if(!response.ok&&!body.configured)throw new Error("Indexer unavailable");setData(body); }
+    catch(error){setData({...fallback,syncError:error instanceof Error?error.message:"Indexer temporarily unavailable"});}
     finally { setLoading(false); }
-  },[chainId]);
-  useEffect(()=>{ void refresh();const timer=window.setInterval(refresh,30_000);return()=>window.clearInterval(timer); },[refresh]);
-  const current=data.chainId===chainId?data:{chainId,chain:chain.name,currency:chain.currency,explorerUrl:chain.explorerUrl,configured:false,listings:[],activity:[]};
+  },[chainId,fallback]);
+  useEffect(()=>{const initial=window.setTimeout(refresh,0);const timer=window.setInterval(refresh,30_000);return()=>{window.clearTimeout(initial);window.clearInterval(timer);};},[refresh]);
+  const current=data.chainId===chainId?data:fallback;
   return { data:current, loading:loading||data.chainId!==chainId, refresh };
 }
 

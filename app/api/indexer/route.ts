@@ -89,13 +89,12 @@ const CHUNK_SIZE = 8_000;
 const MAX_CHUNKS_PER_REQUEST = 8;
 const DEFAULT_MARKETPLACE_ADDRESS = "0x2C5F372746330465C3f4084CE6C6aBce22a48B4d";
 const DEFAULT_MARKETPLACE_DEPLOY_BLOCK = "18216976";
-
 function chainConfig(runtime: RuntimeEnv, chainId: MarketplaceChainId) {
   const chain = getMarketplaceChain(chainId);
   if (chainId === 1) return {
     chain,
-    address: runtime.ETHEREUM_MARKETPLACE_ADDRESS,
-    deployBlock: runtime.ETHEREUM_MARKETPLACE_DEPLOY_BLOCK,
+    address: runtime.ETHEREUM_MARKETPLACE_ADDRESS ?? chain.marketplaceAddress,
+    deployBlock: runtime.ETHEREUM_MARKETPLACE_DEPLOY_BLOCK ?? String(chain.marketplaceDeployBlock),
     rpcUrl: runtime.ETHEREUM_RPC_URL ?? chain.rpcUrl,
   };
   if (chainId === 109) return {
@@ -106,32 +105,32 @@ function chainConfig(runtime: RuntimeEnv, chainId: MarketplaceChainId) {
   };
   if (chainId === 137) return {
     chain,
-    address: runtime.POLYGON_MARKETPLACE_ADDRESS,
-    deployBlock: runtime.POLYGON_MARKETPLACE_DEPLOY_BLOCK,
+    address: runtime.POLYGON_MARKETPLACE_ADDRESS ?? chain.marketplaceAddress,
+    deployBlock: runtime.POLYGON_MARKETPLACE_DEPLOY_BLOCK ?? String(chain.marketplaceDeployBlock),
     rpcUrl: runtime.POLYGON_RPC_URL ?? chain.rpcUrl,
   };
   if (chainId === 8453) return {
     chain,
-    address: runtime.BASE_MARKETPLACE_ADDRESS,
-    deployBlock: runtime.BASE_MARKETPLACE_DEPLOY_BLOCK,
+    address: runtime.BASE_MARKETPLACE_ADDRESS ?? chain.marketplaceAddress,
+    deployBlock: runtime.BASE_MARKETPLACE_DEPLOY_BLOCK ?? String(chain.marketplaceDeployBlock),
     rpcUrl: runtime.BASE_RPC_URL ?? chain.rpcUrl,
   };
   if (chainId === 4663) return {
     chain,
-    address: runtime.ROBINHOOD_MARKETPLACE_ADDRESS,
-    deployBlock: runtime.ROBINHOOD_MARKETPLACE_DEPLOY_BLOCK,
+    address: runtime.ROBINHOOD_MARKETPLACE_ADDRESS ?? chain.marketplaceAddress,
+    deployBlock: runtime.ROBINHOOD_MARKETPLACE_DEPLOY_BLOCK ?? String(chain.marketplaceDeployBlock),
     rpcUrl: runtime.ROBINHOOD_RPC_URL ?? chain.rpcUrl,
   };
   if (chainId === 7777777) return {
     chain,
-    address: runtime.ZORA_MARKETPLACE_ADDRESS,
-    deployBlock: runtime.ZORA_MARKETPLACE_DEPLOY_BLOCK,
+    address: runtime.ZORA_MARKETPLACE_ADDRESS ?? chain.marketplaceAddress,
+    deployBlock: runtime.ZORA_MARKETPLACE_DEPLOY_BLOCK ?? String(chain.marketplaceDeployBlock),
     rpcUrl: runtime.ZORA_RPC_URL ?? chain.rpcUrl,
   };
   return {
     chain,
-    address: runtime.APECHAIN_MARKETPLACE_ADDRESS,
-    deployBlock: runtime.APECHAIN_MARKETPLACE_DEPLOY_BLOCK,
+    address: runtime.APECHAIN_MARKETPLACE_ADDRESS ?? chain.marketplaceAddress,
+    deployBlock: runtime.APECHAIN_MARKETPLACE_DEPLOY_BLOCK ?? String(chain.marketplaceDeployBlock),
     rpcUrl: runtime.APECHAIN_RPC_URL ?? chain.rpcUrl,
   };
 }

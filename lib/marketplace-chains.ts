@@ -8,6 +8,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://eth.blockscout.com/api/v2",
     rpcUrl: "https://ethereum-rpc.publicnode.com",
     confirmations: 12,
+    marketplaceAddress: "0x6acaf964bcf4551cc55afaf12d6e6a8ef7138875",
+    marketplaceDeployBlock: 25652658,
   },
   109: {
     id: 109,
@@ -18,6 +20,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://shibariumscan.io/api/v2",
     rpcUrl: "https://rpc.shibarium.shib.io",
     confirmations: 12,
+    marketplaceAddress: "0x2C5F372746330465C3f4084CE6C6aBce22a48B4d",
+    marketplaceDeployBlock: 18216976,
   },
   137: {
     id: 137,
@@ -28,6 +32,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://polygon.blockscout.com/api/v2",
     rpcUrl: "https://polygon-bor-rpc.publicnode.com",
     confirmations: 128,
+    marketplaceAddress: "0x455DaD76334a67660D61bb319d8CfF1010e33049",
+    marketplaceDeployBlock: 91195275,
   },
   8453: {
     id: 8453,
@@ -38,6 +44,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://base.blockscout.com/api/v2",
     rpcUrl: "https://base-rpc.publicnode.com",
     confirmations: 12,
+    marketplaceAddress: "0xD811Cd9bB417B479Eb6e0849b5AB5ABe8C1A47d8",
+    marketplaceDeployBlock: 49354254,
   },
   4663: {
     id: 4663,
@@ -48,6 +56,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://robinhoodchain.blockscout.com/api/v2",
     rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
     confirmations: 12,
+    marketplaceAddress: "0x455DaD76334a67660D61bb319d8CfF1010e33049",
+    marketplaceDeployBlock: 24148013,
   },
   33139: {
     id: 33139,
@@ -58,6 +68,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://apechain.calderaexplorer.xyz/api/v2",
     rpcUrl: "https://rpc.apechain.com/http",
     confirmations: 12,
+    marketplaceAddress: "0x2C5F372746330465C3f4084CE6C6aBce22a48B4d",
+    marketplaceDeployBlock: 44976904,
   },
   7777777: {
     id: 7777777,
@@ -68,6 +80,8 @@ export const marketplaceChains = {
     explorerApiUrl: "https://explorer.zora.energy/api/v2",
     rpcUrl: "https://rpc.zora.energy",
     confirmations: 12,
+    marketplaceAddress: "0x2C5F372746330465C3f4084CE6C6aBce22a48B4d",
+    marketplaceDeployBlock: 49402114,
   },
 } as const;
 

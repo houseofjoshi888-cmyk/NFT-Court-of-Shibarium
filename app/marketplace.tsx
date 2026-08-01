@@ -97,15 +97,16 @@ export function Marketplace() {
   const chainId = useChainId();
   const selectedChainId: MarketplaceChainId = isMarketplaceChainId(chainId) ? chainId : 109;
   const selectedChain = getMarketplaceChain(selectedChainId);
+  const selectedMarketplaceAddress = selectedChain.marketplaceAddress;
   const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
   const [showList, setShowList] = useState(false);
   const [status, setStatus] = useState("");
   const [listings, setListings] = useState<IndexedListing[]>([]);
   const [activity, setActivity] = useState<IndexedActivity[]>([]);
-  const [indexerReady, setIndexerReady] = useState<boolean | null>(null);
+  const [indexerReady, setIndexerReady] = useState<boolean | null>(true);
   const [indexerError, setIndexerError] = useState("");
-  const [marketplaceAddress, setMarketplaceAddress] = useState<`0x${string}` | null>(null);
+  const [marketplaceAddress, setMarketplaceAddress] = useState<`0x${string}` | null>(selectedMarketplaceAddress);
 
   useEffect(() => {
     let active = true;
@@ -116,7 +117,7 @@ export function Marketplace() {
         setIndexerReady(null);
         setListings([]);
         setActivity([]);
-        setMarketplaceAddress(null);
+        setMarketplaceAddress(selectedMarketplaceAddress);
         const response = await fetch(`/api/indexer?chainId=${selectedChainId}`, { cache: "no-store" });
         const data = await response.json() as IndexerResponse;
         if (!response.ok && !data.configured) throw new Error("Indexer API is unavailable");
@@ -128,14 +129,15 @@ export function Marketplace() {
         setIndexerError(data.syncError ?? "");
       } catch (error) {
         if (!active) return;
-        setIndexerReady(false);
+        setIndexerReady(true);
+        setMarketplaceAddress(selectedMarketplaceAddress);
         setIndexerError(error instanceof Error ? error.message : "Indexer API is unavailable");
       }
     }
     void loadOnchainData();
     const refresh = window.setInterval(loadOnchainData, 30_000);
     return () => { active = false; window.clearInterval(refresh); };
-  }, [selectedChainId]);
+  }, [selectedChainId, selectedMarketplaceAddress]);
 
   async function listNft(nftAddress: string, tokenId: string, price: string) {
     if (!account) {
