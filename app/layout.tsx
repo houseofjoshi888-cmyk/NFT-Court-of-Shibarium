@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
+import "./responsive.css";
 import { Web3Provider } from "./web3-provider";
 import { GlobalFooter, GlobalHeader } from "./site-chrome";
 
@@ -28,5 +29,17 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><Web3Provider><GlobalHeader/>{children}<GlobalFooter/></Web3Provider></body></html>;
+  return (
+    <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-VV75NFVYLR"></script>
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-VV75NFVYLR');` }} />
+      </head>
+      <body>
+        <Web3Provider><GlobalHeader/>{children}<GlobalFooter/></Web3Provider>
+      </body>
+    </html>
+  );
 }
