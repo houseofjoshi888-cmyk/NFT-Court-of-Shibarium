@@ -2619,6 +2619,8 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
 /* Keep Present a Work aligned with the shared royal marketplace system. */
 .portal-sell {
   min-height:calc(100vh - 124px);
+  color-scheme:dark;
+  color:#f4f0e7;
   background:
     radial-gradient(circle at 88% 4%,rgba(199,164,74,.045),transparent 30rem),
     #060606;
@@ -2654,6 +2656,7 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
 }
 .portal-sell .portal-content {
   padding:34px clamp(20px,4vw,64px) 78px;
+  background:transparent;
 }
 .portal-sell .sell-layout {
   grid-template-columns:minmax(0,1fr) minmax(270px,340px);
@@ -2663,6 +2666,7 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
 .portal-sell .sell-layout aside {
   border:1px solid rgba(199,164,74,.18);
   background:#0c0c0a;
+  color:#f4f0e7;
 }
 .portal-sell .sell-layout form { padding:clamp(22px,3vw,36px); }
 .portal-sell .sell-layout aside {
@@ -2683,6 +2687,20 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
   background:#090908;
   color:#f4f0e7;
 }
+.portal-sell .sell-layout input::placeholder { color:#777268; opacity:1; }
+.portal-sell .wallet-nfts-message,
+.portal-sell .sell-layout label>span,
+.portal-sell .sell-layout aside span,
+.portal-sell .sell-layout aside h2,
+.portal-sell .sell-layout aside p,
+.portal-sell .sell-layout aside dt,
+.portal-sell .sell-layout aside dd { color:#f4f0e7; }
+.portal-sell .sell-layout aside p,
+.portal-sell .sell-layout aside dt,
+.portal-sell .wallet-nfts-head small,
+.portal-sell .wallet-nfts-message { color:#aaa397; }
+.portal-sell .wallet-nfts-head span,
+.portal-sell .sell-layout aside>span { color:#c7a44a; }
 .portal-sell .wallet-nft:hover,
 .portal-sell .wallet-nft.selected,
 .portal-sell .sell-layout input:focus { border-color:#c7a44a; }
