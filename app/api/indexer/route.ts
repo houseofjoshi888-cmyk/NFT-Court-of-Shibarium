@@ -289,7 +289,7 @@ export async function GET(request: Request) {
       const result = await syncWithoutDatabase(requestedChainId, config.chain.name, config.chain.confirmations, config.rpcUrl, address, Number(config.deployBlock));
       return Response.json({ ...baseResponse, configured: true, marketplaceAddress: address, ...result }, { headers: { "cache-control": "public, max-age=15, stale-while-revalidate=45" } });
     } catch (error) {
-      return Response.json({ ...baseResponse, configured: true, marketplaceAddress: address, listings: [], activity: [], sync: null, syncError: error instanceof Error ? error.message : "Indexer sync failed" }, { status: 502 });
+      return Response.json({ ...baseResponse, configured: true, marketplaceAddress: address, listings: [], activity: [], sync: null, syncError: error instanceof Error ? error.message : "Indexer sync failed" }, { headers: { "cache-control": "no-store" } });
     }
   }
   await ensureSchema(runtime.DB);

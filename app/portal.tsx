@@ -34,7 +34,7 @@ function useIndexer(chainId:MarketplaceChainId) {
   const [data,setData] = useState<IndexerData>({ chainId,chain:chain.name,currency:chain.currency,explorerUrl:chain.explorerUrl,configured:false,listings:[],activity:[] });
   const [loading,setLoading] = useState(true);
   const refresh=useCallback(async function refresh() {
-    try { const response=await fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}); if(!response.ok) throw new Error("Indexer unavailable"); setData(await response.json() as IndexerData); }
+    try { const response=await fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}); const body=await response.json() as IndexerData;if(!response.ok&&!body.configured)throw new Error("Indexer unavailable");setData(body); }
     finally { setLoading(false); }
   },[chainId]);
   useEffect(()=>{ void refresh();const timer=window.setInterval(refresh,30_000);return()=>window.clearInterval(timer); },[refresh]);

@@ -6,7 +6,7 @@ export const marketplaceChains = {
     currency: "ETH",
     explorerUrl: "https://etherscan.io",
     explorerApiUrl: "https://eth.blockscout.com/api/v2",
-    rpcUrl: "https://cloudflare-eth.com",
+    rpcUrl: "https://ethereum-rpc.publicnode.com",
     confirmations: 12,
   },
   109: {
@@ -26,7 +26,7 @@ export const marketplaceChains = {
     currency: "POL",
     explorerUrl: "https://polygonscan.com",
     explorerApiUrl: "https://polygon.blockscout.com/api/v2",
-    rpcUrl: "https://polygon-rpc.com",
+    rpcUrl: "https://polygon-bor-rpc.publicnode.com",
     confirmations: 128,
   },
   8453: {
@@ -36,7 +36,7 @@ export const marketplaceChains = {
     currency: "ETH",
     explorerUrl: "https://basescan.org",
     explorerApiUrl: "https://base.blockscout.com/api/v2",
-    rpcUrl: "https://mainnet.base.org",
+    rpcUrl: "https://base-rpc.publicnode.com",
     confirmations: 12,
   },
   4663: {

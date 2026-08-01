@@ -118,8 +118,8 @@ export function Marketplace() {
         setActivity([]);
         setMarketplaceAddress(null);
         const response = await fetch(`/api/indexer?chainId=${selectedChainId}`, { cache: "no-store" });
-        if (!response.ok) throw new Error("Indexer API is unavailable");
         const data = await response.json() as IndexerResponse;
+        if (!response.ok && !data.configured) throw new Error("Indexer API is unavailable");
         if (!active) return;
         setIndexerReady(data.configured);
         setListings(data.listings);
