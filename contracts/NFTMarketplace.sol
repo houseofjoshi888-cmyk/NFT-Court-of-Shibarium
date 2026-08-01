@@ -12,6 +12,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 /// royalties are credited separately. All recipients withdraw through pull payments.
 contract NFTMarketplace is ReentrancyGuard {
     struct Listing { address seller; uint256 price; }
+    struct Offer { uint256 amount; uint64 expiresAt; }
 
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant MARKETPLACE_FEE_BPS = 200;
@@ -19,6 +20,7 @@ contract NFTMarketplace is ReentrancyGuard {
     address public constant HOUSE_TREASURY = 0x6736d2eA9807297F0e56967361B9410854B86a5f;
 
     mapping(address nft => mapping(uint256 tokenId => Listing)) private s_listings;
+    mapping(address nft => mapping(uint256 tokenId => mapping(address buyer => Offer))) private s_offers;
     mapping(address recipient => uint256 amount) private s_proceeds;
 
     error AlreadyListed();
@@ -32,6 +34,10 @@ contract NFTMarketplace is ReentrancyGuard {
     error InvalidRoyalty(uint256 royaltyAmount, uint256 salePrice);
     error NoProceeds();
     error TransferFailed();
+    error ArrayLengthMismatch();
+    error OfferExpired();
+    error OfferNotFound();
+    error InvalidExpiration();
 
     event ItemListed(address indexed seller, address indexed nftAddress, uint256 indexed tokenId, uint256 price);
     event ItemCanceled(address indexed seller, address indexed nftAddress, uint256 indexed tokenId);
@@ -45,6 +51,11 @@ contract NFTMarketplace is ReentrancyGuard {
         uint256 royaltyAmount
     );
     event ProceedsWithdrawn(address indexed recipient, uint256 amount);
+    event OfferMade(address indexed buyer, address indexed nftAddress, uint256 indexed tokenId, uint256 amount, uint64 expiresAt);
+    event OfferCanceled(address indexed buyer, address indexed nftAddress, uint256 indexed tokenId, uint256 amount);
+    event OfferAccepted(address indexed seller, address indexed buyer, address indexed nftAddress, uint256 tokenId, uint256 amount, uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount);
+
+    function marketplaceVersion() external pure returns (uint256) { return 2; }
     function listItem(address nftAddress, uint256 tokenId, uint256 price) external {
         if (s_listings[nftAddress][tokenId].price != 0) revert AlreadyListed();
         if (price == 0) revert PriceMustBeAboveZero();
@@ -70,24 +81,77 @@ contract NFTMarketplace is ReentrancyGuard {
         if (listing.price == 0) revert NotListed();
         if (msg.value != listing.price) revert IncorrectPayment(listing.price, msg.value);
 
+        _settleListing(nftAddress, tokenId, listing, msg.sender);
+    }
+
+    function batchBuy(address[] calldata nftAddresses, uint256[] calldata tokenIds) external payable nonReentrant {
+        uint256 length = nftAddresses.length;
+        if (length == 0 || length != tokenIds.length) revert ArrayLengthMismatch();
+        uint256 total;
+        for (uint256 i; i < length; ++i) {
+            Listing memory listing = s_listings[nftAddresses[i]][tokenIds[i]];
+            if (listing.price == 0) revert NotListed();
+            total += listing.price;
+        }
+        if (msg.value != total) revert IncorrectPayment(total, msg.value);
+        for (uint256 i; i < length; ++i) {
+            Listing memory listing = s_listings[nftAddresses[i]][tokenIds[i]];
+            _settleListing(nftAddresses[i], tokenIds[i], listing, msg.sender);
+        }
+    }
+
+    function makeOffer(address nftAddress, uint256 tokenId, uint64 expiresAt) external payable nonReentrant {
+        if (msg.value == 0) revert PriceMustBeAboveZero();
+        if (expiresAt <= block.timestamp) revert InvalidExpiration();
+        Offer memory previous = s_offers[nftAddress][tokenId][msg.sender];
+        if (previous.amount != 0) s_proceeds[msg.sender] += previous.amount;
+        s_offers[nftAddress][tokenId][msg.sender] = Offer(msg.value, expiresAt);
+        emit OfferMade(msg.sender, nftAddress, tokenId, msg.value, expiresAt);
+    }
+
+    function cancelOffer(address nftAddress, uint256 tokenId) external nonReentrant {
+        Offer memory offer = s_offers[nftAddress][tokenId][msg.sender];
+        if (offer.amount == 0) revert OfferNotFound();
+        delete s_offers[nftAddress][tokenId][msg.sender];
+        s_proceeds[msg.sender] += offer.amount;
+        emit OfferCanceled(msg.sender, nftAddress, tokenId, offer.amount);
+    }
+
+    function acceptOffer(address nftAddress, uint256 tokenId, address buyer) external nonReentrant {
+        Offer memory offer = s_offers[nftAddress][tokenId][buyer];
+        if (offer.amount == 0) revert OfferNotFound();
+        if (offer.expiresAt < block.timestamp) revert OfferExpired();
+        IERC721 nft = IERC721(nftAddress);
+        if (nft.ownerOf(tokenId) != msg.sender) revert NotOwner();
+        if (nft.getApproved(tokenId) != address(this) && !nft.isApprovedForAll(msg.sender, address(this))) revert MarketplaceNotApproved();
+        delete s_offers[nftAddress][tokenId][buyer];
+        delete s_listings[nftAddress][tokenId];
+        (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) = _creditSale(nftAddress, tokenId, msg.sender, offer.amount);
+        nft.safeTransferFrom(msg.sender, buyer, tokenId);
+        emit OfferAccepted(msg.sender, buyer, nftAddress, tokenId, offer.amount, marketplaceFee, royaltyRecipient, royaltyAmount);
+    }
+
+    function _settleListing(address nftAddress, uint256 tokenId, Listing memory listing, address buyer) internal {
+
         IERC721 nft = IERC721(nftAddress);
         if (nft.ownerOf(tokenId) != listing.seller) revert ListingNoLongerValid();
         if (nft.getApproved(tokenId) != address(this) && !nft.isApprovedForAll(listing.seller, address(this))) {
             revert ListingNoLongerValid();
         }
 
-        uint256 marketplaceFee = marketplaceFeeFor(listing.price);
-        (address royaltyRecipient, uint256 royaltyAmount) = _royaltyInfo(nftAddress, tokenId, listing.price);
-        if (marketplaceFee + royaltyAmount > listing.price) revert InvalidRoyalty(royaltyAmount, listing.price);
-        uint256 sellerAmount = listing.price - marketplaceFee - royaltyAmount;
-
         delete s_listings[nftAddress][tokenId];
-        s_proceeds[listing.seller] += sellerAmount;
+        (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) = _creditSale(nftAddress, tokenId, listing.seller, listing.price);
+        nft.safeTransferFrom(listing.seller, buyer, tokenId);
+        emit ItemBought(buyer, nftAddress, tokenId, listing.price, marketplaceFee, royaltyRecipient, royaltyAmount);
+    }
+
+    function _creditSale(address nftAddress, uint256 tokenId, address seller, uint256 salePrice) internal returns (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) {
+        marketplaceFee = marketplaceFeeFor(salePrice);
+        (royaltyRecipient, royaltyAmount) = _royaltyInfo(nftAddress, tokenId, salePrice);
+        if (marketplaceFee + royaltyAmount > salePrice) revert InvalidRoyalty(royaltyAmount, salePrice);
+        s_proceeds[seller] += salePrice - marketplaceFee - royaltyAmount;
         s_proceeds[HOUSE_TREASURY] += marketplaceFee;
         if (royaltyAmount != 0) s_proceeds[royaltyRecipient] += royaltyAmount;
-
-        nft.safeTransferFrom(listing.seller, msg.sender, tokenId);
-        emit ItemBought(msg.sender, nftAddress, tokenId, listing.price, marketplaceFee, royaltyRecipient, royaltyAmount);
     }
 
     function withdrawProceeds() external nonReentrant {
@@ -109,6 +173,10 @@ contract NFTMarketplace is ReentrancyGuard {
 
     function getProceeds(address recipient) external view returns (uint256) {
         return s_proceeds[recipient];
+    }
+
+    function getOffer(address nftAddress, uint256 tokenId, address buyer) external view returns (Offer memory) {
+        return s_offers[nftAddress][tokenId][buyer];
     }
 
     function _royaltyInfo(address nftAddress, uint256 tokenId, uint256 salePrice)

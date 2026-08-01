@@ -84,3 +84,21 @@ test("keeps the protocol fee fixed at two percent", async () => {
   assert.match(contract, /IERC2981/);
   assert.match(contract, /withdrawProceeds/);
 });
+
+test("includes NFT pages, favorites, profile management, offers, and batch checkout", async () => {
+  const [portal, nftPage, favorites, contract] = await Promise.all([
+    read("app/portal.tsx"),
+    read("app/nft-page.tsx"),
+    read("app/favorites.ts"),
+    read("contracts/NFTMarketplace.sol"),
+  ]);
+  assert.match(portal, /market-cart-button/);
+  assert.match(portal, /profile-management/);
+  assert.match(portal, /marketplaceVersion/);
+  assert.match(nftPage, /standalone-nft-page/);
+  assert.match(favorites, /localStorage/);
+  assert.match(contract, /function batchBuy/);
+  assert.match(contract, /function makeOffer/);
+  assert.match(contract, /function acceptOffer/);
+  assert.match(contract, /marketplaceVersion\(\).*2/);
+});
