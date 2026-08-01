@@ -2721,6 +2721,115 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
   color:#777268;
 }
 
+/* Marketplace cart: a compact onchain shortlist with one transaction per NFT. */
+.portal-market .market-toolbar {
+  grid-template-columns:auto minmax(240px,1fr) auto minmax(170px,190px) auto;
+}
+.market-cart-button {
+  height:44px;
+  min-width:92px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:0 12px;
+  border:1px solid rgba(199,164,74,.24);
+  border-radius:9px;
+  background:#100c06;
+  color:#f4f0e7;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:9px;
+}
+.market-cart-button b {
+  min-width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:rgba(199,164,74,.16);
+  color:#c7a44a;
+  font-size:9px;
+}
+.market-cart-button.has-items { border-color:#c7a44a; }
+.market-card-actions { display:grid; grid-template-columns:1fr auto; gap:7px; margin-top:12px; }
+.market-listing>div>.market-card-actions>button {
+  width:auto;
+  height:40px;
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 11px;
+  border:1px solid rgba(199,164,74,.28);
+  border-radius:7px;
+  background:rgba(199,164,74,.08);
+  color:#c7a44a;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:8px;
+}
+.market-listing>div>.market-card-actions>button:first-child { justify-content:space-between; }
+.market-listing>div>.market-card-actions>button:hover,
+.market-listing>div>.market-card-actions>button.active { background:#c7a44a; color:#080807; }
+.cart-backdrop {
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:flex;
+  justify-content:flex-end;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(8px);
+}
+.cart-drawer {
+  width:min(460px,100%);
+  height:100%;
+  overflow-y:auto;
+  padding:30px;
+  background:#080807;
+  border-left:1px solid rgba(199,164,74,.25);
+  color:#f4f0e7;
+  box-shadow:-24px 0 70px rgba(0,0,0,.45);
+}
+.cart-drawer>header { display:flex; justify-content:space-between; gap:20px; padding-bottom:24px; border-bottom:1px solid rgba(199,164,74,.18); }
+.cart-drawer>header span { color:#c7a44a; font-family:var(--font-mono); font-size:8px; letter-spacing:.15em; }
+.cart-drawer>header h2 { margin:8px 0 0; font-family:var(--font-serif); font-size:34px; font-weight:500; }
+.cart-drawer>header>button,.cart-items article>button:not(.cart-buy) { border:0; background:transparent; color:#aaa397; cursor:pointer; }
+.cart-drawer>header>button { width:40px; height:40px; display:grid; place-items:center; }
+.cart-items article { display:grid; grid-template-columns:1fr 38px; gap:12px; padding:20px 0; border-bottom:1px solid rgba(199,164,74,.14); }
+.cart-items article>div { min-width:0; display:flex; flex-direction:column; gap:6px; }
+.cart-items article span { color:#c7a44a; font-size:8px; letter-spacing:.1em; }
+.cart-items article strong { font-family:var(--font-mono); font-size:11px; }
+.cart-items article small { color:#f4f0e7; font-family:var(--font-serif); font-size:20px; }
+.cart-buy { grid-column:1/-1; height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 13px; border:1px solid #c7a44a; background:transparent; color:#f4f0e7; cursor:pointer; text-transform:uppercase; letter-spacing:.1em; font-size:8px; }
+.cart-buy:hover { background:#c7a44a; color:#080807; }
+.cart-drawer>footer { display:block; padding:24px 0 0; border:0; background:transparent; }
+.cart-drawer>footer span { color:#aaa397; font-size:8px; letter-spacing:.13em; }
+.cart-drawer>footer strong { display:block; margin-top:7px; color:#f4f0e7; font-family:var(--font-serif); font-size:30px; }
+.cart-drawer>footer p { color:#8f897f; font-size:10px; line-height:1.5; }
+.cart-empty { min-height:62vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.cart-empty svg { color:#c7a44a; }
+.cart-empty h3 { margin:18px 0 8px; font-family:var(--font-serif); font-size:30px; font-weight:500; }
+.cart-empty p { max-width:290px; margin:0; color:#aaa397; font-size:11px; line-height:1.5; }
+.cart-empty button { height:42px; margin-top:22px; padding:0 16px; border:1px solid #c7a44a; background:#c7a44a; color:#080807; cursor:pointer; text-transform:uppercase; letter-spacing:.1em; font-size:8px; }
+
+@media(max-width:900px){
+  .portal-market .market-toolbar { grid-template-columns:auto minmax(180px,1fr) auto; }
+  .portal-market .market-toolbar .sort-control { grid-column:1/3; }
+  .market-cart-button { grid-column:3; grid-row:1/3; height:100%; }
+}
+@media(max-width:620px){
+  .portal-market .market-toolbar { grid-template-columns:auto minmax(0,1fr) auto; }
+  .market-toolbar>span { display:none; }
+  .market-cart-button { min-width:48px; padding:0 10px; }
+  .market-cart-button>span { display:none; }
+  .market-card-actions { grid-template-columns:1fr; }
+  .cart-drawer { padding:22px 18px calc(30px + env(safe-area-inset-bottom)); }
+}
+
 @media(max-width:900px){
   .portal-sell .sell-layout { grid-template-columns:1fr; }
   .portal-sell .sell-layout aside { position:static; }

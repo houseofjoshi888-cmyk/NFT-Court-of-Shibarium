@@ -1,7 +1,7 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { ArrowLeft, ArrowUpRight, ChevronDown, ExternalLink, Grid2X2, List, Search, ShieldCheck, SlidersHorizontal, Wallet, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ChevronDown, ExternalLink, Grid2X2, List, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Trash2, Wallet, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, getAddress, parseEther, zeroAddress } from "viem";
@@ -110,12 +110,17 @@ function MarketView({data,loading,account,onBuy,onCancel}:{data:IndexerData;load
   const[sort,setSort]=useState<"newest"|"low"|"high">("newest");
   const[active,setActive]=useState<Listing|null>(null);
   const[filtersOpen,setFiltersOpen]=useState(true);
+  const[cartIds,setCartIds]=useState<string[]>([]);
+  const[cartOpen,setCartOpen]=useState(false);
   const details=useNftMetadata(active);
   if(!data.listings.length)return <Empty eyebrow={loading?`SYNCING ${data.chain.toUpperCase()}`:data.configured?"NO ACTIVE LISTINGS":"DEPLOYMENT NEEDED"} title={loading?"Reading the onchain record.":data.configured?"No works are listed.":`${data.chain} is ready for its marketplace contract.`} detail={data.syncError||(data.configured?"Only verified active listings appear here.":"Add the contract address and deployment block to activate this network.")}/>;
   const collections=[...new Set(data.listings.map(item=>item.nftAddress))];
   const query=search.trim().toLowerCase();
   const filtered=data.listings.filter(item=>(collection==="all"||item.nftAddress===collection)&&(!query||item.tokenId.includes(query)||item.nftAddress.toLowerCase().includes(query)));
   const shown=[...filtered].sort((a,b)=>sort==="low"?Number(BigInt(a.price)-BigInt(b.price)):sort==="high"?Number(BigInt(b.price)-BigInt(a.price)):b.updatedBlock-a.updatedBlock);
+  const cart=data.listings.filter(item=>cartIds.includes(item.id));
+  const cartTotal=cart.reduce((total,item)=>total+BigInt(item.price),0n);
+  function toggleCart(item:Listing){setCartIds(current=>current.includes(item.id)?current.filter(id=>id!==item.id):[...current,item.id]);}
   return <>
     <nav className="market-tabs" aria-label="Marketplace categories">
       <button className="active">All</button>
@@ -132,6 +137,7 @@ function MarketView({data,loading,account,onBuy,onCancel}:{data:IndexerData;load
       <label><Search size={17}/><input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search items and collections" aria-label="Search NFTs"/></label>
       <span><strong>{shown.length}</strong> items</span>
       <label className="sort-control"><span>Sort by</span><select value={sort} onChange={event=>setSort(event.target.value as "newest"|"low"|"high")} aria-label="Sort NFTs"><option value="newest">Recently listed</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select><ChevronDown size={14}/></label>
+      <button className={`market-cart-button ${cart.length?"has-items":""}`} onClick={()=>setCartOpen(true)} aria-label={`Open cart with ${cart.length} items`}><ShoppingCart size={17}/><span>Cart</span><b>{cart.length}</b></button>
     </section>
     <div className={`market-browser ${filtersOpen?"":"filters-closed"}`}>
       {filtersOpen&&<aside className="market-filter-panel">
@@ -146,14 +152,15 @@ function MarketView({data,loading,account,onBuy,onCancel}:{data:IndexerData;load
         <div className="price-filter-note">Prices shown in {data.currency}</div>
       </aside>}
       <section className="market-results">
-        {shown.length?<div className="market-listings-grid">{shown.map(item=><MarketListingCard key={item.id} item={item} currency={data.currency} chain={data.chain} onOpen={()=>setActive(item)}/>)}</div>:<div className="market-no-results"><Search size={24}/><h2>No NFTs found</h2><p>Try another token ID, contract address, or collection.</p><button onClick={()=>{setSearch("");setCollection("all")}}>Clear filters</button></div>}
+        {shown.length?<div className="market-listings-grid">{shown.map(item=><MarketListingCard key={item.id} item={item} currency={data.currency} chain={data.chain} inCart={cartIds.includes(item.id)} onOpen={()=>setActive(item)} onToggleCart={()=>toggleCart(item)}/>)}</div>:<div className="market-no-results"><Search size={24}/><h2>No NFTs found</h2><p>Try another token ID, contract address, or collection.</p><button onClick={()=>{setSearch("");setCollection("all")}}>Clear filters</button></div>}
       </section>
     </div>
     {active&&<MarketNftDetail listing={active} details={details} account={account} onClose={()=>setActive(null)} onBuy={()=>onBuy(active)} onDelist={()=>{onCancel(active);setActive(null);}}/>}
+    {cartOpen&&<CartDrawer items={cart} currency={data.currency} account={account} total={cartTotal} onClose={()=>setCartOpen(false)} onRemove={item=>toggleCart(item)} onBuy={onBuy}/>} 
   </>
 }
 
-function MarketListingCard({item,currency,chain,onOpen}:{item:Listing;currency:string;chain:string;onOpen:()=>void}){
+function MarketListingCard({item,currency,chain,inCart,onOpen,onToggleCart}:{item:Listing;currency:string;chain:string;inCart:boolean;onOpen:()=>void;onToggleCart:()=>void}){
   const details=useNftMetadata(item);
   const nft=details.nft;
   return <article className="market-listing">
@@ -164,9 +171,13 @@ function MarketListingCard({item,currency,chain,onOpen}:{item:Listing;currency:s
       <small>{nft?.collection??short(item.nftAddress)}</small>
       <h2>{nft?.name??`Token #${item.tokenId}`}</h2>
       <div className="market-card-price"><span>PRICE</span><strong>{formatEther(BigInt(item.price))} {currency}</strong></div>
-      <button onClick={onOpen}>Buy now <ArrowUpRight size={13}/></button>
+      <div className="market-card-actions"><button onClick={onOpen}>Buy now <ArrowUpRight size={13}/></button><button className={inCart?"active":""} onClick={onToggleCart} aria-label={inCart?"Remove from cart":"Add to cart"}><ShoppingCart size={14}/>{inCart?"Added":"Add"}</button></div>
     </div>
   </article>
+}
+
+function CartDrawer({items,currency,account,total,onClose,onRemove,onBuy}:{items:Listing[];currency:string;account?:`0x${string}`;total:bigint;onClose:()=>void;onRemove:(item:Listing)=>void;onBuy:(item:Listing)=>void}){
+  return <div className="cart-backdrop" role="dialog" aria-modal="true" aria-label="Shopping cart" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}><aside className="cart-drawer"><header><div><span>MARKETPLACE CART</span><h2>Your selections</h2></div><button onClick={onClose} aria-label="Close cart"><X size={18}/></button></header>{items.length?<><div className="cart-items">{items.map(item=><article key={item.id}><div><span>ERC-721 · #{item.tokenId}</span><strong>{short(item.nftAddress)}</strong><small>{formatEther(BigInt(item.price))} {currency}</small></div><button onClick={()=>onRemove(item)} aria-label={`Remove token ${item.tokenId} from cart`}><Trash2 size={15}/></button>{account?<button className="cart-buy" onClick={()=>onBuy(item)}>Buy now <ArrowUpRight size={14}/></button>:<ConnectButton.Custom>{({openConnectModal})=><button className="cart-buy" onClick={openConnectModal}>Connect to buy <Wallet size={14}/></button>}</ConnectButton.Custom>}</article>)}</div><footer><span>TOTAL · {items.length} {items.length===1?"ITEM":"ITEMS"}</span><strong>{formatEther(total)} {currency}</strong><p>Each NFT is settled separately and requires its own wallet confirmation.</p></footer></>:<div className="cart-empty"><ShoppingCart size={28}/><h3>Your cart is empty.</h3><p>Add listed NFTs to keep them together while you browse.</p><button onClick={onClose}>Continue browsing</button></div>}</aside></div>;
 }
 
 function MarketNftDetail({listing,details,account,onClose,onBuy,onDelist}:{listing:Listing;details:{nft:WalletNft|null;loading:boolean;error:string};account?:`0x${string}`;onClose:()=>void;onBuy:()=>void;onDelist:()=>void}){const nft=details.nft;const chain=getMarketplaceChain(listing.chainId);const isSeller=!!account&&account.toLowerCase()===listing.seller.toLowerCase();return <div className="nft-detail-backdrop" role="dialog" aria-modal="true" aria-label="Listed NFT details" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><article className="nft-detail"><button className="nft-detail-close" onClick={onClose} aria-label="Close NFT details"><X size={18}/></button>{nft?.imageUrl?<div className="nft-detail-image" style={{backgroundImage:`url(${nft.imageUrl})`}}/>:<div className="nft-detail-image empty"/>}<div className="nft-detail-copy"><small>{nft?.collection??short(listing.nftAddress)} · {chain.name} · ERC-721</small><h2>{nft?.name??`Token #${listing.tokenId}`}</h2><p className="nft-token-id">#{listing.tokenId} · {short(listing.nftAddress)}</p>{details.loading&&<p className="nft-description">Loading verified metadata…</p>}{details.error&&<p className="nft-description">{details.error}</p>}{nft?.description&&<p className="nft-description">{nft.description}</p>}{nft&&nft.traits.length>0&&<section className="nft-traits"><span>TRAITS</span><div>{nft.traits.map(trait=><article key={`${trait.type}:${trait.value}`}><small>{trait.type}</small><strong>{trait.value}</strong></article>)}</div></section>}<div className="listing-price-panel"><span>LISTING PRICE</span><strong>{formatEther(BigInt(listing.price))} {chain.currency}</strong><small>Seller · {short(listing.seller)}</small></div><div className="nft-detail-actions">{isSeller?<button className="delist-button" onClick={onDelist}>Delist NFT <X size={15}/></button>:account?<button onClick={onBuy}>Buy now <ArrowUpRight size={15}/></button>:<ConnectButton.Custom>{({openConnectModal})=><button onClick={openConnectModal}>Connect to buy <Wallet size={15}/></button>}</ConnectButton.Custom>}{nft?.externalUrl&&<a href={nft.externalUrl} target="_blank" rel="noreferrer">Collection link <ExternalLink size={14}/></a>}<a href={tokenUrl(listing.chainId,listing.nftAddress,listing.tokenId)} target="_blank" rel="noreferrer">View on {chain.name} explorer <ExternalLink size={14}/></a></div></div></article></div>}
