@@ -2739,6 +2739,49 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
   color:#777268;
 }
 
+/* The homepage "Present a work" drawer uses the same dark royal theme. */
+.modal-backdrop .listing-panel {
+  color-scheme:dark;
+  background:
+    radial-gradient(circle at 92% 3%,rgba(199,164,74,.07),transparent 24rem),
+    #090908;
+  color:#f4f0e7;
+  border-left:1px solid rgba(199,164,74,.25);
+}
+.modal-backdrop .listing-panel .close-button {
+  border-color:rgba(199,164,74,.28);
+  color:#f4f0e7;
+}
+.modal-backdrop .listing-panel h2,
+.modal-backdrop .listing-panel label,
+.modal-backdrop .listing-panel .field span,
+.modal-backdrop .listing-panel .listing-check strong { color:#f4f0e7; }
+.modal-backdrop .listing-panel .listing-intro,
+.modal-backdrop .listing-panel .listing-check p,
+.modal-backdrop .listing-panel .fee-disclosure,
+.modal-backdrop .listing-panel .fine-print { color:#aaa397; }
+.modal-backdrop .listing-panel .field input {
+  border-color:rgba(199,164,74,.25);
+  background:#060606;
+  color:#f4f0e7;
+}
+.modal-backdrop .listing-panel .field input::placeholder { color:#777268; opacity:1; }
+.modal-backdrop .listing-panel .field input:focus { border-color:#c7a44a; }
+.modal-backdrop .listing-panel .listing-check {
+  border-color:rgba(199,164,74,.2);
+  background:#0c0c0a;
+}
+.modal-backdrop .listing-panel .confirm-buy {
+  border:1px solid #c7a44a;
+  background:#c7a44a;
+  color:#080807;
+}
+.modal-backdrop .listing-panel .confirm-buy:disabled {
+  border-color:rgba(199,164,74,.22);
+  background:#15140f;
+  color:#777268;
+}
+
 /* Marketplace cart: a compact onchain shortlist with one transaction per NFT. */
 .portal-market .market-toolbar {
   grid-template-columns:auto minmax(240px,1fr) auto minmax(170px,190px) auto;
