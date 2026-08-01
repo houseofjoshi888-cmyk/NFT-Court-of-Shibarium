@@ -1649,6 +1649,14 @@ body { padding:124px 0 0 232px; background:#050402; }
   border-bottom:1px solid rgba(199,164,74,.15);
   background:rgba(8,8,7,.96);
   backdrop-filter:blur(16px);
+  transition:transform .24s ease,opacity .18s ease,visibility .24s;
+  will-change:transform;
+}
+.supported-chain-strip.is-hidden {
+  transform:translateY(calc(-100% - 1px));
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
 }
 .supported-chain-strip>span {
   color:#817b71;

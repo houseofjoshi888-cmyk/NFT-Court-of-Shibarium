@@ -23,6 +23,20 @@ const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutD
 export function GlobalHeader() {
   const pathname = usePathname();
   const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
+  const [chainStripHidden,setChainStripHidden]=useState(false);
+  useEffect(()=>{
+    let frame=0;
+    const update=()=>{
+      cancelAnimationFrame(frame);
+      frame=requestAnimationFrame(()=>setChainStripHidden(window.scrollY>24));
+    };
+    update();
+    window.addEventListener("scroll",update,{passive:true});
+    return()=>{
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll",update);
+    };
+  },[]);
   useEffect(()=>{
     if(!mobileMenuOpen)return;
     const previous=document.body.style.overflow;
@@ -40,7 +54,7 @@ export function GlobalHeader() {
       <Link href="/" className="court-topbar-brand"><Image className="court-topbar-logo" src="/house-of-joshi-logo.png" alt="" width={34} height={34} priority unoptimized/><span><strong>HOUSE OF JOSHI</strong><small>NFT MARKETPLACE</small></span></Link>
       <div className="court-topbar-actions"><ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=><><button className="court-network-button symbol-only" type="button" onClick={account?openChainModal:openConnectModal} aria-label={chain?`Change network. Current network: ${chain.name}`:"Choose network"} title={chain?.name??"Choose network"}>{chain?<ChainLogo chainId={chain.id}/>:<Network size={17}/>}</button>{!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</>}</ConnectButton.Custom><button className="court-mobile-menu-button" type="button" onClick={()=>setMobileMenuOpen(open=>!open)} aria-label={mobileMenuOpen?"Close menu":"Open menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-marketplace-menu">{mobileMenuOpen?<X size={19}/>:<Menu size={19}/>}</button></div>
     </header>
-    <div className="supported-chain-strip" aria-label="Supported blockchain networks">
+    <div className={`supported-chain-strip ${chainStripHidden&&!mobileMenuOpen?"is-hidden":""}`} aria-label="Supported blockchain networks" aria-hidden={chainStripHidden&&!mobileMenuOpen}>
       <span>SUPPORTED CHAINS</span>
       <div title="Ethereum"><ChainLogo chainId={1}/><small>Ethereum</small></div>
       <div title="Shibarium"><ChainLogo chainId={109}/><small>Shibarium</small></div>
