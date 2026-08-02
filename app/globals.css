@@ -2893,7 +2893,7 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
 .cart-empty p { max-width:290px; margin:0; color:#aaa397; font-size:11px; line-height:1.5; }
 .cart-empty button { height:42px; margin-top:22px; padding:0 16px; border:1px solid #c7a44a; background:#c7a44a; color:#080807; cursor:pointer; text-transform:uppercase; letter-spacing:.1em; font-size:8px; }
 
-.standalone-nft-page { min-height:calc(100vh - 124px); padding:28px clamp(20px,4vw,64px) 90px; background:radial-gradient(circle at 85% 4%,rgba(199,164,74,.06),transparent 30rem),#060606; color:#f4f0e7; }
+.standalone-nft-page { min-height:calc(100vh - 124px); padding:44px clamp(20px,4vw,64px) 90px; background:radial-gradient(circle at 85% 4%,rgba(199,164,74,.06),transparent 30rem),#060606; color:#f4f0e7; scroll-margin-top:calc(124px + env(safe-area-inset-top)); }
 .nft-page-nav { max-width:1460px; min-height:42px; display:flex; justify-content:space-between; align-items:center; margin:0 auto 24px; }
 .nft-page-nav>div { display:flex; gap:6px; }
 .nft-page-nav a,.nft-page-nav button { min-height:40px; display:flex; align-items:center; gap:8px; padding:0 12px; border:1px solid rgba(199,164,74,.18); background:#090908; color:#aaa397; cursor:pointer; font-size:8px; letter-spacing:.1em; text-transform:uppercase; }
@@ -2973,7 +2973,7 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
   .market-cart-button>span { display:none; }
   .market-card-actions { grid-template-columns:1fr; }
   .cart-drawer { padding:22px 18px calc(30px + env(safe-area-inset-bottom)); }
-  .standalone-nft-page { padding:16px 14px 70px; }
+  .standalone-nft-page { padding:28px 14px 70px; }
   .nft-page-nav { margin-bottom:15px; }
   .nft-page-nav a,.nft-page-nav button { width:40px; justify-content:center; padding:0; }
   .nft-page-nav a { width:auto; padding:0 11px; }
