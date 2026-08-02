@@ -29,6 +29,13 @@ test("uses live indexed data without demo listings", async () => {
   assert.doesNotMatch(`${marketplace}\n${portal}`, /demo listing|mock listing|sample listing/i);
 });
 
+test("ranks trending collections only from live marketplace signals", async () => {
+  const collections = await read("app/collections/collections-browser.tsx");
+  assert.match(collections, /Trending collections/);
+  assert.match(collections, /event\.eventType==="sold"/);
+  assert.match(collections, /current\.activeListings\+=1/);
+});
+
 test("ships the requested court destinations and keeps network choice in the wallet bar", async () => {
   const [chrome, marketplace, portal, collections, malkutaApi] = await Promise.all([
     read("app/site-chrome.tsx"),

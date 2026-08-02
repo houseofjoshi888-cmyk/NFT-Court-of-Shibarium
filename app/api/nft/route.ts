@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   const contract = request.nextUrl.searchParams.get("contract");
   const tokenId = request.nextUrl.searchParams.get("tokenId");
   const chainId = Number(request.nextUrl.searchParams.get("chainId") ?? 109);
+  const refresh = request.nextUrl.searchParams.get("refresh") === "1";
   if (!contract || !tokenId || !/^\d+$/.test(tokenId)) return NextResponse.json({ error: "A valid NFT contract and token ID are required." }, { status: 400 });
   if (!isMarketplaceChainId(chainId)) return NextResponse.json({ error: "Unsupported chain." }, { status: 400 });
   const chain = getMarketplaceChain(chainId);
@@ -31,7 +32,20 @@ export async function GET(request: NextRequest) {
   try { address = getAddress(contract); } catch { return NextResponse.json({ error: "Invalid NFT contract address." }, { status: 400 }); }
 
   try {
-    const response = await fetch(`${explorerApiUrl}/tokens/${address}/instances/${tokenId}`, { headers: { accept: "application/json" }, next: { revalidate: 60 } });
+    const instanceUrl = `${explorerApiUrl}/tokens/${address}/instances/${tokenId}`;
+    if (refresh) {
+      // Blockscout-compatible explorers can queue an on-chain tokenURI re-fetch here.
+      // Some deployments protect or omit this endpoint, so a rejected queue request
+      // must not prevent the uncached metadata read that follows.
+      await fetch(`${instanceUrl}/refetch-metadata`, {
+        method: "POST",
+        headers: { accept: "application/json" },
+        cache: "no-store",
+      }).catch(() => undefined);
+    }
+    const response = await fetch(instanceUrl, refresh
+      ? { headers: { accept: "application/json" }, cache: "no-store" }
+      : { headers: { accept: "application/json" }, next: { revalidate: 60 } });
     if (!response.ok) throw new Error("Explorer request failed");
     const item = await response.json() as ExplorerNft;
     return NextResponse.json({
@@ -44,7 +58,7 @@ export async function GET(request: NextRequest) {
       description: item.metadata?.description ?? null,
       externalUrl: item.metadata?.external_url ?? null,
       traits: (item.metadata?.attributes ?? []).flatMap(attribute => attribute.trait_type && attribute.value !== null && attribute.value !== undefined ? [{ type: attribute.trait_type, value: String(attribute.value) }] : []),
-    }, { headers: { "Cache-Control": "public, max-age=60" } });
+    }, { headers: { "Cache-Control": refresh ? "no-store" : "public, max-age=60" } });
   } catch {
     return NextResponse.json({ error: `Could not load NFT metadata from the ${chain.name} explorer.` }, { status: 502 });
   }

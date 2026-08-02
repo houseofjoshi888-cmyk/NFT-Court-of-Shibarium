@@ -2278,6 +2278,27 @@ select:focus-visible { outline-color:#d8bc69; }
 }
 .featured-collection,
 .listed-collections { padding:34px 0 44px; border-bottom:1px solid rgba(199,164,74,.18); }
+.trending-collections { padding:34px 0; border-bottom:1px solid rgba(199,164,74,.18); }
+.trending-collections>header { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:22px; }
+.trending-collections>header>div>span { display:flex; align-items:center; gap:7px; color:#c7a44a; font-family:var(--font-mono); font-size:8px; letter-spacing:.12em; }
+.trending-collections h2 { margin:8px 0 7px; color:#f4f0e7; font-family:var(--font-serif); font-size:34px; font-weight:500; }
+.trending-collections p { margin:0; color:#928b80; font-size:10px; }
+.trending-collections>header>small { color:#777167; font-size:8px; text-transform:uppercase; letter-spacing:.08em; }
+.trending-collection-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.trending-collection-card { min-width:0; display:grid; grid-template-columns:122px minmax(0,1fr); border:1px solid rgba(199,164,74,.17); background:#0c0c0a; color:#f4f0e7; }
+.trending-collection-card:hover { border-color:rgba(199,164,74,.42); background:#10100d; }
+.trending-collection-art { position:relative; min-height:150px; display:grid; place-items:center; background:radial-gradient(circle,#282315,#0a0a09 68%); background-position:center; background-size:cover; }
+.trending-collection-art b { position:absolute; left:8px; top:8px; padding:5px 7px; background:rgba(5,5,5,.84); color:#c7a44a; font-family:var(--font-mono); font-size:9px; }
+.trending-collection-art span { color:#c7a44a; font-family:var(--font-mono); font-size:9px; }
+.trending-collection-card>div:last-child { min-width:0; padding:14px; }
+.trending-collection-card small { color:#928b80; font-family:var(--font-mono); font-size:7px; letter-spacing:.1em; text-transform:uppercase; }
+.trending-collection-card h3 { margin:6px 0 14px; color:#f4f0e7; font-family:var(--font-serif); font-size:19px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trending-collection-card dl { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin:0 0 13px; background:rgba(199,164,74,.12); }
+.trending-collection-card dl>div { min-width:0; padding:7px; background:#0a0a09; }
+.trending-collection-card dt,.trending-collection-card dd { margin:0; }
+.trending-collection-card dt { color:#777167; font-size:6px; }
+.trending-collection-card dd { margin-top:4px; color:#f4f0e7; font-size:11px; }
+.trending-collection-card>div:last-child>span { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid rgba(199,164,74,.14); color:#c7a44a; font-size:8px; text-transform:uppercase; letter-spacing:.08em; }
 .featured-collection>header,
 .listed-collections>header {
   display:flex;
@@ -2359,7 +2380,7 @@ select:focus-visible { outline-color:#d8bc69; }
 .chain-listings.list .chain-listing h3 { min-height:auto; }
 .collection-loading { min-height:220px; display:grid; place-items:center; grid-column:1/-1; color:#aaa397; font-family:var(--serif); font-size:18px; text-align:center; padding:30px; }
 
-@media(max-width:1250px){.malkuta-grid,.chain-listings.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1250px){.malkuta-grid,.chain-listings.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.trending-collection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){
   .malkuta-grid,.chain-listings.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .collection-browser{grid-template-columns:1fr}
@@ -2368,10 +2389,12 @@ select:focus-visible { outline-color:#d8bc69; }
   .collection-browser>aside button{width:auto;min-width:max-content}
 }
 @media(max-width:620px){
-  .collections-hero,.featured-collection>header{align-items:flex-start;flex-direction:column}
+  .collections-hero,.featured-collection>header,.trending-collections>header{align-items:flex-start;flex-direction:column}
   .collections-hero{min-height:300px}.collections-hero>a{width:100%;justify-content:space-between}
   .featured-collection header>dl{width:100%}.featured-collection header>dl>div{flex:1}
   .malkuta-grid,.chain-listings.grid{grid-template-columns:1fr}
+  .trending-collection-grid{grid-template-columns:1fr}
+  .trending-collection-card{grid-template-columns:104px minmax(0,1fr)}
 }
 
 /* Featured court drop. */
@@ -2912,6 +2935,11 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
 .standalone-nft-art.empty strong { color:#c7a44a; font-family:var(--font-serif); font-size:62px; }
 .nft-media-note { min-height:46px; display:flex; align-items:center; gap:10px; padding:0 14px; border:1px solid rgba(199,164,74,.14); border-top:0; color:#8f897f; font-size:9px; }
 .nft-media-note svg { color:#c7a44a; flex:none; }
+.nft-media-note span { flex:1; }
+.nft-media-note button { display:flex; align-items:center; gap:6px; padding:7px 0; border:0; background:transparent; color:#c7a44a; font-size:10px; cursor:pointer; white-space:nowrap; }
+.nft-media-note button:disabled { cursor:wait; opacity:.7; }
+.nft-media-note .spinning { animation:nft-metadata-spin .8s linear infinite; }
+@keyframes nft-metadata-spin { to { transform:rotate(360deg); } }
 .nft-commerce-column { min-width:0; padding-top:6px; }
 .nft-chain-line { display:flex; flex-wrap:wrap; align-items:center; gap:8px; color:#c7a44a; font-family:var(--font-mono); font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
 .nft-chain-line i { padding:5px 8px; border:1px solid rgba(199,164,74,.16); color:#aaa397; font-style:normal; }

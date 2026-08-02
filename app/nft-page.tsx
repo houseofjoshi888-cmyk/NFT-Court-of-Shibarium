@@ -1,9 +1,9 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { ArrowLeft, ArrowUpRight, Check, Copy, ExternalLink, Heart, ImageIcon, Share2, ShieldCheck, ShoppingCart, Tag, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Copy, ExternalLink, Heart, ImageIcon, RefreshCw, Share2, ShieldCheck, ShoppingCart, Tag, Wallet } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from "wagmi";
 import { favoriteId, useFavorite } from "./favorites";
@@ -27,22 +27,46 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
   const[status,setStatus]=useState("");
   const[copied,setCopied]=useState(false);
   const[shareOpen,setShareOpen]=useState(false);
+  const[refreshing,setRefreshing]=useState(false);
   const favorite=useFavorite(favoriteId(chainId,contract,tokenId));
   const{address}=useAccount();
   const walletChainId=useChainId();
   const{switchChainAsync}=useSwitchChain();
   const{writeContractAsync}=useWriteContract();
 
+  const loadMetadata=useCallback(async(refresh=false)=>{
+    const query=new URLSearchParams({chainId:String(chainId),contract,tokenId});
+    if(refresh){query.set("refresh","1");query.set("t",String(Date.now()));}
+    const response=await fetch(`/api/nft?${query}`,{cache:"no-store"});
+    const body=await response.json() as Nft;
+    if(!response.ok)throw new Error(body.error??"NFT metadata is unavailable.");
+    setNft(body);
+    setError("");
+    return body;
+  },[chainId,contract,tokenId]);
+
   useEffect(()=>{let active=true;void(async()=>{
     if(!valid){setError("This NFT link is not valid.");return;}
     const[metadataResult,indexerResult]=await Promise.allSettled([
-      fetch(`/api/nft?chainId=${chainId}&contract=${contract}&tokenId=${tokenId}`,{cache:"no-store"}).then(async response=>{const body=await response.json() as Nft;if(!response.ok)throw new Error(body.error??"NFT metadata is unavailable.");return body;}),
+      loadMetadata(),
       fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}).then(async response=>{const body=await response.json() as Indexer;if(!response.ok&&!body.configured)throw new Error("Marketplace activity is unavailable.");return body;}),
     ]);
     if(!active)return;
-    if(metadataResult.status==="fulfilled")setNft(metadataResult.value);else setError(metadataResult.reason instanceof Error?metadataResult.reason.message:"NFT metadata is unavailable.");
+    if(metadataResult.status==="rejected")setError(metadataResult.reason instanceof Error?metadataResult.reason.message:"NFT metadata is unavailable.");
     if(indexerResult.status==="fulfilled")setIndexer(indexerResult.value);
-  })();return()=>{active=false;};},[chainId,contract,tokenId,valid]);
+  })();return()=>{active=false;};},[chainId,loadMetadata,valid]);
+
+  async function refreshMetadata(){
+    if(refreshing||!valid)return;
+    setRefreshing(true);
+    setStatus("Refreshing NFT metadata…");
+    try{
+      const refreshed=await loadMetadata(true);
+      setStatus(refreshed.imageUrl?"NFT metadata and image refreshed.":"Metadata refreshed. The collection has not supplied an image yet.");
+    }catch(reason){
+      setStatus(reason instanceof Error?reason.message:"NFT metadata could not be refreshed.");
+    }finally{setRefreshing(false);}
+  }
 
   const listing=useMemo(()=>indexer?.listings.find(item=>item.nftAddress.toLowerCase()===contract.toLowerCase()&&item.tokenId===tokenId)??null,[indexer,contract,tokenId]);
   const activity=useMemo(()=>indexer?.activity.filter(item=>item.nftAddress?.toLowerCase()===contract.toLowerCase()&&item.tokenId===tokenId)??[],[indexer,contract,tokenId]);
@@ -77,7 +101,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     <section className="nft-hero-layout">
       <div className="nft-media-column">
         <div className={`standalone-nft-art ${nft?.imageUrl?"":"empty"}`} style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>{!nft?.imageUrl&&<><ImageIcon size={34}/><span>{error||"Loading verified NFT…"}</span><strong>#{tokenId}</strong></>}</div>
-        <div className="nft-media-note"><ShieldCheck size={15}/><span>Metadata and ownership are read from the {chain.name} network.</span></div>
+        <div className="nft-media-note"><ShieldCheck size={15}/><span>Metadata and ownership are read from the {chain.name} network.</span><button onClick={refreshMetadata} disabled={refreshing}><RefreshCw size={14} className={refreshing?"spinning":undefined}/>{refreshing?"Refreshing…":"Refresh metadata"}</button></div>
       </div>
 
       <article className="nft-commerce-column">

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, ExternalLink, Grid2X2, List, Search } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Flame, Grid2X2, List, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
 import { getMarketplaceChain, marketplaceChains, tokenUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
@@ -11,8 +11,10 @@ type Mint = {
 };
 type MalkutaData = { status:string; collectionTotal:number; indexedThroughBlock:string; latestMints:Mint[] };
 type Listing = { id:string; chainId:MarketplaceChainId; nftAddress:string; tokenId:string; seller:string; price:string; transactionHash:string };
-type ChainListings = { chainId:MarketplaceChainId; chain:string; currency:string; configured:boolean; listings:Listing[] };
+type Activity = { id:string; chainId:MarketplaceChainId; eventType:string; nftAddress:string|null; tokenId:string|null; price:string|null; blockNumber:number };
+type ChainListings = { chainId:MarketplaceChainId; chain:string; currency:string; configured:boolean; listings:Listing[]; activity:Activity[] };
 type NftMetadata = { name:string|null; collection:string|null; imageUrl:string|null };
+type TrendingCollection = { key:string; chainId:MarketplaceChainId; nftAddress:string; sales:number; recentEvents:number; activeListings:number; representativeTokenId:string };
 
 const chainIds = Object.keys(marketplaceChains).map(Number) as MarketplaceChainId[];
 const short = (value:string) => `${value.slice(0,6)}…${value.slice(-4)}`;
@@ -44,6 +46,26 @@ export function CollectionsBrowser(){
   },[]);
 
   const listings=useMemo(()=>chains.flatMap(chain=>chain.listings),[chains]);
+  const trending=useMemo<TrendingCollection[]>(()=>{
+    const records=new Map<string,TrendingCollection>();
+    for(const chain of chains){
+      for(const listing of chain.listings){
+        const key=`${chain.chainId}:${listing.nftAddress.toLowerCase()}`;
+        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:listing.nftAddress,sales:0,recentEvents:0,activeListings:0,representativeTokenId:listing.tokenId};
+        current.activeListings+=1;
+        records.set(key,current);
+      }
+      for(const event of chain.activity??[]){
+        if(!event.nftAddress||!event.tokenId)continue;
+        const key=`${chain.chainId}:${event.nftAddress.toLowerCase()}`;
+        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:event.nftAddress,sales:0,recentEvents:0,activeListings:0,representativeTokenId:event.tokenId};
+        current.recentEvents+=1;
+        if(event.eventType==="sold")current.sales+=1;
+        records.set(key,current);
+      }
+    }
+    return [...records.values()].filter(item=>item.recentEvents||item.activeListings).sort((a,b)=>(b.sales*10+b.recentEvents*2+b.activeListings)-(a.sales*10+a.recentEvents*2+a.activeListings)).slice(0,6);
+  },[chains]);
   const visibleListings=useMemo(()=>{
     const term=query.trim().toLowerCase();
     return listings.filter(item=>(activeChain==="all"||item.chainId===activeChain)&&(!term||item.nftAddress.toLowerCase().includes(term)||item.tokenId.includes(term)));
@@ -60,6 +82,11 @@ export function CollectionsBrowser(){
       {malkuta?.latestMints?.length?<div className="malkuta-grid">{malkuta.latestMints.map(mint=><article className="malkuta-card" key={mint.tokenId}><a className="malkuta-art" href={`https://kingdomwithin.thehouseofjoshi.com/verify?token=${mint.tokenId}`} target="_blank" rel="noreferrer" style={ipfs(mint.imageURI)?{backgroundImage:`url(${ipfs(mint.imageURI)})`}:undefined}><span>#{mint.tokenId.slice(0,8)}…</span><small>{mint.verificationStatus==="verified"?"✓ VERIFIED":"METADATA PENDING"}</small></a><div><span>MALKUTA MANDALA</span><h3>{mint.sourceText.split("\n")[0]||`Signal ${mint.numericalSignature}`}</h3><dl><div><dt>SIGNATURE</dt><dd>Σ {mint.numericalSignature}</dd></div><div><dt>SYMMETRY</dt><dd>{mint.symmetry} PETALS</dd></div></dl><a href={`https://kingdomwithin.thehouseofjoshi.com/verify?token=${mint.tokenId}`} target="_blank" rel="noreferrer">Verify NFT <ArrowUpRight size={13}/></a></div></article>)}</div>:<div className="collection-loading">{loading?"Reading verified Malkuta mints…":"The official mint archive is temporarily unavailable."}</div>}
     </section>
 
+    {(loading||trending.length>0)&&<section className="trending-collections">
+      <header><div><span><Flame size={13}/> LIVE MARKET SIGNALS</span><h2>Trending collections</h2><p>Ranked from recent confirmed sales, marketplace activity, and active listings.</p></div><small>Updates every 30 seconds</small></header>
+      {trending.length?<div className="trending-collection-grid">{trending.map((item,index)=><TrendingCollectionCard key={item.key} item={item} rank={index+1}/>)}</div>:<div className="collection-loading">Reading marketplace activity…</div>}
+    </section>}
+
     <section className="listed-collections">
       <header><div><span>MARKETPLACE</span><h2>Listed NFTs by network</h2></div><div className="collection-view-toggle"><button className={layout==="grid"?"active":""} onClick={()=>setLayout("grid")} aria-label="Grid view"><Grid2X2 size={15}/></button><button className={layout==="list"?"active":""} onClick={()=>setLayout("list")} aria-label="List view"><List size={16}/></button></div></header>
       <div className="collection-browser">
@@ -68,6 +95,13 @@ export function CollectionsBrowser(){
       </div>
     </section>
   </main>;
+}
+
+function TrendingCollectionCard({item,rank}:{item:TrendingCollection;rank:number}){
+  const [nft,setNft]=useState<NftMetadata|null>(null);
+  const chain=getMarketplaceChain(item.chainId);
+  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.representativeTokenId}&chainId=${item.chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)});return()=>{active=false};},[item]);
+  return <a className="trending-collection-card" href={`/nft/${item.chainId}/${item.nftAddress}/${item.representativeTokenId}`}><div className="trending-collection-art" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}><b>#{rank}</b>{!nft?.imageUrl&&<span>{short(item.nftAddress)}</span>}</div><div><small>{chain.name}</small><h3>{nft?.collection??short(item.nftAddress)}</h3><dl><div><dt>RECENT SALES</dt><dd>{item.sales}</dd></div><div><dt>ACTIVE LISTINGS</dt><dd>{item.activeListings}</dd></div><div><dt>ACTIVITY</dt><dd>{item.recentEvents}</dd></div></dl><span>Explore collection <ArrowUpRight size={13}/></span></div></a>;
 }
 
 function ListedNft({item}:{item:Listing}){
