@@ -26,6 +26,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
   const[error,setError]=useState("");
   const[status,setStatus]=useState("");
   const[copied,setCopied]=useState(false);
+  const[shareOpen,setShareOpen]=useState(false);
   const favorite=useFavorite(favoriteId(chainId,contract,tokenId));
   const{address}=useAccount();
   const walletChainId=useChainId();
@@ -62,9 +63,16 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     const data={title:nft?.name??`Token #${tokenId}`,text:`View ${nft?.name??`Token #${tokenId}`} on The House of Joshi NFT Marketplace`,url:window.location.href};
     if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(window.location.href);setStatus("NFT link copied.");}
   }
+  function socialShare(service:"x"|"facebook"|"telegram"){
+    const text=encodeURIComponent(`${nft?.name??`Token #${tokenId}`} · The House of Joshi NFT Marketplace`);
+    const url=encodeURIComponent(window.location.href);
+    const targets={x:`https://twitter.com/intent/tweet?text=${text}&url=${url}`,facebook:`https://www.facebook.com/sharer/sharer.php?u=${url}`,telegram:`https://t.me/share/url?url=${url}&text=${text}`};
+    window.open(targets[service],"_blank","noopener,noreferrer");
+    setShareOpen(false);
+  }
 
   return <main className="standalone-nft-page">
-    <nav className="nft-page-nav"><Link href="/market"><ArrowLeft size={15}/> Marketplace</Link><div><button onClick={share} aria-label="Share NFT"><Share2 size={16}/><span>Share</span></button><button className={favorite.favorite?"active":""} onClick={favorite.toggle}><Heart size={16} fill={favorite.favorite?"currentColor":"none"}/><span>{favorite.favorite?"Saved":"Favorite"}</span></button></div></nav>
+    <nav className="nft-page-nav"><Link href="/market"><ArrowLeft size={15}/> Marketplace</Link><div><div className="nft-share-wrap"><button onClick={()=>setShareOpen(open=>!open)} aria-label="Share NFT" aria-expanded={shareOpen}><Share2 size={16}/><span>Share</span></button>{shareOpen&&<div className="nft-share-menu" role="menu"><button onClick={()=>{void share();setShareOpen(false);}} role="menuitem"><Share2 size={14}/> Device share</button><button onClick={()=>socialShare("x")} role="menuitem"><b>𝕏</b> Share on X</button><button onClick={()=>socialShare("facebook")} role="menuitem"><b>f</b> Facebook</button><button onClick={()=>socialShare("telegram")} role="menuitem"><b>↗</b> Telegram</button><button onClick={async()=>{await navigator.clipboard.writeText(window.location.href);setStatus("NFT link copied.");setShareOpen(false);}} role="menuitem"><Copy size={14}/> Copy link</button></div>}</div><button className={favorite.favorite?"active":""} onClick={favorite.toggle}><Heart size={16} fill={favorite.favorite?"currentColor":"none"}/><span>{favorite.favorite?"Saved":"Favorite"}</span></button></div></nav>
 
     <section className="nft-hero-layout">
       <div className="nft-media-column">
