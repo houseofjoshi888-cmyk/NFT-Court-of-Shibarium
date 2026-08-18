@@ -47,6 +47,7 @@ test("supports wallet-owned native XRPL XLS-20 listings without pre-adding colle
   assert.match(config, /rUG7tHZ5sGCVxuhkAiL9fUqVFhki2Z6bVU/);
   assert.match(config, /XRPL_MARKETPLACE_FEE_BPS = 200/);
   assert.match(page, /broker matches and settles a buy and sell offer/);
+  assert.doesNotMatch(page, /rUG7tHZ5sGCVxuhkAiL9fUqVFhki2Z6bVU|XRPL_BROKER_ADDRESS/);
   assert.match(chrome, /href="\/xrpl"/);
 });
 

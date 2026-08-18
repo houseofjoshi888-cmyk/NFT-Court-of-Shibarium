@@ -2,7 +2,7 @@
 
 import { Check, ExternalLink, LoaderCircle, ShieldCheck, Wallet, X } from "lucide-react";
 import { useCallback, useState } from "react";
-import { XRPL_BROKER_ADDRESS, XRPL_MARKETPLACE_FEE_PERCENT } from "./config";
+import { XRPL_MARKETPLACE_FEE_PERCENT } from "./config";
 
 type SellOffer={nft_offer_index:string;amount:string;owner:string};
 type NativeNft={tokenId:string;issuer:string|null;taxon:number|null;serial:number|null;transferFee:number|null;transferable:boolean;name:string;description:string|null;imageUrl:string|null;traits:Array<{type:string;value:string}>;sellOffer:SellOffer|null;explorerUrl:string};
@@ -56,7 +56,7 @@ export function NativeXrplMarketplace(){
 
     <section className="native-owned-section"><header><div><span>YOUR WALLET</span><h2>Your XRPL NFTs</h2><p>All native XLS-20 NFTs are read directly from the connected wallet. The marketplace does not pre-add collections.</p></div>{address&&<button onClick={()=>void loadOwned(address)}>Refresh wallet</button>}</header>{!address?<div className="native-xrpl-empty">Connect Crossmark to view and list NFTs from your XRPL wallet.</div>:loading?<div className="native-xrpl-empty">Reading your validated XRPL records…</div>:owned.length?<div className="native-nft-grid">{owned.map(nft=><OwnedNativeNft key={nft.tokenId} nft={nft} busy={busy} onList={list}/>)}</div>:<div className="native-xrpl-empty">No native XLS-20 NFTs were found in this wallet.</div>}</section>
     <section className="native-safety"><Check size={16}/><p>House of Joshi never receives your seed or private key. Crossmark signs the native XRPL transaction, and the offer is recorded on the public ledger.</p></section>
-    <section className="native-safety"><ShieldCheck size={16}/><p>XRPL marketplace broker: <strong>{XRPL_BROKER_ADDRESS}</strong> · Fee: <strong>{XRPL_MARKETPLACE_FEE_PERCENT}%</strong>. The fee is collected only when the House of Joshi broker matches and settles a buy and sell offer.</p></section>
+    <section className="native-safety"><ShieldCheck size={16}/><p>XRPL marketplace fee: <strong>{XRPL_MARKETPLACE_FEE_PERCENT}%</strong>. The fee is collected only when the House of Joshi broker matches and settles a buy and sell offer.</p></section>
     {status&&<div className="toast" role="status"><ShieldCheck size={18}/><span>{status}</span><button onClick={()=>setStatus("")}><X size={16}/></button></div>}
   </main>;
 }
