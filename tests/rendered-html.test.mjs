@@ -37,13 +37,16 @@ test("ranks trending collections only from live marketplace signals", async () =
 });
 
 test("supports wallet-owned native XRPL XLS-20 listings without pre-adding collections", async () => {
-  const [page,api,chrome] = await Promise.all([read("app/xrpl/native-xrpl-marketplace.tsx"),read("app/api/xrpl/route.ts"),read("app/site-chrome.tsx")]);
+  const [page,api,config,chrome] = await Promise.all([read("app/xrpl/native-xrpl-marketplace.tsx"),read("app/api/xrpl/route.ts"),read("app/xrpl/config.ts"),read("app/site-chrome.tsx")]);
   assert.match(page, /NFTokenCreateOffer/);
   assert.match(page, /@crossmarkio\/sdk/);
   assert.match(page, /Your XRPL NFTs/);
   assert.match(api, /account_nfts/);
   assert.match(api, /nft_sell_offers/);
   assert.doesNotMatch(api, /FUZZYBEARS|FEATURED_/);
+  assert.match(config, /rUG7tHZ5sGCVxuhkAiL9fUqVFhki2Z6bVU/);
+  assert.match(config, /XRPL_MARKETPLACE_FEE_BPS = 200/);
+  assert.match(page, /broker matches and settles a buy and sell offer/);
   assert.match(chrome, /href="\/xrpl"/);
 });
 

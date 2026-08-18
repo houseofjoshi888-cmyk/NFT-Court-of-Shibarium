@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { XRPL_BROKER_ADDRESS, XRPL_MARKETPLACE_FEE_BPS } from "../../xrpl/config";
 
 export const dynamic = "force-dynamic";
 
@@ -70,9 +71,9 @@ async function enrich(nft:XrplNft){
 export async function GET(request:NextRequest){
   const account=request.nextUrl.searchParams.get("account");
   try{
-    if(!account)return NextResponse.json({network:"XRPL Mainnet",nfts:[]},{headers:{"cache-control":"no-store"}});
+    if(!account)return NextResponse.json({network:"XRPL Mainnet",broker:{address:XRPL_BROKER_ADDRESS,feeBps:XRPL_MARKETPLACE_FEE_BPS},nfts:[]},{headers:{"cache-control":"no-store"}});
     if(!/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(account))return NextResponse.json({error:"Enter a valid XRPL classic address."},{status:400});
     const result=await rpc<{account_nfts?:XrplNft[]}>("account_nfts",{account,limit:100});
-    return NextResponse.json({network:"XRPL Mainnet",account,nfts:await Promise.all((result.account_nfts??[]).slice(0,64).map(enrich))},{headers:{"cache-control":"no-store"}});
+    return NextResponse.json({network:"XRPL Mainnet",account,broker:{address:XRPL_BROKER_ADDRESS,feeBps:XRPL_MARKETPLACE_FEE_BPS},nfts:await Promise.all((result.account_nfts??[]).slice(0,64).map(enrich))},{headers:{"cache-control":"no-store"}});
   }catch(error){return NextResponse.json({error:error instanceof Error?error.message:"XRPL is temporarily unavailable."},{status:502});}
 }
