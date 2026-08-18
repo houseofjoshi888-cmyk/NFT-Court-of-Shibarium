@@ -1664,7 +1664,7 @@ body { padding:124px 0 0 232px; background:#050402; }
   font-size:7px;
   letter-spacing:.15em;
 }
-.supported-chain-strip>div { display:flex; align-items:center; gap:7px; color:#aaa397; }
+.supported-chain-strip>div,.supported-chain-strip>a { display:flex; align-items:center; gap:7px; color:#aaa397; text-decoration:none; }
 .supported-chain-strip small { font-size:8px; letter-spacing:.04em; }
 .official-chain-logo {
   width:22px;
@@ -1796,7 +1796,7 @@ body { padding:124px 0 0 232px; background:#050402; }
   .supported-chain-strip{justify-content:flex-start;gap:18px;overflow-x:auto;scrollbar-width:none}
   .supported-chain-strip::-webkit-scrollbar{display:none}
   .supported-chain-strip>span{display:none}
-  .supported-chain-strip>div{flex:0 0 auto}
+  .supported-chain-strip>div,.supported-chain-strip>a{flex:0 0 auto}
   .court-topbar-actions .wallet-button{min-width:auto;padding-inline:10px}
   .court-mobile-menu-button{display:grid}
   .court-sidebar{display:none}
@@ -2477,6 +2477,19 @@ main { min-height:100dvh; }
 button,a,input,select { touch-action:manipulation; }
 button,input,select,textarea { max-width:100%; }
 p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
+
+/* Native XRP Ledger marketplace. */
+.native-xrpl-page{min-height:100vh;padding:46px clamp(18px,4vw,64px) 80px;background:radial-gradient(circle at 82% 4%,rgba(199,164,74,.07),transparent 30rem),#060606;color:#f4f0e7}
+.native-xrpl-hero{min-height:300px;display:flex;align-items:center;justify-content:space-between;gap:40px;border-bottom:1px solid rgba(199,164,74,.18)}
+.native-xrpl-hero>div:first-child{max-width:720px}.native-xrpl-hero span,.native-collection-heading span,.native-owned-section header span{color:#c7a44a;font-family:var(--font-mono);font-size:8px;letter-spacing:.14em}
+.native-xrpl-hero h1{max-width:680px;margin:12px 0 16px;font-family:var(--font-serif);font-size:clamp(42px,6vw,78px);font-weight:500;line-height:.94}.native-xrpl-hero p,.native-collection-heading p,.native-owned-section header p{margin:0;color:#928b80;font-size:11px}
+.native-xrpl-wallet{width:min(330px,100%);padding:22px;border:1px solid rgba(199,164,74,.2);background:#0a0a09}.native-xrpl-wallet small{display:block;margin-bottom:12px;color:#928b80;font-size:7px}.native-xrpl-wallet strong{display:block;margin-bottom:14px;font-family:var(--font-mono);font-size:12px}.native-xrpl-wallet button{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #c7a44a;background:#c7a44a;color:#080807;cursor:pointer}.native-xrpl-wallet a{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;color:#928b80;font-size:9px}
+.native-collection-heading,.native-owned-section>header{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;padding:36px 0 22px}.native-collection-heading>div>span{display:flex;align-items:center;gap:7px}.native-collection-heading h2,.native-owned-section h2{margin:8px 0 7px;font-family:var(--font-serif);font-size:34px;font-weight:500}.native-collection-heading>a{display:flex;align-items:center;gap:7px;color:#c7a44a;font-size:10px}
+.native-nft-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.native-nft-card{min-width:0;border:1px solid rgba(199,164,74,.17);background:#0c0c0a}.native-nft-art{position:relative;aspect-ratio:1;display:grid;place-items:center;background:radial-gradient(circle,#282315,#0a0a09 68%);background-position:center;background-size:cover}.native-nft-art>span{position:absolute;left:9px;top:9px;padding:5px 7px;background:rgba(5,5,5,.84);color:#f4f0e7;font-size:7px}.native-nft-art>strong{color:#c7a44a;font-family:var(--font-serif);font-size:30px}.native-nft-card>div{padding:14px}.native-nft-card small{color:#928b80;font-family:var(--font-mono);font-size:7px;letter-spacing:.09em}.native-nft-card h3{min-height:40px;margin:7px 0 12px;font-family:var(--font-serif);font-size:19px;font-weight:500}.native-nft-card p{display:flex;flex-direction:column;gap:4px;margin:0 0 12px}.native-nft-card p span,.native-price>span{color:#777167;font-family:var(--font-mono);font-size:7px}.native-nft-card p strong{font-size:12px}.native-nft-card>div>button,.native-price button{width:100%;min-height:38px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(199,164,74,.35);background:transparent;color:#c7a44a;cursor:pointer}.native-nft-card button:disabled{opacity:.5;cursor:not-allowed}
+.native-owned-section{margin-top:38px;border-top:1px solid rgba(199,164,74,.18)}.native-owned-section>header>button{padding:10px 13px;border:1px solid rgba(199,164,74,.25);background:transparent;color:#c7a44a;cursor:pointer}.native-price{display:grid;grid-template-columns:1fr 88px;gap:7px}.native-price>span{grid-column:1/-1}.native-price input{min-width:0;height:38px;padding:0 10px;border:1px solid rgba(199,164,74,.2);background:#080807;color:#f4f0e7;outline:0}.native-price button{min-width:0}.native-xrpl-empty{min-height:180px;display:grid;place-items:center;grid-column:1/-1;border:1px solid rgba(199,164,74,.14);color:#928b80;font-family:var(--font-serif);font-size:18px;text-align:center;padding:24px}.native-safety{display:flex;align-items:center;gap:10px;margin-top:28px;padding:16px;border:1px solid rgba(199,164,74,.14);color:#928b80}.native-safety svg{color:#c7a44a;flex:none}.native-safety p{margin:0;font-size:9px}.native-xrpl-page .spinning{animation:nft-metadata-spin .8s linear infinite}
+@media(max-width:1100px){.native-nft-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:800px){.native-xrpl-hero{align-items:flex-start;flex-direction:column;padding:40px 0}.native-xrpl-wallet{width:100%}.native-nft-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.native-xrpl-page{padding:28px 13px 60px}.native-xrpl-hero h1{font-size:42px}.native-collection-heading,.native-owned-section>header{align-items:flex-start;flex-direction:column}.native-nft-grid{grid-template-columns:1fr}.native-nft-card{display:grid;grid-template-columns:42% minmax(0,1fr)}.native-nft-art{aspect-ratio:auto;min-height:190px}}
 .court-topbar {
   height:calc(72px + env(safe-area-inset-top));
   padding-top:env(safe-area-inset-top);
@@ -2605,7 +2618,7 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-x:contain;
   }
-  .supported-chain-strip>div { min-height:44px; }
+  .supported-chain-strip>div,.supported-chain-strip>a { min-height:44px; }
   .court-welcome h1 { font-size:clamp(34px,11vw,48px); }
   .court-dashboard-empty { min-height:220px; padding:24px 16px; }
   .court-dashboard-empty strong { font-size:21px; }
@@ -2623,7 +2636,7 @@ p,h1,h2,h3,a,span,strong,small,dd { overflow-wrap:anywhere; }
   .court-topbar-actions .wallet-button { max-width:112px; }
   .supported-chain-strip small { display:none; }
   .supported-chain-strip { justify-content:space-around; gap:14px; }
-  .supported-chain-strip>div { flex:0 0 32px; justify-content:center; }
+  .supported-chain-strip>div,.supported-chain-strip>a { flex:0 0 32px; justify-content:center; }
   .court-sidebar { padding-left:max(6px,env(safe-area-inset-left)); padding-right:max(6px,env(safe-area-inset-right)); }
   .court-sidebar nav a { flex-basis:68px; min-width:68px; }
   .court-footer>.court-footer-main { grid-template-columns:1fr; gap:24px; }

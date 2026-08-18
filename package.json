@@ -18,6 +18,7 @@
     "deploy:marketplace": "node scripts/deploy-marketplace.mjs"
   },
   "dependencies": {
+    "@crossmarkio/sdk": "^0.4.0",
     "@openzeppelin/contracts": "^5.6.1",
     "@rainbow-me/rainbowkit": "^2.2.11",
     "@tanstack/react-query": "^5.101.3",
