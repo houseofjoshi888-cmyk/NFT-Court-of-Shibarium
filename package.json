@@ -30,7 +30,8 @@
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "viem": "^2.55.4",
-    "wagmi": "^2.19.5"
+    "wagmi": "^2.19.5",
+    "xrpl": "^4.5.0"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",

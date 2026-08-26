@@ -71,3 +71,10 @@ export const multichainMarketplaceActivity = sqliteTable("multichain_marketplace
 }, (table) => [
   index("multichain_activity_chain_block_idx").on(table.chainId, table.blockNumber, table.logIndex),
 ]);
+
+export const xrplBrokeredListings = sqliteTable("xrpl_brokered_listings", {
+  id: text("id").primaryKey(), tokenId: text("token_id").notNull(), seller: text("seller").notNull(),
+  sellOfferId: text("sell_offer_id").notNull(), sellAmount: text("sell_amount").notNull(), totalPrice: text("total_price").notNull(),
+  buyer: text("buyer"), buyOfferId: text("buy_offer_id"), status: text("status").notNull(),
+  createdAt: integer("created_at").notNull(), updatedAt: integer("updated_at").notNull(),
+}, (table) => [index("xrpl_brokered_status_updated_idx").on(table.status, table.updatedAt), index("xrpl_brokered_seller_idx").on(table.seller)]);
