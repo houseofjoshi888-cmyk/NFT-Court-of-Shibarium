@@ -29,6 +29,13 @@
       "when": 1787069074602,
       "tag": "0003_sloppy_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1787744262443,
+      "tag": "0004_spooky_arclight",
+      "breakpoints": true
     }
   ]
 }

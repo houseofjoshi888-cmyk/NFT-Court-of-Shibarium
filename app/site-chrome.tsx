@@ -11,7 +11,6 @@ import { ChainLogo } from "./chain-logo";
 const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutDashboard; external?:boolean }> = [
   { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/collections", label: "Collections", icon: Gem },
-  { href: "/xrpl", label: "XRP Ledger", icon: Network },
   { href: "/drops", label: "Drops", icon: Sparkles },
   { href: "https://swap.thehouseofjoshi.com/", label: "Swap", icon: Repeat2, external: true },
   { href: "/activity", label: "Activity", icon: Activity },
@@ -64,10 +63,6 @@ export function GlobalHeader() {
       <div title="Robinhood Chain"><ChainLogo chainId={4663}/><small>Robinhood</small></div>
       <div title="Zora"><ChainLogo chainId={7777777}/><small>Zora</small></div>
       <div title="ApeChain"><ChainLogo chainId={33139}/><small>ApeChain</small></div>
-      <Link href="/xrpl" title="XRP Ledger"><span className="official-chain-logo official-chain-xrpl" aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="https://xrpl.org/static/img/xrp-x-logo.png" alt=""/>
-      </span><small>XRP Ledger</small></Link>
     </div>
     <div id="mobile-marketplace-menu" className={`court-mobile-menu ${mobileMenuOpen?"open":""}`} aria-hidden={!mobileMenuOpen}>
       <nav aria-label="Mobile marketplace navigation">{navigation.map(({href,label,icon:Icon,...item})=>item.external?<a key={href} href={href} target="_blank" rel="noreferrer" onClick={()=>setMobileMenuOpen(false)}><Icon size={18}/><span>{label}</span><ExternalLink size={13}/></a>:<Link key={href} href={href} className={pathname===href?"active":""} aria-current={pathname===href?"page":undefined} onClick={()=>setMobileMenuOpen(false)}><Icon size={18}/><span>{label}</span></Link>)}</nav>
