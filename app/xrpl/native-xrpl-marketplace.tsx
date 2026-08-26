@@ -27,7 +27,7 @@ export function NativeXrplMarketplace(){
 
   const loadOwned=useCallback(async(account:string)=>{setLoading(true);try{const response=await fetch(`/api/xrpl?account=${encodeURIComponent(account)}`,{cache:"no-store"});const body=await response.json() as XrplResponse;if(!response.ok)throw new Error(body.error??"Could not read XRPL NFTs.");setOwned(body.nfts);}finally{setLoading(false)}},[]);
   const loadListings=useCallback(async()=>{const response=await fetch("/api/xrpl/offers",{cache:"no-store"});const body=await response.json() as {listings?:BrokeredListing[];signerReady?:boolean};setListings(body.listings??[]);setSignerReady(!!body.signerReady);},[]);
-  useEffect(()=>{let active=true;void fetch("/api/xrpl/offers",{cache:"no-store"}).then(response=>response.json()).then((body:{listings?:BrokeredListing[];signerReady?:boolean})=>{if(active){setListings(body.listings??[]);setSignerReady(!!body.signerReady)}});return()=>{active=false};},[]);
+  useEffect(()=>{let active=true;void fetch("/api/xrpl/offers",{cache:"no-store"}).then(response=>response.json()).then(body=>{const data=body as {listings?:BrokeredListing[];signerReady?:boolean};if(active){setListings(data.listings??[]);setSignerReady(!!data.signerReady)}});return()=>{active=false};},[]);
 
   async function connect(){
     setBusy("connect");setStatus("");
