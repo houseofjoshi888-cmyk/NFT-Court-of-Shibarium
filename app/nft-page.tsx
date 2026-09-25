@@ -141,7 +141,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
     for(const listing of collectionListings){const existing=byId.get(listing.tokenId);byId.set(listing.tokenId,{tokenId:listing.tokenId,name:existing?.name??`Token #${listing.tokenId}`,imageUrl:existing?.imageUrl??`/api/nft-image?${new URLSearchParams({chainId:String(chainId),contract,tokenId:listing.tokenId})}`,listing});}
     return [...byId.values()].slice(0,24);
   },[chainId,collectionListings,collectionTokens,contract,tokenId]);
-  const galleryItems=relatedItems.slice(0,12);
+  const galleryItems=relatedItems.slice(0,6);
   const lastSale=activity.find(item=>(["sold","offer_accepted"].includes(item.eventType))&&item.price);
   const isSeller=!!address&&!!listing&&address.toLowerCase()===listing.seller.toLowerCase();
   const isOwner=!!address&&!!owner&&address.toLowerCase()===owner.toLowerCase();
@@ -228,7 +228,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
     <nav className="royal-nft-nav">
       <div className="royal-nft-gallery-nav">
         <Link href={returnTo} className="royal-nft-gallery-back" aria-label={returnTo==="/profile"?"Back to profile":"Back to marketplace"}><ArrowLeft size={18}/></Link>
-        <div className="royal-nft-thumbnails" aria-label="Other listed NFTs from this collection">
+        <div className="royal-nft-thumbnails" aria-label="More NFTs from this collection">
           {nft?.imageUrl&&!artFailed?<span className="royal-nft-thumb active"><Image src={nft.imageUrl} alt="Current NFT" fill unoptimized sizes="52px"/></span>:<span className="royal-nft-thumb active"><ImageIcon size={20}/></span>}
           {galleryItems.map(item=><Link key={item.tokenId} className="royal-nft-thumb" href={`/nft/${chainId}/${contract}/${item.tokenId}${returnTo==="/profile"?"?from=profile":""}`} title={item.name}><Image src={item.imageUrl} alt={item.name} fill unoptimized sizes="52px"/></Link>)}
         </div>
@@ -422,9 +422,9 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
     </section>
 
     {activeTab==="details"&&<details className="royal-nft-more-from-collection royal-nft-accordion">
-      <summary><ImageIcon size={17}/><span>More from this collection</span><small>{relatedItems.length}</small><ChevronDown size={17}/></summary>
+      <summary><ImageIcon size={17}/><span>More from this collection</span><small>{Math.min(relatedItems.length,6)}</small><ChevronDown size={17}/></summary>
       <div className="royal-collection-grid">
-        {relatedItems.slice(0,8).map(item=>(
+        {relatedItems.slice(0,6).map(item=>(
           <Link key={item.tokenId} href={`/nft/${chainId}/${contract}/${item.tokenId}${returnTo==="/profile"?"?from=profile":""}`} className="royal-collection-item">
             <div className="royal-collection-item-art">
               <Image src={item.imageUrl} alt={item.name} fill unoptimized sizes="140px"/>
