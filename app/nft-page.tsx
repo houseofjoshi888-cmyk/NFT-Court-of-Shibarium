@@ -239,7 +239,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
       </div>
     </nav>
 
-    <section className="royal-nft-hero">
+    <div className="royal-nft-split">
       <div className="royal-nft-media">
         <div className={`royal-nft-art ${nft?.imageUrl&&!artFailed?"":"empty"}`}>
           {nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT ${displayTokenId}`} fill unoptimized sizes="(max-width: 800px) 100vw, 50vw" style={{objectFit:"contain"}} onError={()=>setArtFailed(true)}/>:<><ImageIcon size={48}/><span>{error||(nft?"Artwork unavailable from the NFT metadata source.":"Loading verified NFT…")}</span><strong>{displayTokenId}</strong></>}
@@ -255,6 +255,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
         </div>
       </div>
 
+      <div className="royal-nft-info-scroll" aria-label="NFT information">
       <div className="royal-nft-details">
         <div className="royal-nft-header">
           <h1>{nft?.name??`Token ${displayTokenId}`}</h1>
@@ -320,7 +321,6 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
           </>}
         </div>}
       </div>
-    </section>
 
     <section className="royal-nft-tabs">
       <button className={activeTab==="details"?"active":""} onClick={()=>setActiveTab("details")}>
@@ -421,6 +421,8 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
         {collectionListings.length===0&&<p>No other items from this collection are currently listed.</p>}
       </div>
     </details>}
+    </div>
+    </div>
     </div>
 
     {/* List for Sale Modal */}
