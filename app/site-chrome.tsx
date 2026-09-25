@@ -1,13 +1,23 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Activity, Bell, BookOpen, CircleHelp, ExternalLink, Gem, Headphones, Heart, LayoutDashboard, Menu, Network, Repeat2, Rocket, Search, Sparkles, TrendingUp, UserRound, Wallet, X } from "lucide-react";
+import { Activity, Bell, BookOpen, CircleHelp, ExternalLink, Gem, Headphones, Heart, LayoutDashboard, Menu, Network, Repeat2, Rocket, Search, ShoppingCart, Sparkles, TrendingUp, UserRound, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChainLogo } from "./chain-logo";
-import { marketplaceChains } from "@/lib/marketplace-chains";
+import { marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
+
+function readCartCounts() {
+  return Object.values(marketplaceChains).flatMap(chain => {
+    try {
+      const ids = JSON.parse(window.localStorage.getItem(`hoj-market-cart:${chain.id}`) ?? "[]") as unknown;
+      const count = Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string").length : 0;
+      return count ? [{ chainId: chain.id as MarketplaceChainId, name: chain.name, count }] : [];
+    } catch { return []; }
+  });
+}
 
 const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutDashboard; external?:boolean }> = [
   { href: "/", label: "Discover", icon: LayoutDashboard },
@@ -25,6 +35,15 @@ export function GlobalHeader() {
   const pathname = usePathname();
   const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
   const [chainStripHidden,setChainStripHidden]=useState(false);
+  const [cartOpen,setCartOpen]=useState(false);
+  const [cartCounts,setCartCounts]=useState<ReturnType<typeof readCartCounts>>([]);
+  useEffect(()=>{
+    const update=()=>setCartCounts(readCartCounts());
+    update();
+    window.addEventListener("storage",update);
+    window.addEventListener("hoj-cart-updated",update);
+    return()=>{window.removeEventListener("storage",update);window.removeEventListener("hoj-cart-updated",update);};
+  },[pathname]);
   useEffect(()=>{
     let frame=0;
     const update=()=>{
@@ -57,6 +76,7 @@ export function GlobalHeader() {
         <Link href="/search" className="court-topbar-icon" aria-label="Search"><Search size={18}/></Link>
         <Link href="/favorites" className="court-topbar-icon" aria-label="Favorites"><Heart size={18}/></Link>
         <Link href="/notifications" className="court-topbar-icon" aria-label="Notifications"><Bell size={18}/></Link>
+        <div className="court-cart-wrap"><button type="button" className="court-topbar-icon court-header-cart" aria-label={`Open cart, ${cartCounts.reduce((total,item)=>total+item.count,0)} items`} aria-expanded={cartOpen} onClick={()=>setCartOpen(open=>!open)}><ShoppingCart size={18}/>{cartCounts.length>0&&<b>{cartCounts.reduce((total,item)=>total+item.count,0)}</b>}</button>{cartOpen&&<div className="court-cart-menu"><strong>Your cart</strong>{cartCounts.length?cartCounts.map(item=><a key={item.chainId} href={`/market?chainId=${item.chainId}&cart=1`}><span>{item.name}</span><small>{item.count} {item.count===1?"NFT":"NFTs"}</small></a>):<p>No NFTs added yet.</p>}<Link href="/market" onClick={()=>setCartOpen(false)}>Explore NFTs</Link></div>}</div>
         <ConnectButton.Custom>{({account,chain,mounted,openAccountModal,openChainModal,openConnectModal})=><><button className="court-network-button symbol-only" type="button" onClick={account?openChainModal:openConnectModal} aria-label={chain?`Change network. Current network: ${chain.name}`:"Choose network"} title={chain?.name??"Choose network"}>{chain?<ChainLogo chainId={chain.id}/>:<Network size={17}/>}</button>{!mounted||!account||!chain?<button className="wallet-button" onClick={openConnectModal}>Connect wallet</button>:chain.unsupported?<button className="wallet-button wrong-network" onClick={openChainModal}>Wrong network</button>:<button className="wallet-button" onClick={openAccountModal}><Wallet size={14}/>{account.displayName}</button>}</>}</ConnectButton.Custom><button className="court-mobile-menu-button" type="button" onClick={()=>setMobileMenuOpen(open=>!open)} aria-label={mobileMenuOpen?"Close menu":"Open menu"} aria-expanded={mobileMenuOpen} aria-controls="mobile-marketplace-menu">{mobileMenuOpen?<X size={19}/>:<Menu size={19}/>}</button></div>
     </header>
     <div className={`supported-chain-strip ${chainStripHidden&&!mobileMenuOpen?"is-hidden":""}`} aria-label="Supported blockchain networks" aria-hidden={chainStripHidden&&!mobileMenuOpen}>

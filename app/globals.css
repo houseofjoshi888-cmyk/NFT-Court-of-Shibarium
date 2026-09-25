@@ -9295,6 +9295,56 @@ article.royal-profile-nft > a {
 .royal-profile-content .royal-profile-nft .royal-nft-details h3,.royal-content .royal-profile-nft .royal-nft-details h3,.portal-market .market-listing h2,.chain-listings.grid .chain-listing h3 { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:13px; }
 .royal-profile-content .royal-nft-status .listed { overflow-wrap:anywhere; }
 @media (max-width:620px) { .royal-homepage .royal-nfts-grid,.portal-market .market-listings-grid,.royal-profile-content .royal-portfolio-grid,.royal-content .royal-portfolio-grid,.chain-listings.grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } }
+
+/* Market browsing stays usable even before the first listing is indexed. */
+.royal-portal-market .royal-portal-hero { display:grid; grid-template-columns:1fr auto; align-items:center; column-gap:20px; padding:24px clamp(18px,3vw,42px); background:#0f0f0e; }
+.royal-portal-market .royal-portal-hero label { grid-column:2; grid-row:1/4; margin:0; color:#bdb5a7; font-size:12px; }
+.royal-portal-market .royal-portal-hero .royal-back-link { grid-column:1; width:max-content; margin:0 0 8px; padding:0; background:transparent; color:#d9c298; }
+.royal-portal-market .royal-portal-hero .royal-section-no { grid-column:1; margin:0; }
+.royal-portal-market .royal-portal-hero h1 { grid-column:1; margin:3px 0; font-size:clamp(27px,3vw,40px); }
+.royal-portal-market .royal-portal-hero p { grid-column:1; margin:0; font-size:12px; }
+.royal-portal-market .royal-portal-content { padding:20px clamp(18px,3vw,42px) 56px; }
+.royal-portal-market .market-toolbar { display:grid; grid-template-columns:auto minmax(0,1fr) auto 190px auto; align-items:center; gap:10px; margin:0 0 16px; padding:10px; border:1px solid rgba(218,190,148,.2); border-radius:10px; background:#141311; }
+.royal-portal-market .market-toolbar>label:not(.sort-control) { min-width:0; padding:0 10px; }
+.royal-portal-market .market-toolbar>label:not(.sort-control) input { min-width:0; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+.royal-portal-market .market-toolbar .sort-control { min-width:0; }
+.royal-portal-market .market-toolbar .sort-control select { min-width:0; }
+.royal-portal-market .market-cart-button { grid-column:5; grid-row:1; }
+.royal-portal-market .market-browser { grid-template-columns:220px minmax(0,1fr); gap:16px; padding:0; }
+.royal-portal-market .market-browser.filters-closed { grid-template-columns:1fr; }
+.royal-portal-market .market-filter-panel { position:static; margin:0; padding:15px; border:1px solid rgba(218,190,148,.16); border-radius:10px; background:#141311; }
+.royal-portal-market .market-results { min-width:0; }
+.royal-portal-market .market-listings-grid { grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:12px; padding:0; }
+.royal-portal-market .market-no-results { min-height:280px; padding:32px 18px; border:1px dashed rgba(210,180,124,.22); border-radius:10px; background:#111110; }
+.royal-portal-market .market-no-results h2 { font-family:var(--font-sans); font-size:20px; }
+.royal-portal-market .market-no-results p { max-width:390px; margin:8px auto 0; color:#b9b2a5; font-size:13px; line-height:1.5; }
+.court-cart-wrap { position:relative; }
+.court-header-cart { position:relative; display:grid; place-items:center; cursor:pointer; }
+.court-header-cart b { position:absolute; top:-3px; right:-4px; min-width:17px; height:17px; display:grid; place-items:center; padding:0 3px; border-radius:9px; background:#d5b77a; color:#0b0b0a; font-size:10px; }
+.court-cart-menu { position:absolute; top:calc(100% + 12px); right:0; z-index:130; width:min(290px,calc(100vw - 24px)); padding:14px; border:1px solid rgba(216,185,125,.38); border-radius:10px; background:#151411; color:#f4f0e7; box-shadow:0 20px 48px rgba(0,0,0,.55); }
+.court-cart-menu>strong { display:block; padding:4px 5px 10px; font-size:14px; }
+.court-cart-menu>a { display:flex; align-items:center; justify-content:space-between; min-height:42px; gap:12px; padding:8px 5px; border-top:1px solid rgba(216,185,125,.16); color:#f4f0e7; font-size:12px; }
+.court-cart-menu>a:hover { color:#e9c985; }
+.court-cart-menu>a small,.court-cart-menu p { color:#bcb4a5; font-size:11px; }
+.court-cart-menu p { margin:0; padding:12px 5px; }
+@media(max-width:700px) {
+  .royal-portal-market .royal-portal-hero { grid-template-columns:1fr; gap:4px; padding:20px 16px; }
+  .royal-portal-market .royal-portal-hero label { grid-column:1; grid-row:auto; order:5; margin-top:12px; }
+  .royal-portal-market .royal-portal-hero .royal-back-link,.royal-portal-market .royal-portal-hero .royal-section-no,.royal-portal-market .royal-portal-hero h1,.royal-portal-market .royal-portal-hero p { grid-column:1; }
+  .royal-portal-market .royal-portal-content { padding:14px 12px 44px; }
+  .royal-portal-market .market-toolbar { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:8px; }
+  .royal-portal-market .market-toolbar .sort-control { grid-column:1/3; }
+  .royal-portal-market .market-cart-button { grid-column:3; grid-row:1/3; min-width:46px; height:100%; }
+  .royal-portal-market .market-browser { grid-template-columns:1fr; gap:12px; }
+  .royal-portal-market .market-toolbar>span { display:none; }
+  .royal-portal-market .market-filter-panel { max-height:none; }
+}
+@media(max-width:620px) {
+  .court-topbar-actions>a[aria-label="Favorites"],.court-topbar-actions>a[aria-label="Notifications"] { display:none; }
+  .court-topbar-actions { gap:2px; }
+  .court-topbar-brand strong { max-width:95px; }
+  .court-cart-menu { right:-75px; }
+}
 .royal-explorer-fallbacks { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
 .royal-explorer-fallbacks > ul { grid-column:1/-1; margin:0; padding:12px 0 0 18px; border-top:1px solid rgba(215,188,137,.18); color:#d0c9bc; font-size:12px; line-height:1.55; }
 .royal-explorer-fallbacks > ul li+li { margin-top:5px; }

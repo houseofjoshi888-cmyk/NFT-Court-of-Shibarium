@@ -23,6 +23,16 @@ type WalletNft = { contractAddress:string; tokenId:string; tokenType?:string; qu
 
 function short(value:string) { return `${value.slice(0,6)}…${value.slice(-4)}`; }
 
+function removePurchasedFromCart(chainId:MarketplaceChainId, purchasedIds:string[]) {
+  try {
+    const key=`hoj-market-cart:${chainId}`;
+    const stored=JSON.parse(window.localStorage.getItem(key)??"[]") as unknown;
+    if(!Array.isArray(stored))return;
+    window.localStorage.setItem(key,JSON.stringify(stored.filter(id=>typeof id==="string"&&!purchasedIds.includes(id))));
+    window.dispatchEvent(new Event("hoj-cart-updated"));
+  }catch{/* A completed purchase must not fail because browser storage is unavailable. */}
+}
+
 function useIndexer(chainId:MarketplaceChainId) {
   const chain=getMarketplaceChain(chainId);
   const fallback=useMemo<IndexerData>(()=>({chainId,chain:chain.name,currency:chain.currency,explorerUrl:chain.explorerUrl,configured:false,listings:[],activity:[]}),[chainId,chain]);
@@ -87,14 +97,14 @@ export function Portal({ view }: { view:View }) {
       if(item.chainId!==selectedChainId)throw new Error("Select the NFT's network before buying.");
       if(item.tokenType==="ERC-1155")throw new Error("Open this NFT to choose an edition quantity.");
       await send({address:data.marketplaceAddress!,abi,functionName:"buyItem",args:[item.nftAddress,BigInt(item.tokenId)],value:BigInt(item.price)});
-    });if(ok)void refresh();
+    });if(ok){removePurchasedFromCart(selectedChainId,[item.id]);void refresh();}
   }
   async function batchBuy(items:Listing[]){
     if(!data.marketplaceAddress||!advancedMarketplace||!items.length)return;
     const ok=await transaction.run("Batch purchase",async send=>{
       if(items.some(item=>item.chainId!==selectedChainId||item.tokenType==="ERC-1155"))throw new Error("A checkout must contain NFTs from one network.");
       await send({address:data.marketplaceAddress!,abi,functionName:"batchBuy",args:[items.map(item=>item.nftAddress),items.map(item=>BigInt(item.tokenId))],value:items.reduce((sum,item)=>sum+BigInt(item.price),0n)});
-    });if(ok)void refresh();
+    });if(ok){removePurchasedFromCart(selectedChainId,items.map(item=>item.id));void refresh();}
   }
   async function makeOffer(item:Listing,amount:string){
     if(!data.marketplaceAddress||!advancedMarketplace||!publicClient)return;
@@ -160,20 +170,27 @@ function MarketView({data,loading,account,advancedMarketplace,onBuy,onBatchBuy,o
       setCartOpen(new URLSearchParams(window.location.search).get("cart")==="1");
     }catch{setCartIds([]);}
   },[data.chainId]);
-  if(!data.listings.length)return <Empty eyebrow={loading?`SYNCING ${data.chain.toUpperCase()}`:data.configured?"NO ACTIVE LISTINGS":"COMING SOON"} title={loading?"Reading the onchain record.":data.configured?"No works are listed.":`HOJ Marketplace is coming soon on ${data.chain}.`} detail={loading?"Checking current ownership and marketplace listings…":data.syncError||(data.configured?"Only verified active listings appear here.":"Trading will open after the HOJ marketplace contract is deployed and verified on this network.")}/>;
+  useEffect(()=>{
+    const update=()=>{
+      try { const stored=JSON.parse(window.localStorage.getItem(`hoj-market-cart:${data.chainId}`)??"[]") as unknown;setCartIds(Array.isArray(stored)?stored.filter((id):id is string=>typeof id==="string"):[]); }
+      catch { setCartIds([]); }
+    };
+    window.addEventListener("hoj-cart-updated",update);
+    return()=>window.removeEventListener("hoj-cart-updated",update);
+  },[data.chainId]);
   const collections=[...new Set(data.listings.map(item=>item.nftAddress))];
   const query=search.trim().toLowerCase();
   const filtered=data.listings.filter(item=>(collection==="all"||item.nftAddress===collection)&&(!query||item.tokenId.includes(query)||item.nftAddress.toLowerCase().includes(query)));
   const shown=[...filtered].sort((a,b)=>sort==="low"?Number(BigInt(a.price)-BigInt(b.price)):sort==="high"?Number(BigInt(b.price)-BigInt(a.price)):b.updatedBlock-a.updatedBlock);
   const cart=data.listings.filter(item=>item.tokenType!=="ERC-1155"&&cartIds.includes(item.id));
   const cartTotal=cart.reduce((total,item)=>total+BigInt(item.price),0n);
-  function toggleCart(item:Listing){setCartIds(current=>{const next=current.includes(item.id)?current.filter(id=>id!==item.id):[...current,item.id];try{window.localStorage.setItem(`hoj-market-cart:${data.chainId}`,JSON.stringify(next));}catch{/* Cart remains available for this visit. */}return next;});}
+  function toggleCart(item:Listing){setCartIds(current=>{const next=current.includes(item.id)?current.filter(id=>id!==item.id):[...current,item.id];try{window.localStorage.setItem(`hoj-market-cart:${data.chainId}`,JSON.stringify(next));window.dispatchEvent(new Event("hoj-cart-updated"));}catch{/* Cart remains available for this visit. */}return next;});}
   return <>
     <section className="market-toolbar">
       <button className={`filter-toggle ${filtersOpen?"active":""}`} onClick={()=>setFiltersOpen(value=>!value)} aria-expanded={filtersOpen}>
         <SlidersHorizontal size={17}/> Filters
       </button>
-      <label><Search size={17}/><input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search items and collections" aria-label="Search NFTs"/></label>
+      <label><Search size={17}/><input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Search NFTs" aria-label="Search NFTs"/></label>
       <span><strong>{shown.length}</strong> items</span>
       <label className="sort-control"><span>Sort by</span><select value={sort} onChange={event=>setSort(event.target.value as "newest"|"low"|"high")} aria-label="Sort NFTs"><option value="newest">Recently listed</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select><ChevronDown size={14}/></label>
       <button className={`market-cart-button ${cart.length?"has-items":""}`} onClick={()=>setCartOpen(true)} aria-label={`Open cart with ${cart.length} items`}><ShoppingCart size={17}/><span>Cart</span><b>{cart.length}</b></button>
@@ -191,7 +208,7 @@ function MarketView({data,loading,account,advancedMarketplace,onBuy,onBatchBuy,o
         <div className="price-filter-note">Prices shown in {data.currency}</div>
       </aside>}
       <section className="market-results">
-        {shown.length?<div className="market-listings-grid">{shown.map(item=><MarketListingCard key={item.id} item={item} currency={data.currency} chain={data.chain} inCart={cartIds.includes(item.id)} onToggleCart={()=>toggleCart(item)}/>)}</div>:<div className="market-no-results"><Search size={24}/><h2>No NFTs found</h2><p>Try another token ID, contract address, or collection.</p><button onClick={()=>{setSearch("");setCollection("all")}}>Clear filters</button></div>}
+        {shown.length?<div className="market-listings-grid">{shown.map(item=><MarketListingCard key={item.id} item={item} currency={data.currency} chain={data.chain} inCart={cartIds.includes(item.id)} onToggleCart={()=>toggleCart(item)}/>)}</div>:<div className="market-no-results"><Search size={24}/><h2>{loading?"Loading listings…":data.configured?data.listings.length?"No matching NFTs":"No active listings on this network":`${data.chain} marketplace coming soon`}</h2><p>{loading?"Reading the latest marketplace listings.":data.syncError??(data.listings.length?"Try a different search or collection filter.":data.configured?"Choose another network or check back when an owner lists an NFT.":"Trading will open after the marketplace contract is deployed.")}</p>{data.listings.length>0&&<button onClick={()=>{setSearch("");setCollection("all")}}>Clear filters</button>}</div>}
       </section>
     </div>
     {cartOpen&&<CartDrawer items={cart} currency={data.currency} account={account} total={cartTotal} batchSupported={advancedMarketplace} onClose={()=>setCartOpen(false)} onRemove={item=>toggleCart(item)} onBuy={onBuy} onBatchBuy={()=>onBatchBuy(cart)}/>}
