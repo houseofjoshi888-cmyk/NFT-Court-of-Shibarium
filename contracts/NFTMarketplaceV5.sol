@@ -18,7 +18,7 @@ contract HOJNFTMarketplace is NFTMarketplaceV4 {
     event EditionOfferCanceled(address indexed buyer, address indexed nftAddress, uint256 indexed tokenId, uint256 quantity, uint256 amount);
     event EditionOfferAccepted(address indexed seller, address indexed buyer, address indexed nftAddress, uint256 tokenId, uint256 quantity, uint256 amount, uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount);
 
-    function marketplaceVersion() external pure override returns (uint256) { return 5; }
+    function marketplaceVersion() external pure virtual override returns (uint256) { return 5; }
 
     function makeEditionOffer(address nftAddress, uint256 tokenId, uint256 quantity, uint64 expiresAt) external payable nonReentrant {
         if (!IERC165(nftAddress).supportsInterface(type(IERC1155).interfaceId)) revert UnsupportedToken();

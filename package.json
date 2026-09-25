@@ -17,6 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "deploy:marketplace": "node scripts/deploy-marketplace.mjs",
     "test:contracts": "node --test tests/contracts.test.mjs",
+    "health:marketplace": "node scripts/check-marketplace-health.mjs",
     "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {

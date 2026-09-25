@@ -71,7 +71,7 @@ export const marketplaceChains = {
     currency: "ETH",
     explorerUrl: "https://basescan.org",
     explorerApiUrl: "https://base.blockscout.com/api/v2",
-    rpcUrl: "https://base-rpc.publicnode.com",
+    rpcUrl: "https://mainnet.base.org",
     confirmations: 12,
     marketplaceAddress: "0xCb54f70B0eb580a8ec22a0e67C05293206C358F2",
     marketplaceDeployBlock: 51733550,

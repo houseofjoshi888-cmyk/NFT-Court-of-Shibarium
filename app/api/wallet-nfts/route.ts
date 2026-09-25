@@ -1,4 +1,3 @@
-import { NextRequest, NextResponse } from "next/server";
 import { encodeFunctionData, getAddress, keccak256, stringToHex } from "viem";
 import {
   getMarketplaceChain,
@@ -182,6 +181,21 @@ function mergeNfts(target: Map<string, WalletNft>, incoming: WalletNft[]) {
   }
 }
 
+async function fetchNftProvider(url: string) {
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const response=await fetch(url,{
+        headers:{accept:"application/json"},
+        signal:AbortSignal.timeout(15_000),
+        next:{revalidate:30},
+      });
+      if(response.ok||![429,500,502,503,504].includes(response.status)||attempt===2)return response;
+    }catch(error){if(attempt===2)throw error;}
+    await new Promise(resolve=>setTimeout(resolve,400*(attempt+1)));
+  }
+  throw new Error("NFT provider retries exhausted");
+}
+
 async function fetchFromExplorer(
   apiUrl: string,
   apiKey: string | undefined,
@@ -201,11 +215,7 @@ async function fetchFromExplorer(
       if (value !== null) params.set(key, String(value));
     }
 
-    const response = await fetch(`${apiUrl}/addresses/${address}/nft?${params}`, {
-      headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
-      next: { revalidate: 30 },
-    });
+    const response = await fetchNftProvider(`${apiUrl}/addresses/${address}/nft?${params}`);
     if (!response.ok) throw new Error(`explorer returned ${response.status}`);
 
     const payload = (await response.json()) as ExplorerPage;
@@ -243,11 +253,7 @@ async function fetchFromAlchemy(address: string, chainId: MarketplaceChainId, ap
   for (let page = 0; page < MAX_PAGES; page += 1) {
     const params = new URLSearchParams({ owner: address, withMetadata: "true", pageSize: "100" });
     if (pageKey) params.set("pageKey", pageKey);
-    const response = await fetch(`https://${network}.g.alchemy.com/nft/v3/${apiKey}/getNFTsForOwner?${params}`, {
-      headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
-      next: { revalidate: 30 },
-    });
+    const response = await fetchNftProvider(`https://${network}.g.alchemy.com/nft/v3/${apiKey}/getNFTsForOwner?${params}`);
     if (!response.ok) throw new Error(`Alchemy returned ${response.status}`);
     const payload = (await response.json()) as AlchemyPage;
     if(!Array.isArray(payload.ownedNfts))throw new Error("Invalid Alchemy NFT response");
@@ -365,19 +371,20 @@ async function fetchRecentErc721FromRpc(chainId: MarketplaceChainId, address: st
   return owned;
 }
 
-export async function GET(request: NextRequest) {
-  const owner = request.nextUrl.searchParams.get("owner");
-  const requestedChainId = Number(request.nextUrl.searchParams.get("chainId") ?? 109);
-  if (!owner) return NextResponse.json({ error: "A wallet address is required." }, { status: 400 });
+export async function GET(request: Request) {
+  const query=new URL(request.url).searchParams;
+  const owner = query.get("owner");
+  const requestedChainId = Number(query.get("chainId") ?? 109);
+  if (!owner) return Response.json({ error: "A wallet address is required." }, { status: 400 });
   if (!isMarketplaceChainId(requestedChainId)) {
-    return NextResponse.json({ error: "Unsupported chain." }, { status: 400 });
+    return Response.json({ error: "Unsupported chain." }, { status: 400 });
   }
 
   let address: string;
   try {
     address = getAddress(owner);
   } catch {
-    return NextResponse.json({ error: "Invalid wallet address." }, { status: 400 });
+    return Response.json({ error: "Invalid wallet address." }, { status: 400 });
   }
 
   const chainId: MarketplaceChainId = requestedChainId;
@@ -396,7 +403,7 @@ export async function GET(request: NextRequest) {
       mergeNfts(holdings, nfts);
       sources.push("alchemy");
       if (complete) {
-        return NextResponse.json(
+        return Response.json(
           { owner: address, chainId, nfts, complete:true, source: "alchemy", explorerAddressUrl: `${chain.explorerUrl}/address/${address}`, warnings },
           { headers: { "Cache-Control": "private, max-age=30" } },
         );
@@ -423,6 +430,13 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const providerSetupWarning=!providerSucceeded&&chainId===25&&!runtime.CRONOS_EXPLORER_API_URL&&!runtime.BLOCKSCOUT_API_KEY
+    ?"Cronos needs a server-side BLOCKSCOUT_API_KEY or compatible CRONOS_EXPLORER_API_URL for complete ERC-721 and ERC-1155 holdings."
+    :!providerSucceeded&&chainId===7777777&&!runtime.ALCHEMY_API_KEY
+      ?"Zora needs a server-side ALCHEMY_API_KEY for complete wallet NFT holdings; its configured explorer does not provide the required NFT endpoint."
+      :null;
+  if(providerSetupWarning)warnings.push(providerSetupWarning);
+
   if (!providerSucceeded && holdings.size === 0) {
     try {
       const configuredBlocks = Number(runtime[`${chain.slug.toUpperCase()}_RPC_SCAN_BLOCKS`] ?? (chainId === 109 ? 5_000_000 : 500_000));
@@ -438,22 +452,22 @@ export async function GET(request: NextRequest) {
   }
 
   if (providerSucceeded || holdings.size>0) {
-    return NextResponse.json(
+    return Response.json(
       { owner: address, chainId, nfts: [...holdings.values()], complete:providerSucceeded, source: sources.join(", "), explorerAddressUrl: `${chain.explorerUrl}/address/${address}`, warnings },
       { headers: { "Cache-Control": "private, max-age=30" } },
     );
   }
 
-  return NextResponse.json(
+  return Response.json(
     {
       owner: address,
       chainId,
       nfts: [],
       explorerAddressUrl: `${chain.explorerUrl}/address/${address}`,
       warnings,
-      error: sources.length
+      error: providerSetupWarning??(sources.length
         ? `Could not verify complete wallet holdings on ${chain.name}; the available RPC scan is limited to recent blocks.`
-        : `Could not verify wallet NFTs on ${chain.name}; all configured providers failed.`,
+        : `Could not verify wallet NFTs on ${chain.name}; all configured providers failed.`),
     },
     { status: 502 },
   );

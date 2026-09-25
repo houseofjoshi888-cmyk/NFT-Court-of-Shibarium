@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List } from "lucide-react";
+import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getMarketplaceChain, type MarketplaceChainId } from "@/lib/marketplace-chains";
 import { formatEther } from "viem";
@@ -27,6 +27,7 @@ type IndexedListing = {
   transactionHash: `0x${string}`;
   createdBlock: number;
   updatedBlock: number;
+  tokenType?: "ERC-721" | "ERC-1155";
 };
 
 type IndexedActivity = {
@@ -74,6 +75,9 @@ type CollectionData = {
 export default function CollectionPage({ params }: { params: Promise<{ chainId: string; contract: string }> }) {
   const [collectionData, setCollectionData] = useState<CollectionData | null>(null);
   const [nfts, setNfts] = useState<ListedNft[]>([]);
+  const [allListings, setAllListings] = useState<IndexedListing[]>([]);
+  const [sweepQuantity, setSweepQuantity] = useState(2);
+  const [collectionChainId, setCollectionChainId] = useState<MarketplaceChainId | null>(null);
   const [activity, setActivity] = useState<IndexedActivity[]>([]);
   const [stats, setStats] = useState<CollectionStats | null>(null);
   const [floorComplete, setFloorComplete] = useState(false);
@@ -85,6 +89,26 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [priceFilter, setPriceFilter] = useState("all");
   const [followKey, setFollowKey] = useState("");
   const [following, setFollowing] = useState(false);
+
+  const sweepListings = [...allListings]
+    .filter(listing => listing.tokenType !== "ERC-1155" && BigInt(listing.price) > 0n)
+    .sort((a, b) => BigInt(a.price) < BigInt(b.price) ? -1 : BigInt(a.price) > BigInt(b.price) ? 1 : 0);
+  const sweepCount = Math.min(Math.max(1, sweepQuantity), sweepListings.length);
+  const sweepSelection = sweepListings.slice(0, sweepCount);
+  const sweepTotal = sweepSelection.reduce((total, listing) => total + BigInt(listing.price), 0n);
+
+  function addSweepToCart() {
+    if (!collectionChainId || !sweepSelection.length) return;
+    const key = `hoj-market-cart:${collectionChainId}`;
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(key) ?? "[]") as unknown;
+      const existing = Array.isArray(stored) ? stored.filter((id): id is string => typeof id === "string") : [];
+      window.localStorage.setItem(key, JSON.stringify([...new Set([...existing, ...sweepSelection.map(item => item.id)])]));
+      window.location.assign(`/market?chainId=${collectionChainId}&cart=1`);
+    } catch {
+      window.alert("Could not save this sweep to your cart. Please try again.");
+    }
+  }
 
   function toggleFollow() {
     if (!followKey) return;
@@ -109,6 +133,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
       try {
         const paramsValue = await params;
         const chainId = Number(paramsValue.chainId);
+        setCollectionChainId(chainId as MarketplaceChainId);
         const contract = paramsValue.contract;
         const key = `hoj:followed-collection:${chainId}:${contract.toLowerCase()}`;
         setFollowKey(key);
@@ -125,6 +150,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
           const collectionListings = indexerData.listings.filter(
             (l: IndexedListing) => l.nftAddress.toLowerCase() === contract.toLowerCase()
           );
+          setAllListings(collectionListings);
           const collectionActivity = indexerData.activity.filter(
             (a: IndexedActivity) => a.nftAddress?.toLowerCase() === contract.toLowerCase()
           );
@@ -329,6 +355,22 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
           </section>
 
           {/* Collection Tabs */}
+          {sweepListings.length > 0 && (
+            <section className="royal-sweep-floor" aria-label="Sweep floor">
+              <div>
+                <span>COLLECTION CHECKOUT</span>
+                <h2>Sweep floor</h2>
+                <p>Select the lowest-priced available ERC-721 listings on this network.</p>
+              </div>
+              <label>
+                NFTs
+                <input type="number" min={1} max={sweepListings.length} value={sweepQuantity} onChange={event => setSweepQuantity(Math.min(sweepListings.length, Math.max(1, Number(event.target.value) || 1)))} />
+              </label>
+              <div className="royal-sweep-total"><span>{sweepCount} NFTs · current total</span><strong>{formatEther(sweepTotal)} {currency}</strong></div>
+              <button type="button" onClick={addSweepToCart}><ShoppingCart size={16} /> Review in cart</button>
+              <small>Prices and availability are rechecked by the marketplace contract at checkout. Your wallet confirms the purchase.</small>
+            </section>
+          )}
           <section className="royal-collection-tabs">
             <button className={activeTab === "items" ? "active" : ""} onClick={() => setActiveTab("items")}>
               Items

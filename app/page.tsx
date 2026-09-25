@@ -101,7 +101,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [listingCount, setListingCount] = useState(0);
   const [saleCount, setSaleCount] = useState(0);
-  const [incompleteNetworks,setIncompleteNetworks]=useState<string[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -121,13 +120,10 @@ export default function Home() {
         const allActivity: IndexedActivity[] = [];
 
         const collections: ListedCollection[] = [];
-        const incomplete:string[]=[];
-        const chainIds=Object.keys(marketplaceChains).map(Number) as MarketplaceChainId[];
-        responses.forEach((result,index) => {
+        responses.forEach((result) => {
           if (result.status === "fulfilled" && result.value) {
             const data = result.value as IndexerResponse;
             if (!data.configured) return;
-            if(!data.sync?.caughtUp||data.syncError)incomplete.push(data.chain);
             allListings.push(...data.listings);
             allActivity.push(...data.activity);
             for (const collection of data.collections ?? []) {
@@ -140,9 +136,8 @@ export default function Home() {
                 complete: Boolean(data.sync?.caughtUp && !data.syncError),
               });
             }
-          }else incomplete.push(getMarketplaceChain(chainIds[index]).name);
+          }
         });
-        setIncompleteNetworks(incomplete);
         const activityTimes = new Map(allActivity.map(event => [`${event.chainId}:${event.transactionHash.toLowerCase()}`, event.timestamp ?? 0]));
         setFeaturedNFTs(allListings.sort((a,b) => {
           const aTime = activityTimes.get(`${a.chainId}:${a.transactionHash.toLowerCase()}`) ?? 0;
@@ -225,8 +220,6 @@ export default function Home() {
           <div>
             <span className="royal-section-label">MARKETPLACE</span>
             <h2>Listed Collections</h2>
-            <p>Collections with active listings across supported networks. Prices refresh every 30 seconds.</p>
-            {incompleteNetworks.length>0&&<p role="status">Still syncing: {incompleteNetworks.join(", ")}. Listings and counts may be incomplete.</p>}
           </div>
           <Link href="/collections" className="royal-view-all">
             View All
@@ -255,7 +248,6 @@ export default function Home() {
           <div>
             <span className="royal-section-label">EXPLORE</span>
             <h2>Explore listed NFTs</h2>
-            <p>Current marketplace listings from supported networks</p>
           </div>
           <Link href="/market" className="royal-view-all">
             View All
@@ -311,7 +303,6 @@ export default function Home() {
           <div>
             <span className="royal-section-label">ACTIVITY</span>
             <h2>Recent Activity</h2>
-            <p>Latest transactions across the marketplace</p>
           </div>
           <Link href="/activity" className="royal-view-all">
             View All
@@ -370,7 +361,6 @@ export default function Home() {
         <div className="royal-section-header centered">
           <span className="royal-section-label">GUIDE</span>
           <h2>How It Works</h2>
-          <p>Begin your journey in the digital kingdom</p>
         </div>
         <div className="royal-steps-grid">
           <div className="royal-step-card">

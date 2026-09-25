@@ -71,6 +71,7 @@ type ExplorerFallback = {
   chainId: MarketplaceChainId;
   chainName: string;
   url: string;
+  reason: string;
 };
 
 function NftArtwork({ imageUrl, name }: { imageUrl: string | null; name: string }) {
@@ -119,13 +120,19 @@ export default function ProfilePage() {
           chainIds = [selectedChain];
         }
 
-        const nftResponses = await Promise.allSettled(
-          chainIds.map(async (chainId) => {
-            const res = await fetch(`/api/wallet-nfts?owner=${encodeURIComponent(address)}&chainId=${chainId}`, { cache: "no-store", signal: controller.signal });
-            const data = await res.json() as WalletNftResponse;
+        // Keep requests below provider rate limits; a single network failure
+        // must not prevent already-fetched holdings on other networks.
+        const nftResponses: PromiseSettledResult<WalletNftResponse>[] = [];
+        for(let offset=0;offset<chainIds.length;offset+=3){
+          const batch=await Promise.allSettled(chainIds.slice(offset,offset+3).map(async chainId=>{
+            const response=await fetch(`/api/wallet-nfts?owner=${encodeURIComponent(address)}&chainId=${chainId}`,{cache:"no-store",signal:controller.signal});
+            const data=await response.json() as WalletNftResponse;
+            if(!response.ok&&!data.error)throw new Error(`${getMarketplaceChain(chainId).name} holdings service returned ${response.status}.`);
             return data;
-          })
-        );
+          }));
+          nftResponses.push(...batch);
+          if(!active)return;
+        }
         if (!active) return;
 
         const allNfts: WalletNft[] = [];
@@ -139,14 +146,13 @@ export default function ProfilePage() {
               allNfts.push(...data.nfts.map(nft => ({ ...nft, chainId })));
             }
             if (data.complete === false || data.error) {
-              console.error(`NFT provider warning on chain ${chainIds[index]}:`, data.error ?? data.warnings?.join("; "));
-              {
-                failedExplorers.push({
-                  chainId: chainIds[index],
-                  chainName: getMarketplaceChain(chainIds[index]).name,
-                  url: data.explorerAddressUrl ?? `${getMarketplaceChain(chainIds[index]).explorerUrl}/address/${address}`,
-                });
-              }
+              const reason=data.error??data.warnings?.join("; ")??"The NFT provider could not verify the full wallet history.";
+              failedExplorers.push({
+                chainId: chainIds[index],
+                chainName: getMarketplaceChain(chainIds[index]).name,
+                url: data.explorerAddressUrl ?? `${getMarketplaceChain(chainIds[index]).explorerUrl}/address/${address}`,
+                reason,
+              });
             }
           } else if (result.status === "rejected") {
             console.error(`Failed to load NFTs from chain ${chainIds[index]}:`, result.reason);
@@ -154,6 +160,7 @@ export default function ProfilePage() {
               chainId: chainIds[index],
               chainName: getMarketplaceChain(chainIds[index]).name,
               url: `${getMarketplaceChain(chainIds[index]).explorerUrl}/address/${address}`,
+              reason: "The network request failed. Retry this network or use its explorer while the provider recovers.",
             });
           }
         });
@@ -341,18 +348,19 @@ export default function ProfilePage() {
         {explorerFallbacks.length > 0 && (
           <div className="royal-explorer-fallbacks" role="status">
             <div>
-              <strong>Some networks returned incomplete holdings</strong>
+              <strong>Holdings could not be fully verified on {explorerFallbacks.map(item=>item.chainName).join(", ")}</strong>
               <button type="button" disabled={loading} onClick={() => setRetry(value => value + 1)}>{loading ? "Retrying…" : "Retry missing networks"}</button>
-              <p>Open your wallet on the official explorer to see holdings from those networks.</p>
+              <p>NFTs we found are shown below. Missing items may appear after the provider recovers; this warning does not mean your wallet is empty.</p>
             </div>
             <div className="royal-explorer-links">
               {explorerFallbacks.map((fallback) => (
                 <a key={fallback.chainId} href={fallback.url} target="_blank" rel="noreferrer">
-                  {fallback.chainName}
+                  {fallback.chainName} · View on explorer
                   <ExternalLink size={14} aria-hidden="true" />
                 </a>
               ))}
             </div>
+            <ul>{explorerFallbacks.map(fallback=><li key={fallback.chainId}><strong>{fallback.chainName}:</strong> {fallback.reason}</li>)}</ul>
           </div>
         )}
         {loading ? (
@@ -368,6 +376,7 @@ export default function ProfilePage() {
                 {filteredNfts.length > 0 ? (
                   filteredNfts.map((nft) => {
                     const nftChainId = nft.chainId || 109; // Default to Shibarium if not set
+                    const activeListing=listings.find(l=>l.chainId===nftChainId&&l.nftAddress.toLowerCase()===nft.contractAddress.toLowerCase()&&l.tokenId===nft.tokenId);
                     return (
                       <Link key={`${nftChainId}-${nft.contractAddress}-${nft.tokenId}`} href={`/nft/${nftChainId}/${nft.contractAddress}/${nft.tokenId}`} className="royal-profile-nft">
                         <NftArtwork key={nft.imageUrl ?? "no-image"} imageUrl={nft.imageUrl} name={nft.name || `Token #${nft.tokenId}`} />
@@ -375,12 +384,8 @@ export default function ProfilePage() {
                           <small>{getMarketplaceChain(nftChainId).name} · {nft.collection || `${nft.contractAddress.slice(0, 8)}…`}</small>
                           <h3>{nft.name || `Token #${nft.tokenId}`}</h3>
                           <div className="royal-nft-status">
-                            {listings.some(l => 
-                              l.chainId === nftChainId &&
-                              l.nftAddress.toLowerCase() === nft.contractAddress.toLowerCase() && 
-                              l.tokenId === nft.tokenId
-                            ) ? (
-                              <span className="listed">Listed</span>
+                            {activeListing ? (
+                              <span className="listed">Listed · {formatEther(BigInt(activeListing.price))} {getMarketplaceChain(nftChainId).currency}</span>
                             ) : (
                               <span className="not-listed">Not Listed</span>
                             )}

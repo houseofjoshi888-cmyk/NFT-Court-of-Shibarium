@@ -1,6 +1,6 @@
 # House of Joshi — Multichain NFT Marketplace
 
-A non-custodial ERC-721 and ERC-1155 marketplace. HOJ trading is live on Base, Cronos EVM, and Shibarium. Ethereum, Polygon, Robinhood Chain, ApeChain, Zora, and Arc mainnet are available in the network UI but marked Coming soon for HOJ trading until V5 contracts are deployed and verified. Arc uses USDC as its native gas and settlement currency.
+A non-custodial ERC-721 and ERC-1155 marketplace. HOJ trading is configured on Base, Cronos EVM, Shibarium, Polygon, and Zora. Ethereum, Robinhood Chain, ApeChain, and Arc are marked Coming soon for HOJ trading. Arc uses USDC as its native gas and settlement currency.
 
 ## Local setup
 
@@ -37,7 +37,7 @@ POLYGON_RPC_URL=https://...
 
 BASE_MARKETPLACE_ADDRESS=0x...
 BASE_MARKETPLACE_DEPLOY_BLOCK=...
-BASE_RPC_URL=https://...
+BASE_RPC_URL=https://mainnet.base.org
 
 ROBINHOOD_MARKETPLACE_ADDRESS=0x...
 ROBINHOOD_MARKETPLACE_DEPLOY_BLOCK=...
@@ -56,7 +56,7 @@ BASE_EXPLORER_API_URL=https://.../api/v2
 ROBINHOOD_EXPLORER_API_URL=https://robinhoodchain.blockscout.com/api/v2
 ```
 
-The older `MARKETPLACE_ADDRESS` and `MARKETPLACE_DEPLOY_BLOCK` variables remain supported as Shibarium-only aliases. Cronos NFT wallet discovery uses the RPC ownership fallback and metadata fetching; complete ERC-721/1155 enumeration needs a compatible NFT indexer API, such as a configured `CRONOS_EXPLORER_API_URL` or Blockscout multichain API key.
+The older `MARKETPLACE_ADDRESS` and `MARKETPLACE_DEPLOY_BLOCK` variables remain supported as Shibarium-only aliases. Cronos NFT wallet discovery uses the RPC ownership fallback and metadata fetching; complete ERC-721/1155 enumeration needs a compatible NFT indexer API, such as a configured `CRONOS_EXPLORER_API_URL` or server-side `BLOCKSCOUT_API_KEY`. Complete Zora NFT holdings need server-side `ALCHEMY_API_KEY`; the configured public Zora explorer NFT endpoint does not work. Never place these API keys in `NEXT_PUBLIC_` variables or in a committed file.
 
 Listings, activity, and indexer cursors are stored with chain-specific IDs in the `multichain_listings` and `multichain_marketplace_activity` tables. The API contract is:
 

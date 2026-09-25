@@ -10,6 +10,7 @@ test("configured chains resolve independently with the correct native currencies
   assert.notEqual(polygon.address,base.address);
   assert.equal(base.address,"0xCb54f70B0eb580a8ec22a0e67C05293206C358F2");
   assert.equal(base.deployBlock,"51733550");
+  assert.equal(base.rpcUrl,"https://mainnet.base.org");
   assert.equal(polygon.chain.marketplaceStatus,"live");
   assert.equal(chainConfig({},137).address,"0xfb985d4eDd4C1F909899389C217aEC9D6895B72d");
   assert.equal(chainConfig({},137).deployBlock,"94404469");

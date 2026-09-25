@@ -20,10 +20,19 @@ events per network, not all-time analytics.
 ## Wallet discovery and metadata
 
 Configure `ALCHEMY_API_KEY` and per-network RPC/explorer overrides on the server.
+The Base default RPC is `https://mainnet.base.org`; the former PublicNode
+default rejects archive log requests without a personal token and caused
+production `/api/indexer?chainId=8453` to return no listings. If production
+sets `BASE_RPC_URL`, update that override to a historical-log-capable endpoint
+too. Base's public endpoint limits `eth_getLogs` to 2,000 blocks per request;
+the indexer splits larger requested ranges and resumes from its saved cursor.
 The existing Alchemy key is also used as an archive RPC fallback for Ethereum,
 Polygon and Base. Provider plan restrictions still apply. Range limits narrow the
 next committed scan rather than issuing unbounded recursive requests.
-Pagination preserves already-fetched NFTs if a subsequent request fails. Results
+Pagination preserves already-fetched NFTs if a subsequent request fails. Provider
+requests retry transient HTTP 429 and 5xx failures; the profile batches network
+requests to reduce shared-provider throttling and names each incomplete network.
+Results
 return `complete:false` when incomplete; the profile displays a retry control.
 The 100-page safety ceiling and recent ERC-721 RPC scan are not full-history
 guarantees. ERC-1155 discovery requires an NFT indexer. Offline or permanently
@@ -83,6 +92,11 @@ Do not claim or attempt automatic migration of escrowed offers or proceeds.
 ## Verification
 
 Run `npm test`, `npm run typecheck`, and `npm run build`.
+Run `npm run health:marketplace` against the production URL to check every live
+network's listing index. Set `MARKETPLACE_URL` to check another deployment.
+Optionally set `OWNER_ADDRESS` to check whether each network returns complete
+NFT holdings for that wallet. A nonzero exit status means at least one network
+needs attention; run this command from your deployment monitor to trigger alerts.
 Tests use an isolated Ganache EVM with synthetic test tokens/accounts; no mainnet
 funds, production demo collections, or private wallet keys are used. Covered flows
 include fees/royalties, approval revocation, stale ownership, offer settlement,

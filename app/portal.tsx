@@ -69,6 +69,7 @@ function useNftMetadata(listing: Listing | null) {
 export function Portal({ view }: { view:View }) {
   const walletChainId=useChainId();
   const [selectedChainId,setSelectedChainId]=useState<MarketplaceChainId>(isMarketplaceChainId(walletChainId)?walletChainId:109);
+  useEffect(()=>{const requested=Number(new URLSearchParams(window.location.search).get("chainId"));if(isMarketplaceChainId(requested))setSelectedChainId(requested);},[]);
   const selectedChain=getMarketplaceChain(selectedChainId);
   const { data,loading,refresh }=useIndexer(selectedChainId);
   const { address }=useAccount();
@@ -152,6 +153,13 @@ function MarketView({data,loading,account,advancedMarketplace,onBuy,onBatchBuy,o
   const[filtersOpen,setFiltersOpen]=useState(true);
   const[cartIds,setCartIds]=useState<string[]>([]);
   const[cartOpen,setCartOpen]=useState(false);
+  useEffect(()=>{
+    try{
+      const stored=JSON.parse(window.localStorage.getItem(`hoj-market-cart:${data.chainId}`)??"[]") as unknown;
+      setCartIds(Array.isArray(stored)?stored.filter((id):id is string=>typeof id==="string"):[]);
+      setCartOpen(new URLSearchParams(window.location.search).get("cart")==="1");
+    }catch{setCartIds([]);}
+  },[data.chainId]);
   if(!data.listings.length)return <Empty eyebrow={loading?`SYNCING ${data.chain.toUpperCase()}`:data.configured?"NO ACTIVE LISTINGS":"COMING SOON"} title={loading?"Reading the onchain record.":data.configured?"No works are listed.":`HOJ Marketplace is coming soon on ${data.chain}.`} detail={loading?"Checking current ownership and marketplace listings…":data.syncError||(data.configured?"Only verified active listings appear here.":"Trading will open after the HOJ marketplace contract is deployed and verified on this network.")}/>;
   const collections=[...new Set(data.listings.map(item=>item.nftAddress))];
   const query=search.trim().toLowerCase();
@@ -159,7 +167,7 @@ function MarketView({data,loading,account,advancedMarketplace,onBuy,onBatchBuy,o
   const shown=[...filtered].sort((a,b)=>sort==="low"?Number(BigInt(a.price)-BigInt(b.price)):sort==="high"?Number(BigInt(b.price)-BigInt(a.price)):b.updatedBlock-a.updatedBlock);
   const cart=data.listings.filter(item=>item.tokenType!=="ERC-1155"&&cartIds.includes(item.id));
   const cartTotal=cart.reduce((total,item)=>total+BigInt(item.price),0n);
-  function toggleCart(item:Listing){setCartIds(current=>current.includes(item.id)?current.filter(id=>id!==item.id):[...current,item.id]);}
+  function toggleCart(item:Listing){setCartIds(current=>{const next=current.includes(item.id)?current.filter(id=>id!==item.id):[...current,item.id];try{window.localStorage.setItem(`hoj-market-cart:${data.chainId}`,JSON.stringify(next));}catch{/* Cart remains available for this visit. */}return next;});}
   return <>
     <section className="market-toolbar">
       <button className={`filter-toggle ${filtersOpen?"active":""}`} onClick={()=>setFiltersOpen(value=>!value)} aria-expanded={filtersOpen}>

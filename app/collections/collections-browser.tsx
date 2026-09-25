@@ -6,6 +6,7 @@ import { formatEther } from "viem";
 import Link from "next/link";
 import Image from "next/image";
 import { getMarketplaceChain, isMarketplaceLive, marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
+import { shibEcosystemNfts } from "@/lib/shib-ecosystem-nfts";
 
 type Mint = {
   tokenId:string; owner:string; transactionHash:string; sourceText:string; imageURI:string|null;
@@ -103,6 +104,23 @@ export function CollectionsBrowser(){
     <section className="featured-collection">
       <header><div><span>TRENDING · BASE</span><h2>Malkuta Mandalas</h2><p>Verified canonical mints from the Kingdom Within Malkuta Protocol.</p></div><dl><div><dt>MINTED</dt><dd>{malkuta?.collectionTotal??(loading?"…":"—")}</dd></div><div><dt>NETWORK</dt><dd>BASE</dd></div></dl></header>
       {malkuta?.latestMints?.length?<div className="malkuta-grid">{malkuta.latestMints.map(mint=><article className="malkuta-card" key={mint.tokenId}><a className="malkuta-art" href={`https://kingdomwithin.thehouseofjoshi.com/verify?token=${mint.tokenId}`} target="_blank" rel="noreferrer" style={ipfs(mint.imageURI)?{backgroundImage:`url(${ipfs(mint.imageURI)})`}:undefined}><span>#{mint.tokenId.slice(0,8)}…</span><small>{mint.verificationStatus==="verified"?"✓ VERIFIED":"METADATA PENDING"}</small></a><div><span>MALKUTA MANDALA</span><h3>{mint.sourceText.split("\n")[0]||`Signal ${mint.numericalSignature}`}</h3><dl><div><dt>SIGNATURE</dt><dd>Σ {mint.numericalSignature}</dd></div><div><dt>SYMMETRY</dt><dd>{mint.symmetry} PETALS</dd></div></dl><a href={`https://kingdomwithin.thehouseofjoshi.com/verify?token=${mint.tokenId}`} target="_blank" rel="noreferrer">Verify NFT <ArrowUpRight size={13}/></a></div></article>)}</div>:<div className="collection-loading">{loading?"Reading verified Malkuta mints…":"The official mint archive is temporarily unavailable."}</div>}
+    </section>
+
+    <section className="shib-ecosystem-collections" aria-labelledby="shib-ecosystem-heading">
+      <header><div><span>SHIBA INU ECOSYSTEM</span><h2 id="shib-ecosystem-heading">Known NFT contracts</h2><p>Collections named by Shib. These are contract references, not HOJ listings; wallet holdings and sale status are checked on-chain.</p></div><a href="https://shib.io/ecosystem/nfts" target="_blank" rel="noreferrer">Official directory <ExternalLink size={14}/></a></header>
+      <div className="shib-ecosystem-contracts">{shibEcosystemNfts.map(collection=>{
+        const chain=getMarketplaceChain(collection.chainId);
+        return <article key={`${collection.chainId}:${collection.contract}`}>
+          <small>{chain.name}{isMarketplaceLive(collection.chainId)?" · Live":" · Marketplace coming soon"}</small>
+          <h3>{collection.name}</h3>
+          <code title={collection.contract}>{collection.contract}</code>
+          <div>{isMarketplaceLive(collection.chainId)
+            ?<Link href={`/collection/${collection.chainId}/${collection.contract}`}>View HOJ listings <ArrowUpRight size={13}/></Link>
+            :<a href={`${chain.explorerUrl}/token/${collection.contract}`} target="_blank" rel="noreferrer">View contract <ExternalLink size={13}/></a>}
+            <a href={collection.source} target="_blank" rel="noreferrer">Collection source <ExternalLink size={13}/></a></div>
+        </article>;
+      })}</div>
+      <p>Metaverse land is also featured in the Shib directory, but no single NFT contract is identified there; explore it through <a href="https://shibthemetaverse.io/" target="_blank" rel="noreferrer">the official Metaverse site</a>.</p>
     </section>
 
     {(loading||trending.length>0)&&<section className="trending-collections">
