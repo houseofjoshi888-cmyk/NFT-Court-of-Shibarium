@@ -4,7 +4,7 @@ import { ArrowUpRight, ExternalLink, Flame, Grid2X2, List, Search } from "lucide
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
 import Link from "next/link";
-import { getMarketplaceChain, marketplaceChains, tokenUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
+import { getMarketplaceChain, isMarketplaceLive, marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
 
 type Mint = {
   tokenId:string; owner:string; transactionHash:string; sourceText:string; imageURI:string|null;
@@ -18,6 +18,7 @@ type NftMetadata = { name:string|null; collection:string|null; imageUrl:string|n
 type TrendingCollection = { key:string; chainId:MarketplaceChainId; nftAddress:string; sales:number; recentEvents:number; activeListings:number; floorPrice:bigint; representativeTokenId:string };
 
 const chainIds = Object.keys(marketplaceChains).map(Number) as MarketplaceChainId[];
+const liveChainIds = chainIds.filter(isMarketplaceLive);
 const short = (value:string) => `${value.slice(0,6)}…${value.slice(-4)}`;
 const ipfs = (value:string|null) => value?.startsWith("ipfs://")?`https://ipfs.io/ipfs/${value.slice(7)}`:value;
 
@@ -111,8 +112,15 @@ export function CollectionsBrowser(){
     <section className="listed-collections">
       <header><div><span>MARKETPLACE</span><h2>Listed NFTs by network</h2></div><div className="collection-view-toggle"><button className={layout==="grid"?"active":""} onClick={()=>setLayout("grid")} aria-label="Grid view"><Grid2X2 size={15}/></button><button className={layout==="list"?"active":""} onClick={()=>setLayout("list")} aria-label="List view"><List size={16}/></button></div></header>
       <div className="collection-browser">
-        <aside><label><Search size={14}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search contract or token"/></label><span>CHAINS</span><button className={activeChain==="all"?"active":""} onClick={()=>setActiveChain("all")}><b>All networks</b><em>{listings.length}</em></button>{chainIds.map(chainId=>{const chain=getMarketplaceChain(chainId);const chainListings=listings.filter(item=>item.chainId===chainId);const count=chainListings.length;const floorPrice=chainListings.length>0?chainListings.reduce((min,item)=>{const price=BigInt(item.price);return price<min?price:min;},BigInt(chainListings[0].price)):0n;return <button key={chainId} className={activeChain===chainId?"active":""} onClick={()=>setActiveChain(chainId)}><i/><b>{chain.name}</b><em>{count} NFTs</em><small>Lowest listing: {floorPrice>0n?formatEther(floorPrice):"—"} {chain.currency}</small></button>})}</aside>
-        <div className={`chain-listings ${layout}`}>{visibleListings.length?visibleListings.map(item=><ListedNft key={item.id} item={item}/>):<div className="collection-loading">{loading?"Reading confirmed listings…":"No active NFT listings on this selection."}</div>}</div>
+        <aside aria-label="Filter listed NFTs">
+          <label><Search size={16}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search contract or token" aria-label="Search contract or token"/></label>
+          <span>LIVE NETWORKS</span>
+          <div className="collection-chain-filters">
+            <button type="button" className={activeChain==="all"?"active":""} aria-pressed={activeChain==="all"} onClick={()=>setActiveChain("all")}><b>All networks</b><em>{listings.length} NFTs</em></button>
+            {liveChainIds.map(chainId=>{const chain=getMarketplaceChain(chainId);const chainListings=listings.filter(item=>item.chainId===chainId);const count=chainListings.length;const floorPrice=chainListings.length>0?chainListings.reduce((min,item)=>{const price=BigInt(item.price);return price<min?price:min;},BigInt(chainListings[0].price)):0n;return <button key={chainId} type="button" className={activeChain===chainId?"active":""} aria-pressed={activeChain===chainId} onClick={()=>setActiveChain(chainId)}><i aria-hidden="true"/><b>{chain.name}</b><em>{count} NFTs</em><small>Lowest: {floorPrice>0n?formatEther(floorPrice):"—"} {chain.currency}</small></button>})}
+          </div>
+        </aside>
+        <div className={`chain-listings ${layout}`}>{visibleListings.length?visibleListings.map(item=><ListedNft key={item.id} item={item}/>):<div className="collection-loading">{loading?"Reading confirmed listings…":<div><p>{query.trim()?"No NFTs match your search.":`No active NFT listings${activeChain==="all"?"":` on ${getMarketplaceChain(activeChain).name}`} yet.`}</p><Link href="/sell">List an NFT <ArrowUpRight size={15}/></Link></div>}</div>}</div>
       </div>
     </section>
   </main>;
