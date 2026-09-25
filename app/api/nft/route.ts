@@ -8,13 +8,55 @@ export const dynamic = "force-dynamic";
 type ExplorerNft = {
   id?: string;
   image_url?: string | null;
-  metadata?: { name?: string | null; image?: string | null; description?: string | null; external_url?: string | null; attributes?: Array<{ trait_type?: string | null; value?: string | number | boolean | null }> | null } | null;
+  external_app_url?: string | null;
+  metadata?: { name?: string | null; image?: string | null; image_url?: string | null; image_data?: string | null; description?: string | null; external_url?: string | null; attributes?: Array<{ trait_type?: string | null; value?: string | number | boolean | null }> | null } | null;
   token?: { address_hash?: string; name?: string | null; symbol?: string | null } | null;
 };
 
+const ALCHEMY_NETWORKS: Partial<Record<number, string>> = {
+  1: "eth-mainnet",
+  137: "polygon-mainnet",
+  8453: "base-mainnet",
+  4663: "robinhood-mainnet",
+  33139: "apechain-mainnet",
+  7777777: "zora-mainnet",
+};
+
+async function alchemyMetadata(chainId: number, contract: string, tokenId: string, apiKey: string, refresh = false) {
+  const network = ALCHEMY_NETWORKS[chainId];
+  if (!network) throw new Error("Alchemy NFT metadata is unavailable for this chain");
+  const params = new URLSearchParams({ contractAddress: contract, tokenId, refreshCache: String(refresh) });
+  const response = await fetch(`https://${network}.g.alchemy.com/nft/v3/${apiKey}/getNFTMetadata?${params}`, {
+    headers: { accept: "application/json" },
+    signal: AbortSignal.timeout(15_000),
+    ...(refresh ? {cache: "no-store" as const} : {next: {revalidate: 60}}),
+  });
+  if (!response.ok) throw new Error(`Alchemy metadata returned ${response.status}`);
+  return response.json() as Promise<{
+    name?: string | null;
+    description?: string | null;
+    image?: { cachedUrl?: string | null; pngUrl?: string | null; thumbnailUrl?: string | null; originalUrl?: string | null };
+    contract?: { name?: string | null; symbol?: string | null };
+    raw?: { metadata?: { image?: string | null; image_url?: string | null; image_data?: string | null; external_url?: string | null; attributes?: Array<{ trait_type?: string | null; value?: string | number | boolean | null }> | null } };
+  }>;
+}
+
 function imageUrl(value: string | null | undefined) {
   if (!value) return null;
-  return value.startsWith("ipfs://") ? `https://ipfs.io/ipfs/${value.slice(7)}` : value;
+  if (value.startsWith("ipfs://ipfs/")) return `https://ipfs.io/ipfs/${value.slice(12)}`;
+  if (value.startsWith("ipfs://")) return `https://ipfs.io/ipfs/${value.slice(7)}`;
+  if (value.startsWith("ar://")) return `https://arweave.net/${value.slice(5)}`;
+  if (value.startsWith("http://")) return `https://${value.slice(7)}`;
+  if (value.trimStart().startsWith("<svg")) return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(value)}`;
+  return value;
+}
+
+function marketplaceImageUrl(source: string | null, chainId: number, contract: string, tokenId: string, refresh = false) {
+  if (source?.startsWith("data:")) return source;
+  const params = new URLSearchParams({ chainId: String(chainId), contract, tokenId });
+  if (source) params.set("source", source);
+  if (refresh) params.set("refresh", String(Date.now()));
+  return `/api/nft-image?${params}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -41,25 +83,57 @@ export async function GET(request: NextRequest) {
         method: "POST",
         headers: { accept: "application/json" },
         cache: "no-store",
+        signal: AbortSignal.timeout(5_000),
       }).catch(() => undefined);
     }
     const response = await fetch(instanceUrl, refresh
-      ? { headers: { accept: "application/json" }, cache: "no-store" }
-      : { headers: { accept: "application/json" }, next: { revalidate: 60 } });
+      ? { headers: { accept: "application/json" }, signal: AbortSignal.timeout(10_000), cache: "no-store" }
+      : { headers: { accept: "application/json" }, signal: AbortSignal.timeout(10_000), next: { revalidate: 60 } });
     if (!response.ok) throw new Error("Explorer request failed");
     const item = await response.json() as ExplorerNft;
+    const sourceImage = imageUrl(item.image_url ?? item.metadata?.image_url ?? item.metadata?.image ?? item.metadata?.image_data);
     return NextResponse.json({
       contractAddress: address,
       chainId,
       tokenId,
       name: item.metadata?.name ?? null,
       collection: item.token?.name ?? item.token?.symbol ?? null,
-      imageUrl: imageUrl(item.image_url ?? item.metadata?.image),
+      imageUrl: marketplaceImageUrl(sourceImage, chainId, address, tokenId, refresh),
       description: item.metadata?.description ?? null,
-      externalUrl: item.metadata?.external_url ?? null,
+      externalUrl: imageUrl(item.metadata?.external_url ?? item.external_app_url),
       traits: (item.metadata?.attributes ?? []).flatMap(attribute => attribute.trait_type && attribute.value !== null && attribute.value !== undefined ? [{ type: attribute.trait_type, value: String(attribute.value) }] : []),
     }, { headers: { "Cache-Control": refresh ? "no-store" : "public, max-age=60" } });
   } catch {
-    return NextResponse.json({ error: `Could not load NFT metadata from the ${chain.name} explorer.` }, { status: 502 });
+    if (runtime.ALCHEMY_API_KEY && ALCHEMY_NETWORKS[chainId]) {
+      try {
+        const item = await alchemyMetadata(chainId, address, tokenId, runtime.ALCHEMY_API_KEY, refresh);
+        const sourceImage = imageUrl(item.image?.cachedUrl ?? item.image?.pngUrl ?? item.image?.thumbnailUrl ?? item.image?.originalUrl ?? item.raw?.metadata?.image ?? item.raw?.metadata?.image_url ?? item.raw?.metadata?.image_data);
+        return NextResponse.json({
+          contractAddress: address,
+          chainId,
+          tokenId,
+          name: item.name ?? null,
+          collection: item.contract?.name ?? item.contract?.symbol ?? null,
+          imageUrl: marketplaceImageUrl(sourceImage, chainId, address, tokenId, refresh),
+          description: item.description ?? null,
+          externalUrl: imageUrl(item.raw?.metadata?.external_url),
+          traits: (item.raw?.metadata?.attributes ?? []).flatMap(attribute => attribute.trait_type && attribute.value !== null && attribute.value !== undefined ? [{ type: attribute.trait_type, value: String(attribute.value) }] : []),
+        }, { headers: { "Cache-Control": refresh ? "no-store" : "public, max-age=60" } });
+      } catch {
+        // The image proxy still has on-chain and explorer fallbacks.
+      }
+    }
+    return NextResponse.json({
+      contractAddress: address,
+      chainId,
+      tokenId,
+      name: null,
+      collection: null,
+      imageUrl: marketplaceImageUrl(null, chainId, address, tokenId, refresh),
+      description: null,
+      externalUrl: null,
+      traits: [],
+      metadataUnavailable: true,
+    }, { headers: { "Cache-Control": "public, max-age=30" } });
   }
 }

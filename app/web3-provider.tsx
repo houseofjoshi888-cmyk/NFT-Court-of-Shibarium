@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { defineChain } from "viem";
-import { apeChain, base, mainnet, polygon, zora } from "viem/chains";
+import { apeChain, base, cronos, mainnet, polygon, zora } from "viem/chains";
 
 export const shibarium = defineChain({
   id: 109,
@@ -25,18 +25,28 @@ export const robinhood = defineChain({
   blockExplorers: { default: { name: "Robinhood Chain Explorer", url: "https://robinhoodchain.blockscout.com" } },
 });
 
+export const arc = defineChain({
+  id: 5042,
+  name: "Arc",
+  nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.mainnet.arc.io"] } },
+  blockExplorers: { default: { name: "Arc Explorer", url: "https://explorer.arc.io" } },
+});
+
 // Reown / WalletConnect project ID. Deployments may override this public ID with
 // NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID without changing the application code.
 const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "798a4c4e5870335d10cd2621358e0f77";
-export const supportedChains = [shibarium, mainnet, polygon, base, robinhood, zora, apeChain] as const;
+export const supportedChains = [shibarium, mainnet, polygon, base, cronos, robinhood, zora, apeChain, arc] as const;
 const transport = {
   [shibarium.id]: http(shibarium.rpcUrls.default.http[0]),
   [mainnet.id]: http(),
   [polygon.id]: http(),
   [base.id]: http(),
+  [cronos.id]: http(cronos.rpcUrls.default.http[0]),
   [robinhood.id]: http(robinhood.rpcUrls.default.http[0]),
   [zora.id]: http(zora.rpcUrls.default.http[0]),
   [apeChain.id]: http(apeChain.rpcUrls.default.http[0]),
+  [arc.id]: http(arc.rpcUrls.default.http[0]),
 };
 
 const config = walletConnectProjectId

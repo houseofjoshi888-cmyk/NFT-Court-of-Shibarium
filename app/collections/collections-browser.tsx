@@ -3,6 +3,7 @@
 import { ArrowUpRight, ExternalLink, Flame, Grid2X2, List, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
+import Link from "next/link";
 import { getMarketplaceChain, marketplaceChains, tokenUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
 
 type Mint = {
@@ -14,7 +15,7 @@ type Listing = { id:string; chainId:MarketplaceChainId; nftAddress:string; token
 type Activity = { id:string; chainId:MarketplaceChainId; eventType:string; nftAddress:string|null; tokenId:string|null; price:string|null; blockNumber:number };
 type ChainListings = { chainId:MarketplaceChainId; chain:string; currency:string; configured:boolean; listings:Listing[]; activity:Activity[] };
 type NftMetadata = { name:string|null; collection:string|null; imageUrl:string|null };
-type TrendingCollection = { key:string; chainId:MarketplaceChainId; nftAddress:string; sales:number; recentEvents:number; activeListings:number; representativeTokenId:string };
+type TrendingCollection = { key:string; chainId:MarketplaceChainId; nftAddress:string; sales:number; recentEvents:number; activeListings:number; floorPrice:bigint; representativeTokenId:string };
 
 const chainIds = Object.keys(marketplaceChains).map(Number) as MarketplaceChainId[];
 const short = (value:string) => `${value.slice(0,6)}…${value.slice(-4)}`;
@@ -31,14 +32,31 @@ export function CollectionsBrowser(){
   useEffect(()=>{
     let active=true;
     async function refresh(){
-      const [malkutaResult,...chainResults]=await Promise.allSettled([
+      // Load Shibarium first for instant content
+      const shibariumResult = await Promise.allSettled([
         fetch("/api/malkuta",{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject()),
-        ...chainIds.map(chainId=>fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject())),
+        fetch(`/api/indexer?chainId=109`,{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject()),
       ]);
+      
       if(!active)return;
-      if(malkutaResult.status==="fulfilled")setMalkuta(malkutaResult.value as MalkutaData);
-      setChains(chainResults.flatMap(result=>result.status==="fulfilled"?[result.value as ChainListings]:[]));
+      if(shibariumResult[0].status==="fulfilled")setMalkuta(shibariumResult[0].value as MalkutaData);
+      const shibarium=shibariumResult[1];
+      if(shibarium.status==="fulfilled")setChains(previous=>[...previous.filter(chain=>chain.chainId!==109),shibarium.value as ChainListings]);
       setLoading(false);
+
+      // Load other chains in background
+      const otherChains = chainIds.filter(id => id !== 109);
+      const otherResults = await Promise.allSettled(
+        otherChains.map(chainId=>fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject()))
+      );
+      
+      if(active){
+        setChains(prev => {
+          const latest=new Map(prev.map(chain=>[chain.chainId,chain]));
+          otherResults.forEach(result=>{if(result.status==="fulfilled"){const chain=result.value as ChainListings;latest.set(chain.chainId,chain);}});
+          return [...latest.values()];
+        });
+      }
     }
     void refresh();
     const timer=window.setInterval(refresh,30_000);
@@ -51,16 +69,19 @@ export function CollectionsBrowser(){
     for(const chain of chains){
       for(const listing of chain.listings){
         const key=`${chain.chainId}:${listing.nftAddress.toLowerCase()}`;
-        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:listing.nftAddress,sales:0,recentEvents:0,activeListings:0,representativeTokenId:listing.tokenId};
+        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:listing.nftAddress,sales:0,recentEvents:0,activeListings:0,floorPrice:BigInt(0),representativeTokenId:listing.tokenId};
         current.activeListings+=1;
+        if(BigInt(listing.price) < current.floorPrice || current.floorPrice === 0n) {
+          current.floorPrice = BigInt(listing.price);
+        }
         records.set(key,current);
       }
       for(const event of chain.activity??[]){
         if(!event.nftAddress||!event.tokenId)continue;
         const key=`${chain.chainId}:${event.nftAddress.toLowerCase()}`;
-        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:event.nftAddress,sales:0,recentEvents:0,activeListings:0,representativeTokenId:event.tokenId};
+        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:event.nftAddress,sales:0,recentEvents:0,activeListings:0,floorPrice:BigInt(0),representativeTokenId:event.tokenId};
         current.recentEvents+=1;
-        if(event.eventType==="sold")current.sales+=1;
+        if((["sold","offer_accepted"].includes(event.eventType)))current.sales+=1;
         records.set(key,current);
       }
     }
@@ -90,7 +111,7 @@ export function CollectionsBrowser(){
     <section className="listed-collections">
       <header><div><span>MARKETPLACE</span><h2>Listed NFTs by network</h2></div><div className="collection-view-toggle"><button className={layout==="grid"?"active":""} onClick={()=>setLayout("grid")} aria-label="Grid view"><Grid2X2 size={15}/></button><button className={layout==="list"?"active":""} onClick={()=>setLayout("list")} aria-label="List view"><List size={16}/></button></div></header>
       <div className="collection-browser">
-        <aside><label><Search size={14}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search contract or token"/></label><span>CHAINS</span><button className={activeChain==="all"?"active":""} onClick={()=>setActiveChain("all")}><b>All networks</b><em>{listings.length}</em></button>{chainIds.map(chainId=>{const chain=getMarketplaceChain(chainId);const count=listings.filter(item=>item.chainId===chainId).length;return <button key={chainId} className={activeChain===chainId?"active":""} onClick={()=>setActiveChain(chainId)}><i/><b>{chain.name}</b><em>{count}</em></button>})}</aside>
+        <aside><label><Search size={14}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search contract or token"/></label><span>CHAINS</span><button className={activeChain==="all"?"active":""} onClick={()=>setActiveChain("all")}><b>All networks</b><em>{listings.length}</em></button>{chainIds.map(chainId=>{const chain=getMarketplaceChain(chainId);const chainListings=listings.filter(item=>item.chainId===chainId);const count=chainListings.length;const floorPrice=chainListings.length>0?chainListings.reduce((min,item)=>{const price=BigInt(item.price);return price<min?price:min;},BigInt(chainListings[0].price)):0n;return <button key={chainId} className={activeChain===chainId?"active":""} onClick={()=>setActiveChain(chainId)}><i/><b>{chain.name}</b><em>{count} NFTs</em><small>Lowest listing: {floorPrice>0n?formatEther(floorPrice):"—"} {chain.currency}</small></button>})}</aside>
         <div className={`chain-listings ${layout}`}>{visibleListings.length?visibleListings.map(item=><ListedNft key={item.id} item={item}/>):<div className="collection-loading">{loading?"Reading confirmed listings…":"No active NFT listings on this selection."}</div>}</div>
       </div>
     </section>
@@ -100,13 +121,16 @@ export function CollectionsBrowser(){
 function TrendingCollectionCard({item,rank}:{item:TrendingCollection;rank:number}){
   const [nft,setNft]=useState<NftMetadata|null>(null);
   const chain=getMarketplaceChain(item.chainId);
-  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.representativeTokenId}&chainId=${item.chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)});return()=>{active=false};},[item]);
-  return <a className="trending-collection-card" href={`/nft/${item.chainId}/${item.nftAddress}/${item.representativeTokenId}`}><div className="trending-collection-art" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}><b>#{rank}</b>{!nft?.imageUrl&&<span>{short(item.nftAddress)}</span>}</div><div><small>{chain.name}</small><h3>{nft?.collection??short(item.nftAddress)}</h3><dl><div><dt>RECENT SALES</dt><dd>{item.sales}</dd></div><div><dt>ACTIVE LISTINGS</dt><dd>{item.activeListings}</dd></div><div><dt>ACTIVITY</dt><dd>{item.recentEvents}</dd></div></dl><span>Explore collection <ArrowUpRight size={13}/></span></div></a>;
+  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.representativeTokenId}&chainId=${item.chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)}).catch(()=>{});return()=>{active=false};},[item]);
+  return <a className="trending-collection-card" href={`/collection/${item.chainId}/${item.nftAddress}`}><div className="trending-collection-art" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}><b>#{rank}</b>{!nft?.imageUrl&&<span>{short(item.nftAddress)}</span>}</div><div><small>{chain.name}</small><h3>{nft?.collection??short(item.nftAddress)}</h3><dl><div><dt>OBSERVED HOJ LOW</dt><dd>{item.floorPrice > 0n ? formatEther(item.floorPrice) : "—"} {chain.currency}</dd></div><div><dt>RECENT SALES</dt><dd>{item.sales}</dd></div><div><dt>ACTIVE LISTINGS</dt><dd>{item.activeListings}</dd></div><div><dt>ACTIVITY</dt><dd>{item.recentEvents}</dd></div></dl><span>Explore collection <ArrowUpRight size={13}/></span></div></a>;
 }
 
 function ListedNft({item}:{item:Listing}){
   const [nft,setNft]=useState<NftMetadata|null>(null);
   const chain=getMarketplaceChain(item.chainId);
-  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.tokenId}&chainId=${item.chainId}`).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)});return()=>{active=false};},[item]);
-  return <article className="chain-listing"><a className="chain-listing-art" href={tokenUrl(item.chainId,item.nftAddress,item.tokenId)} target="_blank" rel="noreferrer" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>{!nft?.imageUrl&&<strong>#{item.tokenId}</strong>}<span>{chain.name}</span></a><div><small>{nft?.collection??short(item.nftAddress)}</small><h3>{nft?.name??`Token #${item.tokenId}`}</h3><p><span>PRICE</span><strong>{formatEther(BigInt(item.price))} {chain.currency}</strong></p><a href="/market">View listing <ArrowUpRight size={13}/></a></div></article>;
+  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.tokenId}&chainId=${item.chainId}`).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)}).catch(()=>{});return()=>{active=false};},[item]);
+  return <Link href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} className="chain-listing">
+    <div className="chain-listing-art" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>{!nft?.imageUrl&&<strong>#{item.tokenId}</strong>}<span>{chain.name}</span></div>
+    <div><small>{nft?.collection??short(item.nftAddress)}</small><h3>{nft?.name??`Token #${item.tokenId}`}</h3><p><span>LISTING PRICE</span><strong>{formatEther(BigInt(item.price))} {chain.currency}</strong></p><span>View NFT <ArrowUpRight size={13}/></span></div>
+  </Link>;
 }
