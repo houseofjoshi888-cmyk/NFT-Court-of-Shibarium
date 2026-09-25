@@ -47,9 +47,9 @@ export const marketplaceChains = {
     explorerApiUrl: "https://polygon.blockscout.com/api/v2",
     rpcUrl: "https://polygon-bor-rpc.publicnode.com",
     confirmations: 128,
-    marketplaceAddress: "0x455DaD76334a67660D61bb319d8CfF1010e33049",
-    marketplaceDeployBlock: 91195275,
-    marketplaceStatus: "coming-soon",
+    marketplaceAddress: "0xfb985d4eDd4C1F909899389C217aEC9D6895B72d",
+    marketplaceDeployBlock: 94404469,
+    marketplaceStatus: "live",
   },
   5042: {
     id: 5042,

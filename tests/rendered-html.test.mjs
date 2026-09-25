@@ -10,6 +10,9 @@ test("configured chains resolve independently with the correct native currencies
   assert.notEqual(polygon.address,base.address);
   assert.equal(base.address,"0xCb54f70B0eb580a8ec22a0e67C05293206C358F2");
   assert.equal(base.deployBlock,"51733550");
+  assert.equal(polygon.chain.marketplaceStatus,"live");
+  assert.equal(chainConfig({},137).address,"0xfb985d4eDd4C1F909899389C217aEC9D6895B72d");
+  assert.equal(chainConfig({},137).deployBlock,"94404469");
   const cronos=chainConfig({},25);
   assert.equal(cronos.chain.currency,"CRO");
   assert.equal(cronos.address,"0x6aCaf964bCf4551CC55Afaf12d6e6a8ef7138875");
@@ -29,7 +32,7 @@ test("configured chains resolve independently with the correct native currencies
 });
 test("coming-soon networks expose no live marketplace listings",async()=>{
   const {GET}=await loadModule("app/api/indexer/route.ts");
-  for(const chainId of [1,137,5042,4663,33139]){
+  for(const chainId of [1,5042,4663,33139]){
     const response=await GET(new Request(`http://localhost/api/indexer?chainId=${chainId}`));
     const body=await response.json();
     assert.equal(response.status,200);
