@@ -9204,6 +9204,10 @@ article.royal-profile-nft > a {
 
 /* Transaction controls and funded offers */
 .royal-transaction-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.royal-portal-page:not(.royal-portal-market) .royal-portal-content { padding:24px clamp(16px,3vw,42px) 56px; }
+.royal-portal-sell .sell-layout form { min-width:0; padding:clamp(18px,3vw,32px); border:1px solid rgba(199,164,74,.22); border-radius:10px; background:#11100e; }
+.royal-portal-sell .sell-layout aside { min-width:0; border-radius:10px; }
+.royal-portal-sell .sell-layout input { width:100%; min-width:0; border-color:rgba(199,164,74,.32); color:#f4f0e7; background:#0b0b0a; }
 .royal-transaction-fields:disabled { opacity: .72; }
 .royal-transaction-status { position: sticky; bottom: 16px; z-index: 100; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 16px; margin: 16px 0; border: 1px solid #d4af37; border-radius: 12px; background: #151515; color: #fff; overflow-wrap: anywhere; }
 .royal-transaction-status a { color: #f2d577; text-decoration: underline; }
@@ -9219,6 +9223,17 @@ article.royal-profile-nft > a {
 
 .royal-activity-table { overflow-x: auto; }
 .royal-activity-table .royal-activity-header,.royal-activity-table .royal-activity-row { min-width: 980px; grid-template-columns: 115px minmax(160px,1.4fr) minmax(100px,1fr) 40px 50px 110px 110px 150px; gap: 12px; }
+@media(max-width:768px) {
+  .royal-activity-table .royal-activity-header { display:none; }
+  .royal-activity-table .royal-activity-row { min-width:0; grid-template-columns:minmax(0,1fr) auto; gap:9px 14px; padding:16px; }
+  .royal-activity-table .royal-activity-event { grid-column:1; grid-row:1; margin:0; }
+  .royal-activity-table .royal-activity-item { grid-column:1/-1; grid-row:2; }
+  .royal-activity-table .royal-activity-price { grid-column:2; grid-row:1; align-self:center; text-align:right; }
+  .royal-activity-table .royal-activity-qty,.royal-activity-table .royal-activity-rarity,.royal-activity-table .royal-activity-from,.royal-activity-table .royal-activity-to { display:none; }
+  .royal-activity-table .royal-activity-time { grid-column:1/-1; grid-row:3; }
+  .royal-activity-table .royal-activity-item strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .royal-activity-table .royal-activity-price strong { font-size:13px; white-space:nowrap; }
+}
 .royal-activity-table .royal-activity-item { display: flex; flex-direction: column; min-width: 0; border: 0; padding: 0; background: transparent; }
 .royal-activity-table .royal-activity-item strong,.royal-activity-table .royal-activity-item small { display: block; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .royal-activity-type { overflow-wrap: normal; word-break: normal; }
@@ -9370,6 +9385,9 @@ article.royal-profile-nft > a {
 .royal-nft-page .royal-nft-info-scroll .royal-nft-tabs { position:sticky; top:0; z-index:2; padding-top:8px; background:#121211; }
 .royal-nft-page .royal-nft-info-scroll .royal-nft-content { display:block; margin-bottom:0; }
 .royal-nft-page .royal-nft-nav :is(.royal-nft-gallery-back,.royal-nft-gallery-next,.royal-nft-gallery-close) { padding:0; color:#f4f0e7; background:#1b1a18; }
+.royal-nft-page .royal-nft-nav :is(.royal-nft-gallery-back,.royal-nft-gallery-next,.royal-nft-gallery-close) { border:0; border-radius:0; background:transparent; box-shadow:none; }
+.royal-nft-page .royal-nft-nav :is(.royal-nft-gallery-back,.royal-nft-gallery-next,.royal-nft-gallery-close):hover { color:#e9c783; background:transparent; }
+.royal-nft-page .royal-nft-nav :is(.royal-nft-gallery-back,.royal-nft-gallery-next,.royal-nft-gallery-close):focus-visible { outline:2px solid #e9c783; outline-offset:2px; border-radius:4px; }
 .royal-nft-page .royal-nft-nav { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; column-gap:20px; }
 .royal-nft-page .royal-nft-gallery-nav { display:grid; grid-template-columns:38px minmax(0,max-content) 38px; align-items:center; gap:10px; justify-self:start; }
 .royal-nft-page .royal-nft-thumbnails { max-width:min(52vw,408px); }
@@ -9407,6 +9425,17 @@ article.royal-profile-nft > a {
 }
 
 .hoj-cart-page { max-width:1100px; min-height:65vh; margin:0 auto; padding:clamp(24px,4vw,52px); color:#f5f1e9; }
+.hoj-rankings-content { padding-top:24px; padding-bottom:64px; }
+.hoj-rankings-state { margin:0; color:#bdb6a9; font-size:14px; }
+.hoj-rankings-list { border-top:1px solid rgba(216,185,125,.2); }
+.hoj-ranking-row { display:grid; grid-template-columns:36px minmax(0,1fr) 84px 84px minmax(100px,130px); align-items:center; gap:16px; min-height:76px; padding:12px 8px; border-bottom:1px solid rgba(216,185,125,.16); color:#f5f1e9; }
+.hoj-ranking-row:hover { background:rgba(216,185,125,.055); }
+.hoj-ranking-number { color:#d7b473; font-size:14px; }
+.hoj-ranking-collection { min-width:0; }
+.hoj-ranking-row strong,.hoj-ranking-row small { display:block; }
+.hoj-ranking-row strong { overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+.hoj-ranking-row small { color:#aaa397; font-size:11px; }
+@media(max-width:620px) { .hoj-ranking-row { grid-template-columns:24px minmax(0,1fr) auto; gap:6px 10px; } .hoj-ranking-row>div:nth-of-type(2) { grid-column:3; grid-row:1; text-align:right; } .hoj-ranking-row>div:nth-of-type(3) { grid-column:2; grid-row:2; } .hoj-ranking-row>div:nth-of-type(4) { grid-column:3; grid-row:2; text-align:right; } }
 .hoj-cart-page>header { margin-bottom:28px; }
 .hoj-cart-page>header>span { color:#cfab6d; font-size:11px; letter-spacing:.16em; }
 .hoj-cart-page h1 { margin:8px 0; font-size:clamp(28px,3vw,42px); }
@@ -9434,3 +9463,22 @@ article.royal-profile-nft > a {
   .royal-nft-page .royal-nft-nav-actions { width:auto; gap:5px; justify-content:flex-end; }
   .royal-nft-page .royal-nft-nav-actions button { width:34px; height:34px; justify-content:center; padding:0; }
 }
+
+/* Uniform, scannable collection cards on the home page. */
+.royal-homepage .royal-listed-section .royal-collections-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.hoj-listed-collection { display:grid; grid-template-columns:112px minmax(0,1fr); gap:16px; min-width:0; min-height:136px; padding:12px; border:1px solid rgba(218,190,148,.2); border-radius:10px; background:#161513; color:#f3eee5; text-decoration:none; transition:border-color .18s ease,background .18s ease,transform .18s ease; }
+.hoj-listed-collection:hover { border-color:rgba(224,188,124,.62); background:#1c1a17; transform:translateY(-2px); }
+.hoj-listed-collection:focus-visible { outline:2px solid #e5bd78; outline-offset:3px; }
+.hoj-listed-art { display:grid; place-items:center; width:112px; height:112px; overflow:hidden; border-radius:7px; background:#22201c; color:#bba576; }
+.hoj-listed-art img { display:block; width:100%; height:100%; object-fit:cover; }
+.hoj-listed-content { display:flex; flex-direction:column; min-width:0; }
+.hoj-listed-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; color:#cfb47f; font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
+.hoj-listed-heading svg { flex:none; }
+.hoj-listed-content h3 { overflow:hidden; margin:10px 0 12px; color:#f5f1e8; font-family:var(--font-sans); font-size:17px; font-weight:600; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.hoj-listed-metrics { display:grid; grid-template-columns:minmax(60px,.6fr) minmax(0,1fr); gap:12px; margin-top:auto; padding-top:10px; border-top:1px solid rgba(218,190,148,.15); }
+.hoj-listed-metrics div { min-width:0; }
+.hoj-listed-metrics small,.hoj-listed-metrics strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hoj-listed-metrics small { margin-bottom:4px; color:#aba397; font-size:9px; letter-spacing:.08em; }
+.hoj-listed-metrics strong { color:#f5f1e8; font-size:13px; font-weight:600; }
+@media(max-width:760px) { .royal-homepage .royal-listed-section .royal-collections-grid { grid-template-columns:1fr; } }
+@media(max-width:430px) { .hoj-listed-collection { grid-template-columns:88px minmax(0,1fr); min-height:112px; gap:12px; padding:10px; } .hoj-listed-art { width:88px; height:88px; } .hoj-listed-content h3 { margin:7px 0; font-size:15px; } .hoj-listed-metrics { gap:8px; padding-top:7px; } .hoj-listed-metrics strong { font-size:12px; } }

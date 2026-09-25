@@ -36,6 +36,7 @@ export default function ActivityPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"all" | "sale" | "mint" | "transfer" | "listing" | "offer" | "airdrop" | "canceled" | "withdrawn">("all");
   const [chainFilter, setChainFilter] = useState<"all" | MarketplaceChainId>("all");
+  const [collectionFilter, setCollectionFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"recent" | "price-high" | "price-low">("recent");
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export default function ActivityPage() {
 
   const filteredActivity = activity.filter(item => {
     if (chainFilter !== "all" && item.chainId !== chainFilter) return false;
+    if (collectionFilter !== "all" && (item.collection || item.nftAddress || "").toLowerCase() !== collectionFilter) return false;
     if (statusFilter === "all") return true;
     if (statusFilter === "sale") return item.eventType === "sold" || item.eventType === "offer_accepted";
     if (statusFilter === "listing") return item.eventType === "listed";
@@ -93,6 +95,7 @@ export default function ActivityPage() {
   });
 
   const sortedActivity = sortActivity(filteredActivity,sortBy,chainFilter);
+  const collections = [...new Set(activity.map(item => item.collection || item.nftAddress).filter((value): value is string => !!value))].sort((a,b)=>a.localeCompare(b));
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
@@ -143,7 +146,7 @@ export default function ActivityPage() {
           </select>
         </div>
         <div className="royal-filter-group">
-          <span>{chainFilter==="all"?"Choose one chain to sort by price":"Price"}</span>
+          <span>Sort</span>
           <select value={chainFilter==="all"?"recent":sortBy} onChange={(e) => setSortBy(e.target.value as "recent" | "price-high" | "price-low")}>
             <option value="recent">Recent</option>
             <option disabled={chainFilter==="all"} value="price-high">Price: High to Low</option>
@@ -161,8 +164,9 @@ export default function ActivityPage() {
         </div>
         <div className="royal-filter-group">
           <span>Collections</span>
-          <select>
+          <select value={collectionFilter} onChange={event=>setCollectionFilter(event.target.value)}>
             <option value="all">All Collections</option>
+            {collections.map(collection=><option key={collection} value={collection.toLowerCase()}>{collection}</option>)}
           </select>
         </div>
       </section>
@@ -199,8 +203,8 @@ export default function ActivityPage() {
                       <span className="royal-activity-type">{item.eventType.replaceAll("_"," ").toUpperCase()}</span>
                     </div>
                     <div className="royal-activity-item">
-                      <strong>{item.collection || "Unknown Collection"}</strong>
-                      <small>#{item.tokenId || "—"}</small>
+                      <strong>{item.collection || (item.nftAddress?`${item.nftAddress.slice(0,6)}…${item.nftAddress.slice(-4)}`:"Unspecified collection")}</strong>
+                      <small>#{item.tokenId ?? "—"} · {chain.name}</small>
                     </div>
                     <div className="royal-activity-price">
                       <strong>{price}</strong>

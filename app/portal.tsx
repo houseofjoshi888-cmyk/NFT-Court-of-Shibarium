@@ -72,14 +72,14 @@ function useNftMetadata(listing: Listing | null) {
   const [nft,setNft]=useState<WalletNft|null>(null);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
-  useEffect(()=>{let active=true;void(async()=>{if(!listing){setNft(null);setError("");return;}setLoading(true);setError("");try{const response=await fetch(`/api/nft?contract=${listing.nftAddress}&tokenId=${listing.tokenId}&chainId=${listing.chainId}`);const body=await response.json() as WalletNft&{error?:string};if(!response.ok)throw new Error(body.error??"Could not load NFT metadata.");if(active)setNft(body);}catch(e){if(active)setError(e instanceof Error?e.message:"Could not load NFT metadata.");}finally{if(active)setLoading(false);}})();return()=>{active=false;};},[listing]);
+  useEffect(()=>{let active=true;void(async()=>{await Promise.resolve();if(!active)return;if(!listing){setNft(null);setError("");return;}setLoading(true);setError("");try{const response=await fetch(`/api/nft?contract=${listing.nftAddress}&tokenId=${listing.tokenId}&chainId=${listing.chainId}`);const body=await response.json() as WalletNft&{error?:string};if(!response.ok)throw new Error(body.error??"Could not load NFT metadata.");if(active)setNft(body);}catch(e){if(active)setError(e instanceof Error?e.message:"Could not load NFT metadata.");}finally{if(active)setLoading(false);}})();return()=>{active=false;};},[listing]);
   return {nft,loading,error};
 }
 
 export function Portal({ view }: { view:View }) {
   const walletChainId=useChainId();
   const [selectedChainId,setSelectedChainId]=useState<MarketplaceChainId>(isMarketplaceChainId(walletChainId)?walletChainId:109);
-  useEffect(()=>{const requested=Number(new URLSearchParams(window.location.search).get("chainId"));if(isMarketplaceChainId(requested))setSelectedChainId(requested);},[]);
+  useEffect(()=>{const requested=Number(new URLSearchParams(window.location.search).get("chainId"));if(isMarketplaceChainId(requested))queueMicrotask(()=>setSelectedChainId(requested));},[]);
   const selectedChain=getMarketplaceChain(selectedChainId);
   const { data,loading,refresh }=useIndexer(selectedChainId);
   const { address }=useAccount();
@@ -166,9 +166,8 @@ function MarketView({data,loading,account,advancedMarketplace,onBuy,onBatchBuy,o
   useEffect(()=>{
     try{
       const stored=JSON.parse(window.localStorage.getItem(`hoj-market-cart:${data.chainId}`)??"[]") as unknown;
-      setCartIds(Array.isArray(stored)?stored.filter((id):id is string=>typeof id==="string"):[]);
-      setCartOpen(new URLSearchParams(window.location.search).get("cart")==="1");
-    }catch{setCartIds([]);}
+      queueMicrotask(()=>{setCartIds(Array.isArray(stored)?stored.filter((id):id is string=>typeof id==="string"):[]);setCartOpen(new URLSearchParams(window.location.search).get("cart")==="1");});
+    }catch{queueMicrotask(()=>setCartIds([]));}
   },[data.chainId]);
   useEffect(()=>{
     const update=()=>{

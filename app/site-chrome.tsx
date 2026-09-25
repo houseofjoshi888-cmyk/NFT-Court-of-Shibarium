@@ -1,7 +1,7 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Activity, Bell, BookOpen, CircleHelp, ExternalLink, Gem, Headphones, Heart, LayoutDashboard, Menu, Network, Repeat2, Rocket, Search, ShoppingCart, Sparkles, TrendingUp, UserRound, Wallet, X } from "lucide-react";
+import { Activity, Bell, BookOpen, CircleHelp, ExternalLink, Gem, Heart, LayoutDashboard, Menu, Network, Rocket, Search, ShoppingCart, Sparkles, TrendingUp, UserRound, Wallet, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,7 +35,6 @@ export function GlobalHeader() {
   const pathname = usePathname();
   const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
   const [chainStripHidden,setChainStripHidden]=useState(false);
-  const [cartOpen,setCartOpen]=useState(false);
   const [cartCounts,setCartCounts]=useState<ReturnType<typeof readCartCounts>>([]);
   useEffect(()=>{
     const update=()=>setCartCounts(readCartCounts());
@@ -44,6 +43,19 @@ export function GlobalHeader() {
     window.addEventListener("hoj-cart-updated",update);
     return()=>{window.removeEventListener("storage",update);window.removeEventListener("hoj-cart-updated",update);};
   },[pathname]);
+  useEffect(()=>{
+    const rememberNftOrigin=(event:MouseEvent)=>{
+      const target=event.target;
+      if(!(target instanceof Element)||window.location.pathname.startsWith("/nft/"))return;
+      const anchor=target.closest<HTMLAnchorElement>("a[href]");
+      if(!anchor)return;
+      const destination=new URL(anchor.href,window.location.href);
+      if(destination.origin!==window.location.origin||!destination.pathname.startsWith("/nft/"))return;
+      try{window.sessionStorage.setItem("hoj-nft-origin",JSON.stringify({href:window.location.pathname+window.location.search,at:Date.now()}));}catch{/* Navigation still works when storage is unavailable. */}
+    };
+    document.addEventListener("click",rememberNftOrigin,true);
+    return()=>document.removeEventListener("click",rememberNftOrigin,true);
+  },[]);
   useEffect(()=>{
     let frame=0;
     const update=()=>{

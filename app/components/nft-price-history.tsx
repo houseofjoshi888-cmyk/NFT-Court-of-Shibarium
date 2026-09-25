@@ -19,7 +19,7 @@ export function NftPriceHistory({ chainId, contract, tokenId, currency, refreshK
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
+    queueMicrotask(() => { if (!controller.signal.aborted) setLoading(true); });
     const query = new URLSearchParams({ chainId: String(chainId), contract, tokenId });
     void fetch(`/api/nft-price-history?${query}`, { cache: "no-store", signal: controller.signal })
       .then(async response => {

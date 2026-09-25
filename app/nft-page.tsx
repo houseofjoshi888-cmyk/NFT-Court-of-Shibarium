@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, erc1155Abi, type Address } from "viem";
-import { useAccount, useChainId, usePublicClient, useReadContract } from "wagmi";
+import { useAccount, usePublicClient, useReadContract } from "wagmi";
 import { favoriteId, useFavorite } from "./favorites";
 import { getMarketplaceChain, isMarketplaceChainId, tokenUrl, transactionUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
 import { marketplaceAbi, parseNativeAmount, type IndexedOffer } from "@/lib/marketplace-abi";
@@ -31,6 +31,7 @@ const erc721Abi=[
 const short=(value:string)=>`${value.slice(0,6)}…${value.slice(-4)}`;
 
 export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:number;contract:string;tokenId:string;returnTo?:"/market"|"/profile"}){
+  const[returnHref,setReturnHref]=useState(returnTo==="/market"?"/":returnTo);
   const valid=isMarketplaceChainId(chainId)&&/^0x[a-fA-F0-9]{40}$/.test(contract)&&/^\d+$/.test(tokenId);
   const marketChainId:MarketplaceChainId=isMarketplaceChainId(chainId)?chainId:109;
   const chain=getMarketplaceChain(marketChainId);
@@ -54,7 +55,6 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
   const listPending=transaction.pending;
   const favorite=useFavorite(favoriteId(chainId,contract,tokenId));
   const{address}=useAccount();
-  const walletChainId=useChainId();
   const publicClient=usePublicClient({chainId:marketChainId});
   const nftAddress=contract as Address;
   const parsedTokenId=valid?BigInt(tokenId):0n;
@@ -63,6 +63,21 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
   const{data:owner,refetch:refetchOwner}=useReadContract({address:nftAddress,abi:erc721Abi,functionName:"ownerOf",args:[parsedTokenId],chainId:marketChainId,query:{enabled:valid&&!isEdition,refetchInterval:30_000}});
   const{data:directListing,refetch:refetchListing,isLoading:listingLoading}=useReadContract({address:marketplaceAddress,abi:marketplaceAbi,functionName:"getListing",args:[nftAddress,parsedTokenId],chainId:marketChainId,query:{enabled:valid&&marketplaceLive&&!isEdition,refetchInterval:15_000}});
   const{data:marketVersion}=useReadContract({address:marketplaceAddress,abi:marketplaceAbi,functionName:"marketplaceVersion",chainId:marketChainId,query:{enabled:valid&&marketplaceLive}});
+
+  useEffect(()=>{
+    let active=true;
+    queueMicrotask(()=>{
+      if(!active)return;
+      if(returnTo==="/profile"){setReturnHref("/profile");return;}
+      try{
+        const stored=JSON.parse(window.sessionStorage.getItem("hoj-nft-origin")??"null") as {href?:string;at?:number}|null;
+        const href=stored?.href;
+        if(href&&href.startsWith("/")&&!href.startsWith("//")&&!href.startsWith("/nft/")&&typeof stored?.at==="number"&&Date.now()-stored.at<30*60_000){setReturnHref(href);return;}
+      }catch{/* Use the Discover page when no safe source is recorded. */}
+      setReturnHref("/");
+    });
+    return()=>{active=false;};
+  },[returnTo]);
 
   const loadMetadata=useCallback(async(refresh=false)=>{
     const query=new URLSearchParams({chainId:String(chainId),contract,tokenId});
@@ -227,7 +242,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
     <div className="royal-nft-stage">
     <nav className="royal-nft-nav">
       <div className="royal-nft-gallery-nav">
-        <Link href={returnTo} className="royal-nft-gallery-back" aria-label={returnTo==="/profile"?"Back to profile":"Back to marketplace"}><ArrowLeft size={18}/></Link>
+        <Link href={returnHref} className="royal-nft-gallery-back" aria-label="Back to previous page"><ArrowLeft size={18}/></Link>
         <div className="royal-nft-thumbnails" aria-label="More NFTs from this collection">
           {nft?.imageUrl&&!artFailed?<span className="royal-nft-thumb active"><Image src={nft.imageUrl} alt="Current NFT" fill unoptimized sizes="52px"/></span>:<span className="royal-nft-thumb active"><ImageIcon size={20}/></span>}
           {galleryItems.map(item=><Link key={item.tokenId} className="royal-nft-thumb" href={`/nft/${chainId}/${contract}/${item.tokenId}${returnTo==="/profile"?"?from=profile":""}`} title={item.name}><Image src={item.imageUrl} alt={item.name} fill unoptimized sizes="52px"/></Link>)}
@@ -252,7 +267,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
           <Heart size={16} fill={favorite.favorite?"currentColor":"none"}/>
           <span>{favorite.favorite?"Saved":"Favorite"}</span>
         </button>
-        <Link href={returnTo} className="royal-nft-gallery-close" aria-label="Close NFT view"><X size={19}/></Link>
+        <Link href={returnHref} className="royal-nft-gallery-close" aria-label="Close NFT view"><X size={19}/></Link>
       </div>
     </nav>
 

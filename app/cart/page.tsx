@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { formatEther } from "viem";
@@ -19,7 +20,7 @@ export default function CartPage(){
         return ids.length?[{chainId:chain.id as MarketplaceChainId,name:chain.name,currency:chain.currency,ids,listings:[],loading:true,error:""}]:[];
       }catch{return [];}
     });
-    setGroups(initial);
+    queueMicrotask(()=>{if(active)setGroups(initial);});
     for(const group of initial){void fetch(`/api/indexer?chainId=${group.chainId}`,{cache:"no-store"}).then(async response=>{
       if(!response.ok)throw new Error("Listings are temporarily unavailable.");
       const body=await response.json() as {listings:Listing[]};
@@ -39,7 +40,7 @@ export default function CartPage(){
   const count=groups.reduce((sum,group)=>sum+group.ids.length,0);
   return <main className="hoj-cart-page"><header><span>MARKETPLACE CART</span><h1>Your cart</h1><p>{count} {count===1?"NFT":"NFTs"} saved for checkout. Purchases settle separately on each network.</p></header>
     {groups.length===0?<section className="hoj-cart-empty"><ShoppingCart size={28}/><h2>Your cart is empty</h2><p>Find an NFT you love and add it here.</p><Link href="/market">Explore listed NFTs</Link></section>:groups.map(group=><section className="hoj-cart-group" key={group.chainId}><div className="hoj-cart-group-heading"><h2>{group.name}</h2><strong>{group.listings.length?`${formatEther(group.listings.reduce((sum,item)=>sum+BigInt(item.price),0n))} ${group.currency}`:""}</strong></div>
-      {group.loading?<p>Checking current listings…</p>:group.error?<p>{group.error}</p>:group.ids.map(id=>{const item=group.listings.find(listing=>listing.id===id);return <article key={id} className="hoj-cart-row"><div className="hoj-cart-row-art">{item?<img src={`/api/nft-image?${new URLSearchParams({chainId:String(group.chainId),contract:item.nftAddress,tokenId:item.tokenId})}`} alt=""/>:<ShoppingCart size={20}/>}</div><div><strong>{item?`Token #${item.tokenId}`:"Listing unavailable"}</strong><small>{item?item.nftAddress:"This item is no longer in the active listings."}</small></div><span>{item?`${formatEther(BigInt(item.price))} ${group.currency}`:"—"}</span><button onClick={()=>remove(group.chainId,id)} aria-label="Remove from cart"><Trash2 size={17}/></button></article>;})}
+      {group.loading?<p>Checking current listings…</p>:group.error?<p>{group.error}</p>:group.ids.map(id=>{const item=group.listings.find(listing=>listing.id===id);return <article key={id} className="hoj-cart-row"><div className="hoj-cart-row-art">{item?<Image src={`/api/nft-image?${new URLSearchParams({chainId:String(group.chainId),contract:item.nftAddress,tokenId:item.tokenId})}`} alt="" width={56} height={56} unoptimized/>:<ShoppingCart size={20}/>}</div><div><strong>{item?`Token #${item.tokenId}`:"Listing unavailable"}</strong><small>{item?item.nftAddress:"This item is no longer in the active listings."}</small></div><span>{item?`${formatEther(BigInt(item.price))} ${group.currency}`:"—"}</span><button onClick={()=>remove(group.chainId,id)} aria-label="Remove from cart"><Trash2 size={17}/></button></article>;})}
       <Link className="hoj-cart-checkout" href={`/market?chainId=${group.chainId}&cart=1`}>Review and checkout on {group.name}</Link>
     </section>)}
   </main>;

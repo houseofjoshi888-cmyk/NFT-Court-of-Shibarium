@@ -60,7 +60,7 @@ function shortAddress(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
-function ListedCollectionCard({collection,rank,featured=false}:{collection:ListedCollection;rank:number;featured?:boolean}) {
+function ListedCollectionCard({collection,rank}:{collection:ListedCollection;rank:number}) {
   const [metadata,setMetadata]=useState<{collection?:string;imageUrl?:string}|null>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{
@@ -69,11 +69,12 @@ function ListedCollectionCard({collection,rank,featured=false}:{collection:Liste
       .then(response=>response.ok?response.json() as Promise<{collection?:string;imageUrl?:string}>:null).then(data=>{setMetadata(data);setFailed(false);}).catch(()=>{});
     return()=>controller.abort();
   },[collection.chainId,collection.address,collection.sampleTokenId]);
-  return <Link href={`/collection/${collection.chainId}/${collection.address}`} className={`royal-collection-card${featured?" royal-featured-collection":""}`}>
-    <div className="royal-collection-rank">{featured?"FEATURED COLLECTION":`#${rank}`}</div>
-    <div className="royal-collection-avatar">{metadata?.imageUrl&&!failed?<Image src={metadata.imageUrl} alt={metadata.collection??"Collection artwork"} width={56} height={56} unoptimized onError={()=>setFailed(true)} style={{objectFit:"cover",borderRadius:8}}/>:<ImageIcon size={32}/>}</div>
-    <div className="royal-collection-info"><h3>{metadata?.collection??shortAddress(collection.address)}</h3><span>{getMarketplaceChain(collection.chainId).name}</span>
-      <div className="royal-collection-stats"><div><strong>{collection.listingCount}</strong><span>Listings</span></div><div><strong>{formatEther(BigInt(collection.floorPrice))} {getMarketplaceChain(collection.chainId).currency}</strong><span>{collection.complete?"HOJ floor":"Observed HOJ low"}</span></div></div>
+  return <Link href={`/collection/${collection.chainId}/${collection.address}`} className="hoj-listed-collection">
+    <div className="hoj-listed-art">{metadata?.imageUrl&&!failed?<Image src={metadata.imageUrl} alt={metadata.collection??"Collection artwork"} width={112} height={112} unoptimized onError={()=>setFailed(true)}/>:<ImageIcon size={30} aria-label="Artwork unavailable"/>}</div>
+    <div className="hoj-listed-content">
+      <div className="hoj-listed-heading"><span>{String(rank).padStart(2,"0")} · {getMarketplaceChain(collection.chainId).name}</span><ArrowUpRight size={17} aria-hidden="true"/></div>
+      <h3>{metadata?.collection??shortAddress(collection.address)}</h3>
+      <div className="hoj-listed-metrics"><div><small>LISTED</small><strong>{collection.listingCount}</strong></div><div><small>{collection.complete?"HOJ FLOOR":"OBSERVED LOW"}</small><strong>{formatEther(BigInt(collection.floorPrice))} {getMarketplaceChain(collection.chainId).currency}</strong></div></div>
     </div>
   </Link>;
 }
@@ -236,7 +237,7 @@ export default function Home() {
           <div className="royal-collections-grid">
             {listedCollections.length === 0 && <p className="royal-market-empty">No collections have active indexed listings yet. Check back after a seller lists an NFT.</p>}
             {listedCollections.map((collection, index) => (
-              <ListedCollectionCard key={`${collection.chainId}:${collection.address}`} collection={collection} rank={index+1} featured={index===0}/>
+              <ListedCollectionCard key={`${collection.chainId}:${collection.address}`} collection={collection} rank={index+1}/>
             ))}
           </div>
         )}
