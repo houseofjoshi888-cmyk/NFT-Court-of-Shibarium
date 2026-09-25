@@ -30,13 +30,14 @@ const erc721Abi=[
 ] as const;
 const short=(value:string)=>`${value.slice(0,6)}…${value.slice(-4)}`;
 
-export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:string;tokenId:string}){
+export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:number;contract:string;tokenId:string;returnTo?:"/market"|"/profile"}){
   const valid=isMarketplaceChainId(chainId)&&/^0x[a-fA-F0-9]{40}$/.test(contract)&&/^\d+$/.test(tokenId);
   const marketChainId:MarketplaceChainId=isMarketplaceChainId(chainId)?chainId:109;
   const chain=getMarketplaceChain(marketChainId);
   const marketplaceLive=chain.marketplaceStatus==="live";
   const[nft,setNft]=useState<Nft|null>(null);
   const[indexer,setIndexer]=useState<Indexer|null>(null);
+  const[collectionTokens,setCollectionTokens]=useState<Array<{tokenId:string;name:string;imageUrl:string}>>([]);
   const marketplaceAddress=(indexer?.marketplaceAddress??chain.marketplaceAddress) as Address;
   const[error,setError]=useState("");
   const[status,setStatus]=useState("");
@@ -101,6 +102,16 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     return()=>window.clearInterval(timer);
   },[chainId,valid]);
 
+  useEffect(()=>{
+    if(!valid)return;
+    let active=true;
+    void fetch(`/api/collection-nfts?${new URLSearchParams({chainId:String(chainId),contract})}`)
+      .then(response=>response.ok?response.json() as Promise<{items:Array<{tokenId:string;name:string;imageUrl:string}>}>:{items:[]})
+      .then(body=>{if(active)setCollectionTokens(body.items);})
+      .catch(()=>{});
+    return()=>{active=false;};
+  },[chainId,contract,valid]);
+
   async function refreshMetadata(){
     if(refreshing||!valid)return;
     setRefreshing(true);
@@ -124,7 +135,13 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
   },[indexer,contract,tokenId,directListing,isEdition,marketChainId]);
   const activity=useMemo(()=>indexer?.activity.filter(item=>item.nftAddress?.toLowerCase()===contract.toLowerCase()&&item.tokenId===tokenId)??[],[indexer,contract,tokenId]);
   const collectionListings=useMemo(()=>indexer?.listings.filter(item=>item.nftAddress.toLowerCase()===contract.toLowerCase()&&item.tokenId!==tokenId)??[],[indexer,contract,tokenId]);
-  const galleryItems=collectionListings.slice(0,12);
+  const relatedItems=useMemo(()=>{
+    const byId=new Map<string,{tokenId:string;name:string;imageUrl:string;listing:Listing|null}>();
+    for(const item of collectionTokens){if(item.tokenId!==tokenId)byId.set(item.tokenId,{...item,listing:null});}
+    for(const listing of collectionListings){const existing=byId.get(listing.tokenId);byId.set(listing.tokenId,{tokenId:listing.tokenId,name:existing?.name??`Token #${listing.tokenId}`,imageUrl:existing?.imageUrl??`/api/nft-image?${new URLSearchParams({chainId:String(chainId),contract,tokenId:listing.tokenId})}`,listing});}
+    return [...byId.values()].slice(0,24);
+  },[chainId,collectionListings,collectionTokens,contract,tokenId]);
+  const galleryItems=relatedItems.slice(0,12);
   const lastSale=activity.find(item=>(["sold","offer_accepted"].includes(item.eventType))&&item.price);
   const isSeller=!!address&&!!listing&&address.toLowerCase()===listing.seller.toLowerCase();
   const isOwner=!!address&&!!owner&&address.toLowerCase()===owner.toLowerCase();
@@ -210,12 +227,12 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     <div className="royal-nft-stage">
     <nav className="royal-nft-nav">
       <div className="royal-nft-gallery-nav">
-        <Link href="/market" className="royal-nft-gallery-back" aria-label="Back to marketplace"><ArrowLeft size={18}/></Link>
+        <Link href={returnTo} className="royal-nft-gallery-back" aria-label={returnTo==="/profile"?"Back to profile":"Back to marketplace"}><ArrowLeft size={18}/></Link>
         <div className="royal-nft-thumbnails" aria-label="Other listed NFTs from this collection">
           {nft?.imageUrl&&!artFailed?<span className="royal-nft-thumb active"><Image src={nft.imageUrl} alt="Current NFT" fill unoptimized sizes="52px"/></span>:<span className="royal-nft-thumb active"><ImageIcon size={20}/></span>}
-          {galleryItems.map(item=><Link key={item.id} className="royal-nft-thumb" href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} title={`Token #${item.tokenId}`}><Image src={`/api/nft-image?chainId=${item.chainId}&contract=${item.nftAddress}&tokenId=${item.tokenId}`} alt={`Token #${item.tokenId}`} fill unoptimized sizes="52px"/></Link>)}
+          {galleryItems.map(item=><Link key={item.tokenId} className="royal-nft-thumb" href={`/nft/${chainId}/${contract}/${item.tokenId}${returnTo==="/profile"?"?from=profile":""}`} title={item.name}><Image src={item.imageUrl} alt={item.name} fill unoptimized sizes="52px"/></Link>)}
         </div>
-        {galleryItems.length>0&&<Link href={`/nft/${galleryItems[0].chainId}/${galleryItems[0].nftAddress}/${galleryItems[0].tokenId}`} className="royal-nft-gallery-next" aria-label="View another NFT in this collection"><ArrowRight size={18}/></Link>}
+        {galleryItems.length>0&&<Link href={`/nft/${chainId}/${contract}/${galleryItems[0].tokenId}${returnTo==="/profile"?"?from=profile":""}`} className="royal-nft-gallery-next" aria-label="View another NFT in this collection"><ArrowRight size={18}/></Link>}
       </div>
       <div className="royal-nft-nav-actions">
         <div className="nft-share-wrap">
@@ -235,7 +252,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
           <Heart size={16} fill={favorite.favorite?"currentColor":"none"}/>
           <span>{favorite.favorite?"Saved":"Favorite"}</span>
         </button>
-        <Link href="/market" className="royal-nft-gallery-close" aria-label="Close NFT view"><X size={19}/></Link>
+        <Link href={returnTo} className="royal-nft-gallery-close" aria-label="Close NFT view"><X size={19}/></Link>
       </div>
     </nav>
 
@@ -351,9 +368,9 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
         <details className="royal-nft-accordion">
           <summary><ShieldCheck size={17}/><span>Blockchain details</span><ChevronDown size={17}/></summary>
           <div className="royal-nft-accordion-body">
-          <dl>
+          <dl className="royal-blockchain-details">
             <div><dt>Contract</dt><dd><button onClick={copyContract}>{short(contract)} {copied?<Check size={13}/>:<Copy size={13}/>}</button></dd></div>
-            <div><dt>Token ID</dt><dd>{tokenId}</dd></div>
+            <div><dt>Token ID</dt><dd><button type="button" title={tokenId} aria-label="Copy full token ID" onClick={async()=>{await navigator.clipboard.writeText(tokenId);setStatus("Token ID copied.");}}>{tokenId.length>24?`${tokenId.slice(0,12)}…${tokenId.slice(-8)}`:tokenId} <Copy size={13}/></button></dd></div>
             <div><dt>Token standard</dt><dd>{isEdition?"ERC-1155":"ERC-721"}</dd></div>
             <div><dt>Network</dt><dd>{chain.name}</dd></div>
           </dl>
@@ -405,20 +422,20 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     </section>
 
     {activeTab==="details"&&<details className="royal-nft-more-from-collection royal-nft-accordion">
-      <summary><ImageIcon size={17}/><span>More from this collection</span><small>{collectionListings.length}</small><ChevronDown size={17}/></summary>
+      <summary><ImageIcon size={17}/><span>More from this collection</span><small>{relatedItems.length}</small><ChevronDown size={17}/></summary>
       <div className="royal-collection-grid">
-        {collectionListings.slice(0,8).map(item=>(
-          <Link key={item.id} href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} className="royal-collection-item">
+        {relatedItems.slice(0,8).map(item=>(
+          <Link key={item.tokenId} href={`/nft/${chainId}/${contract}/${item.tokenId}${returnTo==="/profile"?"?from=profile":""}`} className="royal-collection-item">
             <div className="royal-collection-item-art">
-              <Image src={`/api/nft-image?chainId=${item.chainId}&contract=${item.nftAddress}&tokenId=${item.tokenId}`} alt={`Token #${item.tokenId}`} fill unoptimized sizes="140px"/>
+              <Image src={item.imageUrl} alt={item.name} fill unoptimized sizes="140px"/>
             </div>
             <div className="royal-collection-item-info">
-              <small>#{item.tokenId}</small>
-              <strong>{formatEther(BigInt(item.price))} {chain.currency}</strong>
+              <small>{item.name}</small>
+              <strong>{item.listing?`${formatEther(BigInt(item.listing.price))} ${chain.currency}`:"Not listed"}</strong>
             </div>
           </Link>
         ))}
-        {collectionListings.length===0&&<p>No other items from this collection are currently listed.</p>}
+        {relatedItems.length===0&&<p>No other NFTs from this collection could be loaded right now.</p>}
       </div>
     </details>}
     </div>

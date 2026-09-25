@@ -378,7 +378,7 @@ export default function ProfilePage() {
                     const nftChainId = nft.chainId || 109; // Default to Shibarium if not set
                     const activeListing=listings.find(l=>l.chainId===nftChainId&&l.nftAddress.toLowerCase()===nft.contractAddress.toLowerCase()&&l.tokenId===nft.tokenId);
                     return (
-                      <Link key={`${nftChainId}-${nft.contractAddress}-${nft.tokenId}`} href={`/nft/${nftChainId}/${nft.contractAddress}/${nft.tokenId}`} className="royal-profile-nft">
+                      <Link key={`${nftChainId}-${nft.contractAddress}-${nft.tokenId}`} href={`/nft/${nftChainId}/${nft.contractAddress}/${nft.tokenId}?from=profile`} className="royal-profile-nft">
                         <NftArtwork key={nft.imageUrl ?? "no-image"} imageUrl={nft.imageUrl} name={nft.name || `Token #${nft.tokenId}`} />
                         <div className="royal-nft-details">
                           <small>{getMarketplaceChain(nftChainId).name} · {nft.collection || `${nft.contractAddress.slice(0, 8)}…`}</small>
@@ -417,7 +417,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="royal-listing-details">
                           <small>{chain.name}</small>
-                          <h3>#{listing.tokenId}</h3><Link href={`/nft/${listing.chainId}/${listing.nftAddress}/${listing.tokenId}`}>Manage listing</Link>
+                          <h3>#{listing.tokenId}</h3><Link href={`/nft/${listing.chainId}/${listing.nftAddress}/${listing.tokenId}?from=profile`}>Manage listing</Link>
                           <p>{listing.nftAddress.slice(0, 8)}…</p>
                         </div>
                       </div>
