@@ -78,7 +78,7 @@ function NftArtwork({ imageUrl, name }: { imageUrl: string | null; name: string 
   return <div className="royal-nft-image">
     {imageUrl && !failed
       ? <Image src={imageUrl} alt={name} width={320} height={320} unoptimized loading="lazy" onError={() => setFailed(true)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-      : <ImageIcon size={32} aria-label="Artwork unavailable" />}
+      : <div className="royal-nft-artwork-fallback"><ImageIcon size={30} aria-hidden="true" /><span>Artwork unavailable</span></div>}
   </div>;
 }
 

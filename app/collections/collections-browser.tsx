@@ -4,6 +4,7 @@ import { ArrowUpRight, ExternalLink, Flame, Grid2X2, List, Search } from "lucide
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
 import Link from "next/link";
+import Image from "next/image";
 import { getMarketplaceChain, isMarketplaceLive, marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
 
 type Mint = {
@@ -135,10 +136,11 @@ function TrendingCollectionCard({item,rank}:{item:TrendingCollection;rank:number
 
 function ListedNft({item}:{item:Listing}){
   const [nft,setNft]=useState<NftMetadata|null>(null);
+  const [artFailed,setArtFailed]=useState(false);
   const chain=getMarketplaceChain(item.chainId);
   useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.tokenId}&chainId=${item.chainId}`).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)}).catch(()=>{});return()=>{active=false};},[item]);
   return <Link href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} className="chain-listing">
-    <div className="chain-listing-art" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>{!nft?.imageUrl&&<strong>#{item.tokenId}</strong>}<span>{chain.name}</span></div>
+    <div className="chain-listing-art">{nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT #${item.tokenId}`} fill unoptimized sizes="(max-width: 700px) 100vw, 220px" style={{objectFit:"cover"}} onError={()=>setArtFailed(true)}/>:<strong>#{item.tokenId}<small>Artwork unavailable</small></strong>}<span>{chain.name}</span></div>
     <div><small>{nft?.collection??short(item.nftAddress)}</small><h3>{nft?.name??`Token #${item.tokenId}`}</h3><p><span>LISTING PRICE</span><strong>{formatEther(BigInt(item.price))} {chain.currency}</strong></p><span>View NFT <ArrowUpRight size={13}/></span></div>
   </Link>;
 }

@@ -3,6 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ArrowLeft, ArrowUpRight, Check, Copy, ExternalLink, Heart, ImageIcon, RefreshCw, Share2, ShieldCheck, ShoppingCart, Tag, Wallet, TrendingUp, Activity, Layers, History, Info, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, erc1155Abi, type Address } from "viem";
 import { useAccount, useChainId, usePublicClient, useReadContract } from "wagmi";
@@ -42,6 +43,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
   const[copied,setCopied]=useState(false);
   const[shareOpen,setShareOpen]=useState(false);
   const[refreshing,setRefreshing]=useState(false);
+  const[artFailed,setArtFailed]=useState(false);
   const[activeTab,setActiveTab]=useState<"details"|"orders"|"activity"|"traits"|"price-history"|"about">("details");
   const[showListModal,setShowListModal]=useState(false);
   const[listPrice,setListPrice]=useState("");
@@ -68,6 +70,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     const body=await response.json() as Nft;
     if(!response.ok)throw new Error(body.error??"NFT metadata is unavailable.");
     setNft(body);
+    setArtFailed(false);
     setError("");
     return body;
   },[chainId,contract,tokenId]);
@@ -104,7 +107,7 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
     setStatus("Refreshing NFT metadata…");
     try{
       const refreshed=await loadMetadata(true);
-      setStatus(refreshed.imageUrl?"NFT metadata and image refreshed.":"Metadata refreshed. The collection has not supplied an image yet.");
+      setStatus(refreshed.imageUrl?"Metadata rechecked. Artwork will reload if the collection source is available.":"Metadata refreshed. The collection has not supplied an image yet.");
     }catch(reason){
       setStatus(reason instanceof Error?reason.message:"NFT metadata could not be refreshed.");
     }finally{setRefreshing(false);}
@@ -217,9 +220,10 @@ export function NftPage({chainId,contract,tokenId}:{chainId:number;contract:stri
 
     <section className="royal-nft-hero">
       <div className="royal-nft-media">
-        <div className={`royal-nft-art ${nft?.imageUrl?"":"empty"}`} style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>
-          {!nft?.imageUrl&&<><ImageIcon size={48}/><span>{error||"Loading verified NFT…"}</span><strong>{displayTokenId}</strong></>}
+        <div className={`royal-nft-art ${nft?.imageUrl&&!artFailed?"":"empty"}`}>
+          {nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT ${displayTokenId}`} fill unoptimized sizes="(max-width: 800px) 100vw, 50vw" style={{objectFit:"contain"}} onError={()=>setArtFailed(true)}/>:<><ImageIcon size={48}/><span>{error||(nft?"Artwork unavailable from the NFT metadata source.":"Loading verified NFT…")}</span><strong>{displayTokenId}</strong></>}
         </div>
+        {artFailed&&chainId===109&&contract.toLowerCase()==="0x007bbf85988caf18cf4222c9214e4fa019b3e002"&&<p className="royal-nft-artwork-warning">The Shib Magazine Covers metadata host is denying public access. Your NFT remains on Shibarium, but its publisher must restore the image source for the original cover to appear.</p>}
         <div className="royal-nft-media-info">
           <ShieldCheck size={16}/>
           <span>Metadata and ownership are read from the {chain.name} network.</span>

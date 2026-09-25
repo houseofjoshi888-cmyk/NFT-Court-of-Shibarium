@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPublicClient, getAddress, http, type Address } from "viem";
 import { getMarketplaceChain, isMarketplaceChainId } from "@/lib/marketplace-chains";
 import { env } from "@runtime-env";
+import { officialShibMagazineCover, shibMagazineEdition } from "@/lib/shib-magazine-cover";
 
 export const dynamic = "force-dynamic";
 
@@ -275,6 +276,24 @@ export async function GET(request: NextRequest) {
         },
       });
     } catch {
+      // The publisher's NFT metadata S3 bucket is currently inaccessible, but
+      // its public magazine still hosts the matching edition cover artwork.
+      const edition = shibMagazineEdition(requestedChainId, contract, requestedTokenId);
+      if (edition !== null) {
+        try {
+          const cover = await officialShibMagazineCover(edition, refresh);
+          const image = await fetchFirstImage(cover.imageUrl, requestedTokenId, refresh);
+          return new NextResponse(image.body, {
+            headers: {
+              "Content-Type": image.headers.get("content-type") ?? "image/jpeg",
+              "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
+              "X-Artwork-Source": "official-magazine-edition-cover",
+            },
+          });
+        } catch {
+          // Never substitute a different edition or an unverified image.
+        }
+      }
       return new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=300" } });
     }
   }

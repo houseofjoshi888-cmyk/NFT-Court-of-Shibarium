@@ -3,6 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ArrowLeft, ArrowUpRight, ChevronDown, ExternalLink, Grid2X2, Heart, List, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Trash2, Wallet, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatEther, getAddress, erc721Abi, zeroAddress } from "viem";
 import { useAccount, useChainId, usePublicClient, useReadContract } from "wagmi";
@@ -192,10 +193,12 @@ function MarketView({data,loading,account,advancedMarketplace,onBuy,onBatchBuy,o
 function MarketListingCard({item,currency,chain,inCart,onToggleCart}:{item:Listing;currency:string;chain:string;inCart:boolean;onToggleCart:()=>void}){
   const details=useNftMetadata(item);
   const nft=details.nft;
+  const [artFailed,setArtFailed]=useState(false);
+  const showArt=!!nft?.imageUrl&&!artFailed;
   const saved=useFavorite(favoriteId(item.chainId,item.nftAddress,item.tokenId));
   return <article className="market-listing">
-    <Link href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} className={`market-listing-art ${nft?.imageUrl?"has-image":""}`} style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>
-      {!nft?.imageUrl&&<><span>{chain} · ERC-721</span><strong>#{item.tokenId}</strong><i>{short(item.nftAddress)}</i></>}
+    <Link href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} className={`market-listing-art ${showArt?"has-image":""}`}>
+      {showArt?<Image src={nft.imageUrl!} alt={nft.name??`NFT #${item.tokenId}`} fill unoptimized sizes="(max-width: 700px) 50vw, 220px" style={{objectFit:"cover"}} onError={()=>setArtFailed(true)}/>:<><span>{chain} · {item.tokenType??"ERC-721"}</span><strong>#{item.tokenId}</strong><i>Artwork unavailable</i></>}
     </Link>
     <button className={`market-favorite ${saved.favorite?"active":""}`} onClick={saved.toggle} aria-label={saved.favorite?"Remove from favorites":"Add to favorites"}><Heart size={15} fill={saved.favorite?"currentColor":"none"}/></button>
     <div>
