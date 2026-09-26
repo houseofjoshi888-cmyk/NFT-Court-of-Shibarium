@@ -29,6 +29,7 @@ const navigation: ReadonlyArray<{ href:string; label:string; icon:typeof LayoutD
   { href: "/activity", label: "Activity", icon: Activity },
   { href: "/rankings", label: "Rankings", icon: TrendingUp },
   { href: "/profile", label: "Profile", icon: UserRound },
+  { href: "/wallet", label: "Withdraw", icon: Wallet },
 ];
 
 export function GlobalHeader() {

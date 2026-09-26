@@ -2,7 +2,7 @@
 
 import { WalletOffers } from "../components/offers-panel";
 
-import { Sparkles, Wallet, TrendingUp, Activity, Gift, ExternalLink, ImageIcon } from "lucide-react";
+import { Sparkles, Wallet, TrendingUp, Activity, Gift, ExternalLink, ImageIcon, ArrowUpRight } from "lucide-react";
 import { useAccount, useChainId } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
@@ -263,6 +263,7 @@ export default function ProfilePage() {
             <Wallet size={20} />
             <span>{address.slice(0, 6)}…{address.slice(-4)}</span>
           </div>
+          <Link href="/wallet" className="hoj-profile-withdraw-link">View withdrawable balance <ArrowUpRight size={15}/></Link>
           <div className="royal-portfolio-value">
             <span>Wallet status</span>
             <strong>Connected</strong>

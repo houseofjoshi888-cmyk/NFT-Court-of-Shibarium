@@ -304,7 +304,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
 
         <div className="royal-nft-owner">
           <span>{isEdition?"Edition ownership":"Owned by"}</span>
-          {owner?<a href={`${chain.explorerUrl}/address/${owner}`} target="_blank" rel="noreferrer">{short(owner)} <ExternalLink size={12}/></a>:<span>—</span>}
+          {isEdition?<span>Multiple holders</span>:owner?<a href={`${chain.explorerUrl}/address/${owner}`} target="_blank" rel="noreferrer">{short(owner)} <ExternalLink size={12}/></a>:<span>—</span>}
         </div>
 
         {nft?.description&&<p className="royal-nft-intro">{nft.description}</p>}

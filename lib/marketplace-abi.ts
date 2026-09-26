@@ -2,6 +2,8 @@ import { parseAbi, parseEther, maxUint256 } from "viem";
 
 export const marketplaceAbi = parseAbi([
   "function marketplaceVersion() pure returns (uint256)",
+  "function HOUSE_TREASURY() view returns (address)",
+  "function MARKETPLACE_FEE_BPS() view returns (uint256)",
   "function allowedPaymentTokens(address paymentToken) view returns (bool)",
   "function setAllowedPaymentToken(address paymentToken, bool allowed)",
   "function listTokenItem(address nftAddress, uint256 tokenId, address paymentToken, uint256 price)",
