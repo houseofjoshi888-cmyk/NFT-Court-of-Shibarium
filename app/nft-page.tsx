@@ -47,7 +47,6 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
   const[shareOpen,setShareOpen]=useState(false);
   const[refreshing,setRefreshing]=useState(false);
   const[artFailed,setArtFailed]=useState(false);
-  const[portraitArtwork,setPortraitArtwork]=useState(false);
   const[activeTab,setActiveTab]=useState<"details"|"orders"|"activity">("details");
   const[showListModal,setShowListModal]=useState(false);
   const[listPrice,setListPrice]=useState("");
@@ -90,7 +89,6 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
     if(!response.ok)throw new Error(body.error??"NFT metadata is unavailable.");
     setNft(body);
     setArtFailed(false);
-    setPortraitArtwork(false);
     setError("");
     return body;
   },[chainId,contract,tokenId]);
@@ -277,8 +275,8 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
 
     <div className="royal-nft-split">
       <div className="royal-nft-media">
-        <div className={`royal-nft-art ${nft?.imageUrl&&!artFailed?"":"empty"}${portraitArtwork?" portrait-artwork":""}`}>
-          {nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT ${displayTokenId}`} fill unoptimized sizes="(max-width: 1100px) 100vw, 56vw" style={{objectFit:"contain"}} onLoad={event=>{const image=event.currentTarget;setPortraitArtwork(image.naturalHeight>image.naturalWidth*1.3);}} onError={()=>setArtFailed(true)}/>:<><ImageIcon size={48}/><span>{error||(nft?"Artwork unavailable from the NFT metadata source.":"Loading verified NFT…")}</span><strong>{displayTokenId}</strong></>}
+        <div className={`royal-nft-art ${nft?.imageUrl&&!artFailed?"":"empty"}`}>
+          {nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT ${displayTokenId}`} fill unoptimized sizes="(max-width: 1100px) 100vw, 56vw" style={{objectFit:"contain"}} onError={()=>setArtFailed(true)}/>:<><ImageIcon size={48}/><span>{error||(nft?"Artwork unavailable from the NFT metadata source.":"Loading verified NFT…")}</span><strong>{displayTokenId}</strong></>}
         </div>
         {artFailed&&chainId===109&&contract.toLowerCase()==="0x007bbf85988caf18cf4222c9214e4fa019b3e002"&&<p className="royal-nft-artwork-warning">The Shib Magazine Covers metadata host is denying public access. Your NFT remains on Shibarium, but its publisher must restore the image source for the original cover to appear.</p>}
         <div className="royal-nft-media-info">
