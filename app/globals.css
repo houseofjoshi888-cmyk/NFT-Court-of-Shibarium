@@ -10157,22 +10157,22 @@ article.royal-profile-nft > a {
 
 .royal-collection-stats-bar.opensea-style {
   display:flex;
-  gap:0;
-  padding:0;
-  background:var(--royal-dark-gray);
-  border:1px solid var(--royal-border);
+  gap:24px;
+  padding:16px 20px;
+  background:transparent;
+  border:none;
   margin:0 clamp(20px,4vw,60px) 20px;
   max-width:1400px;
   margin-left:auto;
   margin-right:auto;
-  border-radius:12px;
-  overflow:hidden;
+  border-radius:0;
+  overflow:visible;
 }
 
 .royal-collection-stats-bar.opensea-style .royal-stat-item {
   flex:1;
-  padding:16px 20px;
-  border-right:1px solid var(--royal-border);
+  padding:0;
+  border:none;
   display:flex;
   flex-direction:column;
   gap:4px;
@@ -10180,7 +10180,7 @@ article.royal-profile-nft > a {
 }
 
 .royal-collection-stats-bar.opensea-style .royal-stat-item:last-child {
-  border-right:none;
+  border:none;
 }
 
 .royal-collection-stats-bar.opensea-style .royal-stat-label {
