@@ -26,7 +26,7 @@ const rpcUrl = process.env.DEPLOY_RPC_URL ?? chain?.rpcUrls.default.http[0];
 
 if (!chain) throw new Error("DEPLOY_CHAIN_ID must be 1, 25, 109, 137, 8453, 4663, 33139, or 7777777.");
 
-const sourceFiles = ["NFTMarketplace.sol", "NFTMarketplaceV4.sol", "NFTMarketplaceV5.sol", "NFTMarketplaceV6.sol"];
+const sourceFiles = ["NFTMarketplace.sol", "NFTMarketplaceV4.sol", "NFTMarketplaceV5.sol", "NFTMarketplaceV6.sol", "NFTMarketplaceV7.sol"];
 const sources = Object.fromEntries(await Promise.all(sourceFiles.map(async name => [
   `contracts/${name}`, { content: await readFile(resolve("contracts", name), "utf8") },
 ])));
@@ -52,9 +52,9 @@ const output = JSON.parse(solc.compile(JSON.stringify(input), {
 const errors = (output.errors ?? []).filter(error => error.severity === "error");
 if (errors.length) throw new Error(errors.map(error => error.formattedMessage).join("\n"));
 
-const artifact = output.contracts["contracts/NFTMarketplaceV6.sol"].HOJNFTMarketplaceV6;
+const artifact = output.contracts["contracts/NFTMarketplaceV7.sol"].HOJNFTMarketplaceV7;
 if (process.env.COMPILE_ONLY === "1") {
-  console.log(`HOJNFTMarketplaceV6 compiled for ${chain.name}.`);
+  console.log(`HOJNFTMarketplaceV7 compiled for ${chain.name}.`);
   process.exit(0);
 }
 const treasury = process.env.FEE_TREASURY_ADDRESS;

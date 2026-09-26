@@ -29,7 +29,7 @@ contract HOJNFTMarketplaceV6 is HOJNFTMarketplace {
 
     constructor(address treasury) HOJNFTMarketplace(treasury) {}
 
-    function marketplaceVersion() external pure override returns (uint256) { return 6; }
+    function marketplaceVersion() external pure virtual override returns (uint256) { return 6; }
 
     function setAllowedPaymentToken(address paymentToken, bool allowed) external {
         if (msg.sender != HOUSE_TREASURY) revert UnauthorizedPaymentAdmin();

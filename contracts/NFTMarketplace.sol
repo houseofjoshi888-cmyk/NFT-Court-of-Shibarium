@@ -167,7 +167,7 @@ contract NFTMarketplace is ReentrancyGuard {
         emit ItemBought(buyer, nftAddress, tokenId, listing.price, marketplaceFee, royaltyRecipient, royaltyAmount);
     }
 
-    function _creditSale(address nftAddress, uint256 tokenId, address seller, uint256 salePrice) internal returns (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) {
+    function _creditSale(address nftAddress, uint256 tokenId, address seller, uint256 salePrice) internal virtual returns (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) {
         marketplaceFee = marketplaceFeeFor(salePrice);
         (royaltyRecipient, royaltyAmount) = _royaltyInfo(nftAddress, tokenId, salePrice);
         if (marketplaceFee + royaltyAmount > salePrice) revert InvalidRoyalty(royaltyAmount, salePrice);
