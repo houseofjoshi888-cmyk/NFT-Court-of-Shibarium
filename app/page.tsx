@@ -198,7 +198,7 @@ export default function Home() {
         setListingCount(collections.reduce((sum, item) => sum + item.listingCount, 0));
         
         // Sort collections by sales count (trending)
-        setListedCollections(collections.sort((a, b) => b.salesCount - a.salesCount || b.salesVolume - a.salesVolume));
+        setListedCollections(collections.sort((a, b) => Number(b.salesCount - a.salesCount) || Number(b.salesVolume - a.salesVolume)));
         
         // Debug: Log all listings to see what's available
         console.log('Total listings across all chains:', allListings.length);
