@@ -27,7 +27,13 @@ export async function GET(request: Request) {
     });
 
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json() as {
+        name?: string;
+        symbol?: string;
+        total_supply?: string;
+        decimals?: number;
+        type?: string;
+      };
       return Response.json({
         address: contractAddress,
         name: data.name || null,
