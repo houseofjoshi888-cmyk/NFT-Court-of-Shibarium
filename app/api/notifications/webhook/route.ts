@@ -5,16 +5,25 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const { 
-      chainId, 
-      contract, 
-      tokenId, 
-      eventType, 
-      seller, 
-      buyer, 
-      price, 
-      transactionHash 
-    } = await request.json();
+    const {
+      chainId,
+      contract,
+      tokenId,
+      eventType,
+      seller,
+      buyer,
+      price,
+      transactionHash
+    } = await request.json() as {
+      chainId?: number;
+      contract?: string;
+      tokenId?: string;
+      eventType?: string;
+      seller?: string;
+      buyer?: string;
+      price?: string;
+      transactionHash?: string;
+    };
 
     // Validate required fields
     if (!chainId || !contract || !tokenId || !eventType) {

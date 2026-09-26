@@ -2,7 +2,15 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const { email, nftName, offerPrice, currency, offerer, transactionUrl, collectionName } = await request.json();
+    const { email, nftName, offerPrice, currency, offerer, transactionUrl, collectionName } = await request.json() as {
+      email?: string;
+      nftName?: string;
+      offerPrice?: string;
+      currency?: string;
+      offerer?: string;
+      transactionUrl?: string;
+      collectionName?: string;
+    };
 
     if (!email) {
       return Response.json({ error: "Email address is required." }, { status: 400 });

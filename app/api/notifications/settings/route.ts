@@ -4,7 +4,13 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const { walletAddress, email, emailEnabled, salesEnabled, offersEnabled } = await request.json();
+    const { walletAddress, email, emailEnabled, salesEnabled, offersEnabled } = await request.json() as {
+      walletAddress?: string;
+      email?: string;
+      emailEnabled?: boolean;
+      salesEnabled?: boolean;
+      offersEnabled?: boolean;
+    };
 
     if (!walletAddress) {
       return Response.json({ error: "Wallet address is required." }, { status: 400 });
