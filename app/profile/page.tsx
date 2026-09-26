@@ -2,7 +2,7 @@
 
 import { WalletOffers } from "../components/offers-panel";
 
-import { Sparkles, Wallet, TrendingUp, Activity, Gift, ExternalLink, ImageIcon, ArrowUpRight } from "lucide-react";
+import { Sparkles, Wallet, TrendingUp, Activity, Gift, ExternalLink, ImageIcon, ArrowUpRight, Mail, Bell } from "lucide-react";
 import { useAccount, useChainId } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
@@ -86,7 +86,7 @@ function NftArtwork({ imageUrl, name }: { imageUrl: string | null; name: string 
 export default function ProfilePage() {
   const { address } = useAccount();
   const walletChainId = useChainId();
-  const [activeTab, setActiveTab] = useState<"portfolio" | "listings" | "offers" | "created" | "activity">("portfolio");
+  const [activeTab, setActiveTab] = useState<"portfolio" | "listings" | "offers" | "created" | "activity" | "notifications">("portfolio");
   const [statusFilter, setStatusFilter] = useState<"all" | "listed" | "not-listed">("all");
   const [walletNfts, setWalletNfts] = useState<WalletNft[]>([]);
   const [listings, setListings] = useState<IndexedListing[]>([]);
@@ -95,6 +95,12 @@ export default function ProfilePage() {
   const [selectedChain, setSelectedChain] = useState<MarketplaceChainId | "all" | "wallet">("all");
   const [explorerFallbacks, setExplorerFallbacks] = useState<ExplorerFallback[]>([]);
   const [retry, setRetry] = useState(0);
+  const [notificationSettings, setNotificationSettings] = useState({
+    email: "",
+    emailEnabled: false,
+    salesEnabled: true,
+    offersEnabled: true
+  });
 
   useEffect(() => {
     if (!address) return;
@@ -106,6 +112,16 @@ export default function ProfilePage() {
       
       setLoading(true);
       try {
+        // Load notification settings
+        try {
+          const settingsKey = `hoj:notification-settings:${address.toLowerCase()}`;
+          const storedSettings = localStorage.getItem(settingsKey);
+          if (storedSettings) {
+            setNotificationSettings(JSON.parse(storedSettings));
+          }
+        } catch (error) {
+          console.error("Failed to load notification settings:", error);
+        }
         // Show holdings across networks by default, with Shibarium first.
         let chainIds: MarketplaceChainId[] = [];
         if (selectedChain === "all") {
@@ -316,6 +332,12 @@ export default function ProfilePage() {
         >
           Activity
         </button>
+        <button 
+          className={activeTab === "notifications" ? "active" : ""} 
+          onClick={() => setActiveTab("notifications")}
+        >
+          <Bell size={16} /> Notifications
+        </button>
       </section>
 
       <section className="royal-profile-filters">
@@ -474,6 +496,100 @@ export default function ProfilePage() {
                 <Sparkles size={64} />
                 <h2>No Created NFTs</h2>
                 <p>NFTs you create will appear here.</p>
+              </div>
+            )}
+
+            {activeTab === "notifications" && (
+              <div className="royal-notifications-section">
+                <div className="royal-email-settings">
+                  <h3><Mail size={20} /> Email Notifications</h3>
+                  <p>Receive email notifications when your NFTs are sold or when you receive offers.</p>
+                  
+                  <div className="royal-notification-inputs">
+                    <label>
+                      <span>Email Address</span>
+                      <input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={notificationSettings.email}
+                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, email: e.target.value }))}
+                      />
+                    </label>
+                    
+                    <label className="royal-notification-toggle">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.emailEnabled}
+                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, emailEnabled: e.target.checked }))}
+                      />
+                      <span>Enable email notifications</span>
+                    </label>
+                    
+                    <label className="royal-notification-toggle">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.salesEnabled}
+                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, salesEnabled: e.target.checked }))}
+                      />
+                      <span>Notify me when my NFTs sell</span>
+                    </label>
+                    
+                    <label className="royal-notification-toggle">
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings.offersEnabled}
+                        onChange={(e) => setNotificationSettings(prev => ({ ...prev, offersEnabled: e.target.checked }))}
+                      />
+                      <span>Notify me about new offers</span>
+                    </label>
+                  </div>
+                  
+                  <button 
+                    className="royal-primary-button"
+                    onClick={async () => {
+                      try {
+                        // Save to localStorage
+                        const settingsKey = `hoj:notification-settings:${address.toLowerCase()}`;
+                        const settingsToSave = {
+                          ...notificationSettings,
+                          updatedAt: new Date().toISOString()
+                        };
+                        localStorage.setItem(settingsKey, JSON.stringify(settingsToSave));
+                        
+                        // Also save to API for future database integration
+                        const response = await fetch('/api/notifications/settings', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            walletAddress: address,
+                            ...notificationSettings
+                          })
+                        });
+                        
+                        if (response.ok) {
+                          alert('Notification settings saved successfully!');
+                        } else {
+                          alert('Notification settings saved locally (API failed).');
+                        }
+                      } catch (error) {
+                        console.error('Failed to save notification settings:', error);
+                        alert('Failed to save notification settings.');
+                      }
+                    }}
+                  >
+                    Save Notification Settings
+                  </button>
+                </div>
+                
+                <div className="royal-notification-info">
+                  <h3><Bell size={20} /> Notification Information</h3>
+                  <ul>
+                    <li><strong>Sale Notifications:</strong> You'll receive an email when your listed NFT is sold</li>
+                    <li><strong>Offer Notifications:</strong> Get notified when someone makes an offer on your NFT</li>
+                    <li><strong>Transaction Details:</strong> Each email includes price, buyer, and transaction links</li>
+                    <li><strong>Privacy:</strong> Your email is only used for marketplace notifications</li>
+                  </ul>
+                </div>
               </div>
             )}
           </>

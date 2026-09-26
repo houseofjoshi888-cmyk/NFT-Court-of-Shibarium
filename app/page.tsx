@@ -54,6 +54,8 @@ type ListedCollection = {
   listingCount: number;
   complete: boolean;
   chainId: MarketplaceChainId;
+  salesVolume: bigint;
+  salesCount: number;
 };
 
 function shortAddress(address: string) {
@@ -63,6 +65,7 @@ function shortAddress(address: string) {
 function ListedCollectionCard({collection,rank}:{collection:ListedCollection;rank:number}) {
   const [metadata,setMetadata]=useState<{collection?:string;imageUrl?:string}|null>(null);
   const [failed,setFailed]=useState(false);
+  const chain = getMarketplaceChain(collection.chainId);
   useEffect(()=>{
     const controller=new AbortController();
     void fetch(`/api/nft?chainId=${collection.chainId}&contract=${collection.address}&tokenId=${collection.sampleTokenId}`,{signal:controller.signal})
@@ -72,9 +75,14 @@ function ListedCollectionCard({collection,rank}:{collection:ListedCollection;ran
   return <Link href={`/collection/${collection.chainId}/${collection.address}`} className="hoj-listed-collection">
     <div className="hoj-listed-art">{metadata?.imageUrl&&!failed?<Image src={metadata.imageUrl} alt={metadata.collection??"Collection artwork"} width={112} height={112} unoptimized onError={()=>setFailed(true)}/>:<ImageIcon size={30} aria-label="Artwork unavailable"/>}</div>
     <div className="hoj-listed-content">
-      <div className="hoj-listed-heading"><span>{String(rank).padStart(2,"0")} · {getMarketplaceChain(collection.chainId).name}</span><ArrowUpRight size={17} aria-hidden="true"/></div>
+      <div className="hoj-listed-heading"><span className="hoj-trending-badge"><TrendingUp size={14}/> #{String(rank).padStart(2,"0")}</span><span>{chain.name}</span><ArrowUpRight size={17} aria-hidden="true"/></div>
       <h3>{metadata?.collection??shortAddress(collection.address)}</h3>
-      <div className="hoj-listed-metrics"><div><small>LISTED</small><strong>{collection.listingCount}</strong></div><div><small>{collection.complete?"HOJ FLOOR":"OBSERVED LOW"}</small><strong>{formatEther(BigInt(collection.floorPrice))} {getMarketplaceChain(collection.chainId).currency}</strong></div></div>
+      <div className="hoj-listed-metrics">
+        <div><small>LISTED</small><strong>{collection.listingCount}</strong></div>
+        <div><small>SALES</small><strong>{collection.salesCount}</strong></div>
+        <div><small>VOLUME</small><strong>{collection.salesVolume > 0n ? formatEther(collection.salesVolume) : "—"} {chain.currency}</strong></div>
+        <div><small>{collection.complete?"FLOOR":"LOW"}</small><strong>{formatEther(BigInt(collection.floorPrice))} {chain.currency}</strong></div>
+      </div>
     </div>
   </Link>;
 }
@@ -135,21 +143,69 @@ export default function Home() {
                 floorPrice: collection.floorPrice,
                 listingCount: collection.listingCount,
                 complete: Boolean(data.sync?.caughtUp && !data.syncError),
+                salesVolume: 0n,
+                salesCount: 0,
               });
             }
           }
         });
+        
+        // Calculate sales volume and count for each collection
+        const collectionSales = new Map<string, { volume: bigint; count: number }>();
+        allActivity.forEach(activity => {
+          if (activity.nftAddress && ["sold", "offer_accepted"].includes(activity.eventType) && activity.price) {
+            const key = `${activity.chainId}:${activity.nftAddress.toLowerCase()}`;
+            const current = collectionSales.get(key) || { volume: 0n, count: 0 };
+            collectionSales.set(key, {
+              volume: current.volume + BigInt(activity.price),
+              count: current.count + 1
+            });
+          }
+        });
+        
+        // Update collections with sales data
+        collections.forEach(collection => {
+          const key = `${collection.chainId}:${collection.address.toLowerCase()}`;
+          const salesData = collectionSales.get(key);
+          if (salesData) {
+            collection.salesVolume = salesData.volume;
+            collection.salesCount = salesData.count;
+          }
+        });
+        
         const activityTimes = new Map(allActivity.map(event => [`${event.chainId}:${event.transactionHash.toLowerCase()}`, event.timestamp ?? 0]));
-        setFeaturedNFTs(allListings.sort((a,b) => {
+        
+        // Debug: Log activity times
+        console.log('Activity times sample:', Array.from(activityTimes).slice(0, 5));
+        
+        const sortedListings = allListings.sort((a,b) => {
           const aTime = activityTimes.get(`${a.chainId}:${a.transactionHash.toLowerCase()}`) ?? 0;
           const bTime = activityTimes.get(`${b.chainId}:${b.transactionHash.toLowerCase()}`) ?? 0;
           return bTime-aTime || (a.chainId===b.chainId ? b.updatedBlock-a.updatedBlock : 0);
-        }).slice(0, 8));
+        });
+        
+        console.log('Sorted listings sample:', sortedListings.slice(0, 5).map(l => ({
+          chainId: l.chainId,
+          tokenId: l.tokenId,
+          price: l.price,
+          chain: getMarketplaceChain(l.chainId).name
+        })));
+        
+        setFeaturedNFTs(sortedListings.slice(0, 12)); // Increased from 8 to 12 to show more NFTs
         const sales = allActivity.filter(a => (["sold","offer_accepted"].includes(a.eventType)));
         setRecentActivity(sales.slice(0, 6));
         setSaleCount(sales.length);
         setListingCount(collections.reduce((sum, item) => sum + item.listingCount, 0));
-        setListedCollections(collections.sort((a, b) => b.listingCount - a.listingCount));
+        
+        // Sort collections by sales count (trending)
+        setListedCollections(collections.sort((a, b) => b.salesCount - a.salesCount || b.salesVolume - a.salesVolume));
+        
+        // Debug: Log all listings to see what's available
+        console.log('Total listings across all chains:', allListings.length);
+        console.log('Listings by chain:', allListings.reduce((acc, listing) => {
+          acc[listing.chainId] = (acc[listing.chainId] || 0) + 1;
+          return acc;
+        }, {} as Record<number, number>));
       } catch (error) {
         console.error("Failed to load marketplace data:", error);
       } finally {
@@ -215,12 +271,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Collections with active marketplace listings */}
+      {/* Trending Collections based on sales */}
       <section className="royal-section royal-listed-section">
         <div className="royal-section-header">
           <div>
-            <span className="royal-section-label">MARKETPLACE</span>
-            <h2>Listed Collections</h2>
+            <span className="royal-section-label">TRENDING</span>
+            <h2>Top Collections by Sales</h2>
+            <p>Collections with the most sales across all networks</p>
           </div>
           <Link href="/collections" className="royal-view-all">
             View All

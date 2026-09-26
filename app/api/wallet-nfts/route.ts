@@ -432,9 +432,11 @@ export async function GET(request: Request) {
 
   const providerSetupWarning=!providerSucceeded&&chainId===25&&!runtime.CRONOS_EXPLORER_API_URL&&!runtime.BLOCKSCOUT_API_KEY
     ?"Cronos needs a server-side BLOCKSCOUT_API_KEY or compatible CRONOS_EXPLORER_API_URL for complete ERC-721 and ERC-1155 holdings."
-    :!providerSucceeded&&chainId===7777777&&!runtime.ALCHEMY_API_KEY
-      ?"Zora needs a server-side ALCHEMY_API_KEY for complete wallet NFT holdings; its configured explorer does not provide the required NFT endpoint."
-      :null;
+    :!providerSucceeded&&chainId===5042&&!runtime.BLOCKSCOUT_API_KEY
+      ?"Arc needs a server-side BLOCKSCOUT_API_KEY for complete wallet NFT holdings; its configured explorer does not provide the required NFT endpoint."
+      :!providerSucceeded&&chainId===7777777&&!runtime.ALCHEMY_API_KEY
+        ?"Zora needs a server-side ALCHEMY_API_KEY for complete wallet NFT holdings; its configured explorer does not provide the required NFT endpoint."
+        :null;
   if(providerSetupWarning)warnings.push(providerSetupWarning);
 
   if (!providerSucceeded && holdings.size === 0) {

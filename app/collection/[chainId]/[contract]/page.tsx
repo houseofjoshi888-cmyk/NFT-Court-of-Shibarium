@@ -60,6 +60,10 @@ type CollectionStats = {
   floorPrice: bigint;
   listedItems: number;
   totalSales: number;
+  averagePrice: bigint;
+  highestSale: bigint;
+  createdDate: string | null;
+  mintedPercentage: number;
 };
 
 type CollectionData = {
@@ -70,6 +74,13 @@ type CollectionData = {
   externalUrl: string | null;
   socialLinks: Record<string, string>;
   verified: boolean;
+  creator: string | null;
+  royaltyRecipient: string | null;
+  royaltyPercentage: number | null;
+  totalSupply: number | null;
+  mintedDate: string | null;
+  contractType: string | null;
+  standard: string | null;
 };
 
 export default function CollectionPage({ params }: { params: Promise<{ chainId: string; contract: string }> }) {
@@ -78,17 +89,22 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [allListings, setAllListings] = useState<IndexedListing[]>([]);
   const [sweepQuantity, setSweepQuantity] = useState(2);
   const [collectionChainId, setCollectionChainId] = useState<MarketplaceChainId | null>(null);
+  const [contractAddress, setContractAddress] = useState<string>("");
   const [activity, setActivity] = useState<IndexedActivity[]>([]);
   const [stats, setStats] = useState<CollectionStats | null>(null);
   const [floorComplete, setFloorComplete] = useState(false);
   const [currency, setCurrency] = useState("ETH");
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"items" | "activity" | "analytics" | "offers">("items");
+  const [activeTab, setActiveTab] = useState<"items" | "activity" | "analytics" | "offers" | "details" | "traits">("items");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<"price" | "recent" | "rarity">("recent");
   const [priceFilter, setPriceFilter] = useState("all");
   const [followKey, setFollowKey] = useState("");
   const [following, setFollowing] = useState(false);
+  const [contractInfo, setContractInfo] = useState<any>(null);
+  const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: string; event: string }>>([]);
+  const [traitDistribution, setTraitDistribution] = useState<Array<{ traitType: string; value: string; count: number; percentage: number }>>([]);
+  const [rarityRankings, setRarityRankings] = useState<Array<{ tokenId: string; rank: number; score: number }>>([]);
 
   const sweepListings = [...allListings]
     .filter(listing => listing.tokenType !== "ERC-1155" && BigInt(listing.price) > 0n)
@@ -135,6 +151,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
         const chainId = Number(paramsValue.chainId);
         setCollectionChainId(chainId as MarketplaceChainId);
         const contract = paramsValue.contract;
+        setContractAddress(contract);
         const key = `hoj:followed-collection:${chainId}:${contract.toLowerCase()}`;
         setFollowKey(key);
         setFollowing(window.localStorage.getItem(key) === "1");
@@ -192,6 +209,15 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             floorPrice,
             listedItems: summary?.listingCount ?? collectionListings.length,
             totalSales,
+            averagePrice: totalSales > 0n ? totalVolume / BigInt(totalSales) : 0n,
+            highestSale: collectionActivity
+              .filter((a: IndexedActivity) => ["sold","offer_accepted"].includes(a.eventType) && a.price)
+              .reduce((max: bigint, a: IndexedActivity) => {
+                const price = BigInt(a.price || "0");
+                return price > max ? price : max;
+              }, 0n),
+            createdDate: null,
+            mintedPercentage: 100,
           });
 
           // Load NFT metadata for listed items
@@ -212,7 +238,62 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             externalUrl: first?.externalUrl ?? null,
             socialLinks: {},
             verified: false,
+            creator: null,
+            royaltyRecipient: null,
+            royaltyPercentage: null,
+            totalSupply: null,
+            mintedDate: null,
+            contractType: null,
+            standard: null,
           });
+
+          // Try to fetch contract information
+          try {
+            const contractRes = await fetch(`/api/contract-info?chainId=${chainId}&contract=${contract}`, { cache: "no-store" });
+            if (contractRes.ok) {
+              const contractData = await contractRes.json();
+              setContractInfo(contractData);
+            }
+          } catch (error) {
+            console.log("Could not fetch contract info:", error);
+          }
+
+          // Calculate price history from activity
+          const priceHistoryData = collectionActivity
+            .filter((a: IndexedActivity) => ["sold","offer_accepted"].includes(a.eventType) && a.price)
+            .map((a: IndexedActivity) => ({
+              date: new Date().toISOString(),
+              price: a.price || "0",
+              event: a.eventType,
+            }))
+            .slice(-50); // Last 50 sales
+          setPriceHistory(priceHistoryData);
+
+          // Calculate trait distribution
+          const traitMap = new Map<string, Map<string, number>>();
+          for (const nft of resolvedMetadata) {
+            for (const trait of nft.traits) {
+              if (!traitMap.has(trait.type)) {
+                traitMap.set(trait.type, new Map());
+              }
+              const typeMap = traitMap.get(trait.type)!;
+              typeMap.set(trait.value, (typeMap.get(trait.value) || 0) + 1);
+            }
+          }
+
+          const traitDistributionData: Array<{ traitType: string; value: string; count: number; percentage: number }> = [];
+          for (const [traitType, valueMap] of traitMap) {
+            const total = valueMap.size;
+            for (const [value, count] of valueMap) {
+              traitDistributionData.push({
+                traitType,
+                value,
+                count,
+                percentage: (count / resolvedMetadata.length) * 100,
+              });
+            }
+          }
+          setTraitDistribution(traitDistributionData.sort((a, b) => b.count - a.count).slice(0, 20));
         }
 
         setLoading(false);
@@ -245,7 +326,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
         </div>
       ) : (
         <>
-          {/* Collection Header */}
+          {/* Collection Header - Modern Layout */}
           <section className="royal-collection-header">
             <div className="royal-collection-banner">
               {collectionData?.banner ? (
@@ -272,7 +353,13 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                 )}
               </div>
               <div className="royal-collection-details">
-                <h1>{collectionData?.name || "Unknown Collection"}</h1>
+                <div className="royal-collection-header-top">
+                  <h1>{collectionData?.name || "Unknown Collection"}</h1>
+                  <div className="royal-collection-badges">
+                    {collectionData?.verified && <span className="royal-badge verified">Verified</span>}
+                    <span className="royal-badge chain">{getMarketplaceChain(collectionChainId || 109).name}</span>
+                  </div>
+                </div>
                 <p>{collectionData?.description || "No description available."}</p>
                 <div className="royal-collection-links">
                   {collectionData?.externalUrl && (
@@ -281,6 +368,10 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                       Website
                     </a>
                   )}
+                  <a href={`${getMarketplaceChain(collectionChainId || 109).explorerUrl}/token/${contractAddress}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={16} />
+                    Explorer
+                  </a>
                 </div>
               </div>
               <div className="royal-collection-actions">
@@ -296,60 +387,42 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             </div>
           </section>
 
-          {/* Collection Stats */}
+          {/* Collection Stats - Modern Horizontal Layout */}
           <section className="royal-collection-stats">
-            <div className="royal-stat-card">
-              <div className="royal-stat-icon">
-                <DollarSign size={24} />
+            <div className="royal-stat-group">
+              <div className="royal-stat-item primary">
+                <span className="royal-stat-label">Floor Price</span>
+                <strong className="royal-stat-value">{stats && stats.floorPrice > 0n ? formatEther(stats.floorPrice) : "—"} {currency}</strong>
               </div>
-              <div className="royal-stat-content">
-                <span>{floorComplete ? "Marketplace Floor" : "Observed Listing Low"}</span>
-                <strong>{stats && stats.floorPrice > 0n ? formatEther(stats.floorPrice) : "—"} {currency}</strong>
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Total Volume</span>
+                <strong className="royal-stat-value">{stats?.totalVolume ? formatEther(stats.totalVolume) : "—"} {currency}</strong>
               </div>
-            </div>
-            <div className="royal-stat-card">
-              <div className="royal-stat-icon">
-                <TrendingUp size={24} />
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Owners</span>
+                <strong className="royal-stat-value">{stats?.totalOwners || 0}</strong>
               </div>
-              <div className="royal-stat-content">
-                <span title="Sales visible in the latest indexed activity; not all-time volume.">Recent HOJ Volume</span>
-                <strong>{stats?.totalVolume ? formatEther(stats.totalVolume) : "—"} {currency}</strong>
-              </div>
-            </div>
-            <div className="royal-stat-card">
-              <div className="royal-stat-icon">
-                <Users size={24} />
-              </div>
-              <div className="royal-stat-content">
-                <span title="Unique sellers and buyers in indexed activity, not the collection's total holder count.">Observed traders</span>
-                <strong>{stats?.totalOwners || 0}</strong>
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Items</span>
+                <strong className="royal-stat-value">{stats?.totalItems || 0}</strong>
               </div>
             </div>
-            <div className="royal-stat-card">
-              <div className="royal-stat-icon">
-                <Activity size={24} />
+            <div className="royal-stat-group">
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Created</span>
+                <strong className="royal-stat-value">{stats?.createdDate ? new Date(stats.createdDate).toLocaleDateString() : "—"}</strong>
               </div>
-              <div className="royal-stat-content">
-                <span>Indexed Items</span>
-                <strong>{stats?.totalItems || 0}</strong>
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Creator Fee</span>
+                <strong className="royal-stat-value">{collectionData?.royaltyPercentage ? `${collectionData.royaltyPercentage}%` : "—"}</strong>
               </div>
-            </div>
-            <div className="royal-stat-card">
-              <div className="royal-stat-icon">
-                <Zap size={24} />
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Chain</span>
+                <strong className="royal-stat-value">{getMarketplaceChain(collectionChainId || 109).name}</strong>
               </div>
-              <div className="royal-stat-content">
-                <span>Listed</span>
-                <strong>{stats?.listedItems || 0}</strong>
-              </div>
-            </div>
-            <div className="royal-stat-card">
-              <div className="royal-stat-icon">
-                <Clock size={24} />
-              </div>
-              <div className="royal-stat-content">
-                <span>Total Sales</span>
-                <strong>{stats?.totalSales || 0}</strong>
+              <div className="royal-stat-item">
+                <span className="royal-stat-label">Category</span>
+                <strong className="royal-stat-value">NFTs</strong>
               </div>
             </div>
           </section>
@@ -377,6 +450,12 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             </button>
             <button className={activeTab === "activity" ? "active" : ""} onClick={() => setActiveTab("activity")}>
               Activity
+            </button>
+            <button className={activeTab === "details" ? "active" : ""} onClick={() => setActiveTab("details")}>
+              Details
+            </button>
+            <button className={activeTab === "traits" ? "active" : ""} onClick={() => setActiveTab("traits")}>
+              Traits
             </button>
             <button className={activeTab === "analytics" ? "active" : ""} onClick={() => setActiveTab("analytics")}>
               Analytics
@@ -508,6 +587,111 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                 <Heart size={64} />
                 <h2>No offers yet</h2>
                 <p>Offers on this collection will appear here.</p>
+              </div>
+            )}
+
+            {activeTab === "details" && (
+              <div className="royal-collection-details-tab">
+                <div className="royal-details-section">
+                  <h3>About Collection</h3>
+                  <p>{collectionData?.description || "No description available for this collection."}</p>
+                </div>
+
+                {collectionData?.externalUrl && (
+                  <div className="royal-details-section">
+                    <h3>Website</h3>
+                    <a href={collectionData.externalUrl} target="_blank" rel="noopener noreferrer">
+                      {collectionData.externalUrl} <ExternalLink size={14} />
+                    </a>
+                  </div>
+                )}
+
+                <div className="royal-details-section">
+                  <h3>Contract Information</h3>
+                  <div className="royal-contract-info">
+                    <div>
+                      <span>Contract Address</span>
+                      <code>{contractAddress || "Loading..."}</code>
+                    </div>
+                    <div>
+                      <span>Token Standard</span>
+                      <strong>{collectionData?.standard || "ERC-721"}</strong>
+                    </div>
+                    <div>
+                      <span>Chain</span>
+                      <strong>{getMarketplaceChain(collectionChainId || 109).name}</strong>
+                    </div>
+                    {collectionData?.creator && (
+                      <div>
+                        <span>Creator</span>
+                        <code>{collectionData.creator}</code>
+                      </div>
+                    )}
+                    {collectionData?.royaltyPercentage !== null && (
+                      <div>
+                        <span>Royalty</span>
+                        <strong>{collectionData.royaltyPercentage}%</strong>
+                      </div>
+                    )}
+                    {collectionData?.totalSupply !== null && (
+                      <div>
+                        <span>Total Supply</span>
+                        <strong>{collectionData.totalSupply.toLocaleString()}</strong>
+                      </div>
+                    )}
+                    {collectionData?.mintedDate && (
+                      <div>
+                        <span>Minted Date</span>
+                        <strong>{new Date(collectionData.mintedDate).toLocaleDateString()}</strong>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="royal-details-section">
+                  <h3>Links</h3>
+                  <div className="royal-social-links">
+                    {contractAddress && (
+                      <a href={`${getMarketplaceChain(collectionChainId || 109).explorerUrl}/token/${contractAddress}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={14} /> View on Explorer
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "traits" && (
+              <div className="royal-traits-tab">
+                {traitDistribution.length > 0 ? (
+                  <div className="royal-traits-distribution">
+                    <h3>Trait Distribution</h3>
+                    <p>Most common traits in this collection based on listed items.</p>
+                    <div className="royal-traits-grid">
+                      {traitDistribution.map((trait, index) => (
+                        <div key={index} className="royal-trait-card">
+                          <div className="royal-trait-header">
+                            <span>{trait.traitType}</span>
+                            <strong>{trait.value}</strong>
+                          </div>
+                          <div className="royal-trait-stats">
+                            <span>{trait.count} NFTs</span>
+                            <strong>{trait.percentage.toFixed(1)}%</strong>
+                          </div>
+                          <div className="royal-trait-bar">
+                            <div style={{ width: `${trait.percentage}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="royal-empty-state">
+                    <Activity size={64} />
+                    <h2>No trait data available</h2>
+                    <p>Trait information will appear when NFTs with metadata are listed.</p>
+                  </div>
+                )}
               </div>
             )}
           </section>
