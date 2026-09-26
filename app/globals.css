@@ -5110,7 +5110,8 @@ footer a:hover { color:var(--royal-ivory); }
 .wallet-nft-grid.list .wallet-nft strong { grid-column:3; grid-row:1/3; }
 .wallet-nft-grid.list .wallet-nft small { grid-column:4; grid-row:1/3; text-align:right; }
 .wallet-nft.selected { border-color:var(--amber); box-shadow:inset 0 0 0 1px var(--amber); }
-.wallet-nft-image { display:block; aspect-ratio:auto; background-position:center; background-size:contain; background-color:#ded9cf; }
+.wallet-nft-image { display:block; aspect-ratio:auto; overflow:hidden; background-color:#ded9cf; }
+.wallet-nft-image img { width:100%; height:100%; object-fit:contain; object-position:center; }
 .wallet-nft-image.empty { background:linear-gradient(135deg,#d8d3c9,#b8b1a4); }
 .wallet-nft > span:not(.wallet-nft-image),.wallet-nft strong,.wallet-nft small { display:block; padding:0 10px; }
 .wallet-nft > span:not(.wallet-nft-image) { margin-top:10px; font-family:var(--font-mono); font-size:8px; color:#77736b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -5130,7 +5131,8 @@ footer a:hover { color:var(--royal-ivory); }
 .nft-detail-backdrop { position:fixed; inset:0; z-index:100; padding:28px; background:rgba(10,10,9,.7); backdrop-filter:blur(8px); display:grid; place-items:center; }
 .nft-detail { width:min(960px,100%); max-height:calc(100vh - 56px); overflow:auto; display:grid; grid-template-columns:minmax(300px,1fr) minmax(320px,.9fr); background:var(--paper); color:var(--ink); position:relative; box-shadow:0 25px 80px rgba(0,0,0,.45); }
 .nft-detail-close { position:absolute; top:14px; right:14px; z-index:2; width:36px; height:36px; display:grid; place-items:center; border:1px solid rgba(17,17,15,.2); background:var(--paper); cursor:pointer; }
-.nft-detail-image { min-height:490px; background-position:center; background-size:cover; background-color:#d8d3c9; }
+.nft-detail-image { min-height:490px; overflow:hidden; background-color:#d8d3c9; }
+.nft-detail-image img { width:100%; height:100%; object-fit:contain; object-position:center; }
 .nft-detail-image.empty { background:linear-gradient(135deg,#d8d3c9,#aaa394); }
 .nft-detail-copy { padding:42px 36px; }
 .nft-detail-copy > small,.nft-token-id,.nft-traits > span { font-family:var(--font-mono); color:#77736b; font-size:9px; letter-spacing:.08em; }
@@ -10479,6 +10481,8 @@ article.royal-profile-nft > a {
   border-radius:12px;
   overflow:hidden;
   transition:all .3s ease;
+  display:flex;
+  flex-direction:column;
 }
 
 .royal-nft-card.opensea-style:hover {
@@ -10489,10 +10493,20 @@ article.royal-profile-nft > a {
 
 .royal-nft-card.opensea-style .royal-nft-image {
   aspect-ratio:auto;
+  min-height:200px;
+  max-height:400px;
   background:var(--royal-mid-gray);
-  background-size:contain;
-  background-position:center;
-  background-repeat:no-repeat;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.royal-nft-card.opensea-style .royal-nft-image img {
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
 }
 
 .royal-nft-card.opensea-style .royal-nft-details {
@@ -10629,7 +10643,7 @@ article.royal-profile-nft > a {
 }
 
 .royal-nft-grid.grid {
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
 }
 
 .royal-nft-grid.list {

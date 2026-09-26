@@ -99,7 +99,7 @@ function FeaturedArtwork({ listing }: { listing: IndexedListing }) {
     return () => controller.abort();
   }, [listing.chainId, listing.nftAddress, listing.tokenId]);
   return imageUrl && !failed
-    ? <Image src={imageUrl} alt={`NFT #${listing.tokenId}`} width={360} height={360} unoptimized loading="lazy" onError={() => setFailed(true)} className="royal-featured-artwork" />
+    ? <img src={imageUrl} alt={`NFT #${listing.tokenId}`} loading="lazy" onError={() => setFailed(true)} className="royal-featured-artwork" />
     : <div className="royal-nft-placeholder"><ImageIcon size={36} aria-label="Artwork unavailable" /></div>;
 }
 

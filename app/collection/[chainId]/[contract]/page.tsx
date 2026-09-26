@@ -623,8 +623,12 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                             href={`/nft/${listing.chainId}/${listing.nftAddress}/${listing.tokenId}`}
                             className="royal-nft-card opensea-style"
                           >
-                            <div className="royal-nft-image" style={nft.imageUrl ? { backgroundImage: `url(${nft.imageUrl})` } : undefined}>
-                              {!nft.imageUrl && <ImageIcon size={32} />}
+                            <div className="royal-nft-image">
+                              {nft.imageUrl ? (
+                                <img src={nft.imageUrl} alt={nft.name || `Token #${listing.tokenId}`} />
+                              ) : (
+                                <ImageIcon size={32} />
+                              )}
                             </div>
                             <div className="royal-nft-details">
                               <div className="royal-nft-header">
