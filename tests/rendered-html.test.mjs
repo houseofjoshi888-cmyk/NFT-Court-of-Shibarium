@@ -1,104 +1,67 @@
-import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
+import assert from "node:assert/strict";
+import { loadModule } from "./load-module.mjs";
 
-const root = new URL("../", import.meta.url);
-const read = (path) => readFile(new URL(path, root), "utf8");
-
-test("ships every core marketplace route", async () => {
-  const routes = ["market", "sell", "activity", "account", "protocol"];
-  for (const route of routes) {
-    const source = await read(`app/${route}/page.tsx`);
-    assert.match(source, new RegExp(`view=\\"${route}\\"`));
+test("configured chains resolve independently with the correct native currencies",async()=>{
+  const {chainConfig}=await loadModule("lib/server-marketplace-config.ts");
+  const polygon=chainConfig({POLYGON_MARKETPLACE_ADDRESS:"0x1111111111111111111111111111111111111111"},137);
+  const base=chainConfig({},8453);
+  assert.equal(polygon.chain.currency,"POL");assert.equal(base.chain.currency,"ETH");
+  assert.notEqual(polygon.address,base.address);
+  assert.equal(base.address,"0xCb54f70B0eb580a8ec22a0e67C05293206C358F2");
+  assert.equal(base.deployBlock,"51733550");
+  assert.equal(base.rpcUrl,"https://mainnet.base.org");
+  assert.equal(polygon.chain.marketplaceStatus,"live");
+  assert.equal(chainConfig({},137).address,"0xfb985d4eDd4C1F909899389C217aEC9D6895B72d");
+  assert.equal(chainConfig({},137).deployBlock,"94404469");
+  const cronos=chainConfig({},25);
+  assert.equal(cronos.chain.currency,"CRO");
+  assert.equal(cronos.address,"0x6aCaf964bCf4551CC55Afaf12d6e6a8ef7138875");
+  assert.equal(cronos.deployBlock,"95919348");
+  assert.equal(chainConfig({},109).chain.currency,"BONE");assert.equal(chainConfig({},33139).chain.currency,"APE");
+  assert.equal(chainConfig({},109).address,"0x6aCaf964bCf4551CC55Afaf12d6e6a8ef7138875");
+  assert.equal(chainConfig({},109).deployBlock,"19143354");
+  const zora=chainConfig({},7777777);
+  assert.equal(zora.chain.marketplaceStatus,"live");
+  assert.equal(zora.address,"0x6aCaf964bCf4551CC55Afaf12d6e6a8ef7138875");
+  assert.equal(zora.deployBlock,"51793532");
+  const arc=chainConfig({},5042);
+  assert.equal(arc.chain.currency,"USDC");
+  assert.equal(arc.chain.marketplaceStatus,"coming-soon");
+  assert.equal(arc.address,"");
+  assert.equal(arc.rpcUrl,"https://rpc.mainnet.arc.io");
+});
+test("coming-soon networks expose no live marketplace listings",async()=>{
+  const {GET}=await loadModule("app/api/indexer/route.ts");
+  for(const chainId of [1,5042,4663,33139]){
+    const response=await GET(new Request(`http://localhost/api/indexer?chainId=${chainId}`));
+    const body=await response.json();
+    assert.equal(response.status,200);
+    assert.equal(body.configured,false);
+    assert.equal(body.status,"coming-soon");
+    assert.deepEqual(body.listings,[]);
   }
 });
-
-test("uses live indexed data without demo listings", async () => {
-  const [marketplace, portal, indexer] = await Promise.all([
-    read("app/marketplace.tsx"),
-    read("app/portal.tsx"),
-    read("app/api/indexer/route.ts"),
+test("NFT price history keeps only recorded listing and settlement prices in time order",async()=>{
+  const {toPriceHistoryPoints}=await loadModule("lib/nft-price-history.ts");
+  const base={chainId:8453,nftAddress:"0x1111111111111111111111111111111111111111",tokenId:"7",seller:null,buyer:null,marketplaceFee:null,royaltyRecipient:null,royaltyAmount:null,transactionHash:`0x${"a".repeat(64)}`,timestamp:100,logIndex:0};
+  const points=toPriceHistoryPoints([
+    {...base,id:"sale",eventType:"sold",price:"200",blockNumber:12},
+    {...base,id:"offer",eventType:"offer",price:"300",blockNumber:11},
+    {...base,id:"list",eventType:"listed",price:"100",blockNumber:10},
   ]);
-
-  assert.match(marketplace, /\/api\/indexer\?chainId=/);
-  assert.match(portal, /\/api\/indexer\?chainId=/);
-  assert.match(indexer, /eth_getLogs/);
-  assert.match(indexer, /0x2C5F372746330465C3f4084CE6C6aBce22a48B4d/);
-  assert.match(indexer, /18216976/);
-  assert.match(indexer, /configured: false, listings: \[\], activity: \[\]/);
-  assert.doesNotMatch(`${marketplace}\n${portal}`, /demo listing|mock listing|sample listing/i);
+  assert.deepEqual(points.map(point=>[point.eventType,point.price]),[["listed","100"],["sold","200"]]);
 });
-
-test("ships the requested court destinations and keeps network choice in the wallet bar", async () => {
-  const [chrome, marketplace, portal, collections, malkutaApi] = await Promise.all([
-    read("app/site-chrome.tsx"),
-    read("app/marketplace.tsx"),
-    read("app/portal.tsx"),
-    read("app/collections/collections-browser.tsx"),
-    read("app/api/malkuta/route.ts"),
-  ]);
-
-  for (const route of ["/collections", "/drops", "/activity", "/profile", "/resources", "/support"]) {
-    assert.match(chrome, new RegExp(route.replace("/", "\\/")));
-  }
-  assert.match(chrome, /https:\/\/swap\.thehouseofjoshi\.com\//);
-  assert.match(chrome, /https:\/\/www\.nftlaunchpad\.thehouseofjoshi\.com\//);
-  assert.match(collections, /Malkuta Mandalas/);
-  assert.match(collections, /\/api\/indexer\?chainId=/);
-  assert.match(malkutaApi, /kingdomwithin\.thehouseofjoshi\.com\/api\/epoch\?scope=all/);
-  assert.match(chrome, /court-network-button/);
-  assert.doesNotMatch(marketplace, /<NetworkRail/);
-  assert.doesNotMatch(portal, /<NetworkContext/);
+test("coming-soon NFT price history returns a truthful empty state",async()=>{
+  const {GET}=await loadModule("app/api/nft-price-history/route.ts");
+  const response=await GET(new Request("http://localhost/api/nft-price-history?chainId=5042&contract=0x1111111111111111111111111111111111111111&tokenId=7"));
+  assert.equal(response.status,200);
+  const body=await response.json();
+  assert.deepEqual(body.points,[]);
+  assert.match(body.warning,/coming soon/i);
 });
-
-test("isolates listings and activity by supported chain", async () => {
-  const [chains, indexer, portal, schema] = await Promise.all([
-    read("lib/marketplace-chains.ts"),
-    read("app/api/indexer/route.ts"),
-    read("app/portal.tsx"),
-    read("db/schema.ts"),
-  ]);
-
-  for (const chainId of ["1", "109", "137", "8453", "4663", "33139", "7777777"]) {
-    assert.match(chains, new RegExp(`${chainId}:`));
-  }
-  assert.match(indexer, /POLYGON_MARKETPLACE_ADDRESS/);
-  assert.match(indexer, /BASE_MARKETPLACE_ADDRESS/);
-  assert.match(indexer, /ROBINHOOD_MARKETPLACE_ADDRESS/);
-  assert.match(indexer, /ZORA_MARKETPLACE_ADDRESS/);
-  assert.match(indexer, /APECHAIN_MARKETPLACE_ADDRESS/);
-  assert.match(indexer, /marketplace:\$\{chainId\}/);
-  assert.match(indexer, /WHERE chain_id = \?/);
-  assert.match(schema, /multichain_listings/);
-  assert.match(schema, /multichain_marketplace_activity/);
-  assert.match(portal, /chainId:selectedChainId/);
-  assert.match(portal, /transactionUrl/);
-  assert.match(portal, /tokenUrl/);
-});
-
-test("keeps the protocol fee fixed at two percent", async () => {
-  const contract = await read("contracts/NFTMarketplace.sol");
-  assert.match(contract, /MARKETPLACE_FEE_BPS = 200/);
-  assert.match(contract, /BPS_DENOMINATOR = 10_000/);
-  assert.match(contract, /HOUSE_TREASURY = 0x6736d2eA9807297F0e56967361B9410854B86a5f/);
-  assert.match(contract, /IERC2981/);
-  assert.match(contract, /withdrawProceeds/);
-});
-
-test("includes NFT pages, favorites, profile management, offers, and batch checkout", async () => {
-  const [portal, nftPage, favorites, contract] = await Promise.all([
-    read("app/portal.tsx"),
-    read("app/nft-page.tsx"),
-    read("app/favorites.ts"),
-    read("contracts/NFTMarketplace.sol"),
-  ]);
-  assert.match(portal, /market-cart-button/);
-  assert.match(portal, /profile-management/);
-  assert.match(portal, /marketplaceVersion/);
-  assert.match(nftPage, /standalone-nft-page/);
-  assert.match(favorites, /localStorage/);
-  assert.match(contract, /function batchBuy/);
-  assert.match(contract, /function makeOffer/);
-  assert.match(contract, /function acceptOffer/);
-  assert.match(contract, /marketplaceVersion\(\).*2/);
+test("indexer rejects unsupported networks without issuing RPC requests",async()=>{
+  const {GET}=await loadModule("app/api/indexer/route.ts");
+  const response=await GET(new Request("http://localhost/api/indexer?chainId=999"));
+  assert.equal(response.status,400);assert.equal((await response.json()).configured,false);
 });

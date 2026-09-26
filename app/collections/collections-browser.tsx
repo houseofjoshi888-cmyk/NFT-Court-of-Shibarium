@@ -1,9 +1,12 @@
 "use client";
 
-import { ArrowUpRight, ExternalLink, Grid2X2, List, Search } from "lucide-react";
+import { ArrowUpRight, ExternalLink, Flame, Grid2X2, List, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { formatEther } from "viem";
-import { getMarketplaceChain, marketplaceChains, tokenUrl, type MarketplaceChainId } from "@/lib/marketplace-chains";
+import Link from "next/link";
+import Image from "next/image";
+import { getMarketplaceChain, isMarketplaceLive, marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
+import { shibEcosystemNfts } from "@/lib/shib-ecosystem-nfts";
 
 type Mint = {
   tokenId:string; owner:string; transactionHash:string; sourceText:string; imageURI:string|null;
@@ -11,10 +14,13 @@ type Mint = {
 };
 type MalkutaData = { status:string; collectionTotal:number; indexedThroughBlock:string; latestMints:Mint[] };
 type Listing = { id:string; chainId:MarketplaceChainId; nftAddress:string; tokenId:string; seller:string; price:string; transactionHash:string };
-type ChainListings = { chainId:MarketplaceChainId; chain:string; currency:string; configured:boolean; listings:Listing[] };
+type Activity = { id:string; chainId:MarketplaceChainId; eventType:string; nftAddress:string|null; tokenId:string|null; price:string|null; blockNumber:number };
+type ChainListings = { chainId:MarketplaceChainId; chain:string; currency:string; configured:boolean; listings:Listing[]; activity:Activity[] };
 type NftMetadata = { name:string|null; collection:string|null; imageUrl:string|null };
+type TrendingCollection = { key:string; chainId:MarketplaceChainId; nftAddress:string; sales:number; recentEvents:number; activeListings:number; floorPrice:bigint; representativeTokenId:string };
 
 const chainIds = Object.keys(marketplaceChains).map(Number) as MarketplaceChainId[];
+const liveChainIds = chainIds.filter(isMarketplaceLive);
 const short = (value:string) => `${value.slice(0,6)}…${value.slice(-4)}`;
 const ipfs = (value:string|null) => value?.startsWith("ipfs://")?`https://ipfs.io/ipfs/${value.slice(7)}`:value;
 
@@ -29,14 +35,31 @@ export function CollectionsBrowser(){
   useEffect(()=>{
     let active=true;
     async function refresh(){
-      const [malkutaResult,...chainResults]=await Promise.allSettled([
+      // Load Shibarium first for instant content
+      const shibariumResult = await Promise.allSettled([
         fetch("/api/malkuta",{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject()),
-        ...chainIds.map(chainId=>fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject())),
+        fetch(`/api/indexer?chainId=109`,{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject()),
       ]);
+      
       if(!active)return;
-      if(malkutaResult.status==="fulfilled")setMalkuta(malkutaResult.value as MalkutaData);
-      setChains(chainResults.flatMap(result=>result.status==="fulfilled"?[result.value as ChainListings]:[]));
+      if(shibariumResult[0].status==="fulfilled")setMalkuta(shibariumResult[0].value as MalkutaData);
+      const shibarium=shibariumResult[1];
+      if(shibarium.status==="fulfilled")setChains(previous=>[...previous.filter(chain=>chain.chainId!==109),shibarium.value as ChainListings]);
       setLoading(false);
+
+      // Load other chains in background
+      const otherChains = chainIds.filter(id => id !== 109);
+      const otherResults = await Promise.allSettled(
+        otherChains.map(chainId=>fetch(`/api/indexer?chainId=${chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():Promise.reject()))
+      );
+      
+      if(active){
+        setChains(prev => {
+          const latest=new Map(prev.map(chain=>[chain.chainId,chain]));
+          otherResults.forEach(result=>{if(result.status==="fulfilled"){const chain=result.value as ChainListings;latest.set(chain.chainId,chain);}});
+          return [...latest.values()];
+        });
+      }
     }
     void refresh();
     const timer=window.setInterval(refresh,30_000);
@@ -44,6 +67,29 @@ export function CollectionsBrowser(){
   },[]);
 
   const listings=useMemo(()=>chains.flatMap(chain=>chain.listings),[chains]);
+  const trending=useMemo<TrendingCollection[]>(()=>{
+    const records=new Map<string,TrendingCollection>();
+    for(const chain of chains){
+      for(const listing of chain.listings){
+        const key=`${chain.chainId}:${listing.nftAddress.toLowerCase()}`;
+        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:listing.nftAddress,sales:0,recentEvents:0,activeListings:0,floorPrice:BigInt(0),representativeTokenId:listing.tokenId};
+        current.activeListings+=1;
+        if(BigInt(listing.price) < current.floorPrice || current.floorPrice === 0n) {
+          current.floorPrice = BigInt(listing.price);
+        }
+        records.set(key,current);
+      }
+      for(const event of chain.activity??[]){
+        if(!event.nftAddress||!event.tokenId)continue;
+        const key=`${chain.chainId}:${event.nftAddress.toLowerCase()}`;
+        const current=records.get(key)??{key,chainId:chain.chainId,nftAddress:event.nftAddress,sales:0,recentEvents:0,activeListings:0,floorPrice:BigInt(0),representativeTokenId:event.tokenId};
+        current.recentEvents+=1;
+        if((["sold","offer_accepted"].includes(event.eventType)))current.sales+=1;
+        records.set(key,current);
+      }
+    }
+    return [...records.values()].filter(item=>item.recentEvents||item.activeListings).sort((a,b)=>(b.sales*10+b.recentEvents*2+b.activeListings)-(a.sales*10+a.recentEvents*2+a.activeListings)).slice(0,6);
+  },[chains]);
   const visibleListings=useMemo(()=>{
     const term=query.trim().toLowerCase();
     return listings.filter(item=>(activeChain==="all"||item.chainId===activeChain)&&(!term||item.nftAddress.toLowerCase().includes(term)||item.tokenId.includes(term)));
@@ -60,19 +106,59 @@ export function CollectionsBrowser(){
       {malkuta?.latestMints?.length?<div className="malkuta-grid">{malkuta.latestMints.map(mint=><article className="malkuta-card" key={mint.tokenId}><a className="malkuta-art" href={`https://kingdomwithin.thehouseofjoshi.com/verify?token=${mint.tokenId}`} target="_blank" rel="noreferrer" style={ipfs(mint.imageURI)?{backgroundImage:`url(${ipfs(mint.imageURI)})`}:undefined}><span>#{mint.tokenId.slice(0,8)}…</span><small>{mint.verificationStatus==="verified"?"✓ VERIFIED":"METADATA PENDING"}</small></a><div><span>MALKUTA MANDALA</span><h3>{mint.sourceText.split("\n")[0]||`Signal ${mint.numericalSignature}`}</h3><dl><div><dt>SIGNATURE</dt><dd>Σ {mint.numericalSignature}</dd></div><div><dt>SYMMETRY</dt><dd>{mint.symmetry} PETALS</dd></div></dl><a href={`https://kingdomwithin.thehouseofjoshi.com/verify?token=${mint.tokenId}`} target="_blank" rel="noreferrer">Verify NFT <ArrowUpRight size={13}/></a></div></article>)}</div>:<div className="collection-loading">{loading?"Reading verified Malkuta mints…":"The official mint archive is temporarily unavailable."}</div>}
     </section>
 
+    <section className="shib-ecosystem-collections" aria-labelledby="shib-ecosystem-heading">
+      <header><div><span>SHIBA INU ECOSYSTEM</span><h2 id="shib-ecosystem-heading">Known NFT contracts</h2><p>Collections named by Shib. These are contract references, not HOJ listings; wallet holdings and sale status are checked on-chain.</p></div><a href="https://shib.io/ecosystem/nfts" target="_blank" rel="noreferrer">Official directory <ExternalLink size={14}/></a></header>
+      <div className="shib-ecosystem-contracts">{shibEcosystemNfts.map(collection=>{
+        const chain=getMarketplaceChain(collection.chainId);
+        return <article key={`${collection.chainId}:${collection.contract}`}>
+          <small>{chain.name}{isMarketplaceLive(collection.chainId)?" · Live":" · Marketplace coming soon"}</small>
+          <h3>{collection.name}</h3>
+          <code title={collection.contract}>{collection.contract}</code>
+          <div>{isMarketplaceLive(collection.chainId)
+            ?<Link href={`/collection/${collection.chainId}/${collection.contract}`}>View HOJ listings <ArrowUpRight size={13}/></Link>
+            :<a href={`${chain.explorerUrl}/token/${collection.contract}`} target="_blank" rel="noreferrer">View contract <ExternalLink size={13}/></a>}
+            <a href={collection.source} target="_blank" rel="noreferrer">Collection source <ExternalLink size={13}/></a></div>
+        </article>;
+      })}</div>
+      <p>Metaverse land is also featured in the Shib directory, but no single NFT contract is identified there; explore it through <a href="https://shibthemetaverse.io/" target="_blank" rel="noreferrer">the official Metaverse site</a>.</p>
+    </section>
+
+    {(loading||trending.length>0)&&<section className="trending-collections">
+      <header><div><span><Flame size={13}/> LIVE MARKET SIGNALS</span><h2>Trending collections</h2><p>Ranked from recent confirmed sales, marketplace activity, and active listings.</p></div><small>Updates every 30 seconds</small></header>
+      {trending.length?<div className="trending-collection-grid">{trending.map((item,index)=><TrendingCollectionCard key={item.key} item={item} rank={index+1}/>)}</div>:<div className="collection-loading">Reading marketplace activity…</div>}
+    </section>}
+
     <section className="listed-collections">
       <header><div><span>MARKETPLACE</span><h2>Listed NFTs by network</h2></div><div className="collection-view-toggle"><button className={layout==="grid"?"active":""} onClick={()=>setLayout("grid")} aria-label="Grid view"><Grid2X2 size={15}/></button><button className={layout==="list"?"active":""} onClick={()=>setLayout("list")} aria-label="List view"><List size={16}/></button></div></header>
       <div className="collection-browser">
-        <aside><label><Search size={14}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search contract or token"/></label><span>CHAINS</span><button className={activeChain==="all"?"active":""} onClick={()=>setActiveChain("all")}><b>All networks</b><em>{listings.length}</em></button>{chainIds.map(chainId=>{const chain=getMarketplaceChain(chainId);const count=listings.filter(item=>item.chainId===chainId).length;return <button key={chainId} className={activeChain===chainId?"active":""} onClick={()=>setActiveChain(chainId)}><i/><b>{chain.name}</b><em>{count}</em></button>})}</aside>
-        <div className={`chain-listings ${layout}`}>{visibleListings.length?visibleListings.map(item=><ListedNft key={item.id} item={item}/>):<div className="collection-loading">{loading?"Reading confirmed listings…":"No active NFT listings on this selection."}</div>}</div>
+        <aside aria-label="Filter listed NFTs">
+          <label><Search size={16}/><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search contract or token" aria-label="Search contract or token"/></label>
+          <span>LIVE NETWORKS</span>
+          <div className="collection-chain-filters">
+            <button type="button" className={activeChain==="all"?"active":""} aria-pressed={activeChain==="all"} onClick={()=>setActiveChain("all")}><b>All networks</b><em>{listings.length} NFTs</em></button>
+            {liveChainIds.map(chainId=>{const chain=getMarketplaceChain(chainId);const chainListings=listings.filter(item=>item.chainId===chainId);const count=chainListings.length;const floorPrice=chainListings.length>0?chainListings.reduce((min,item)=>{const price=BigInt(item.price);return price<min?price:min;},BigInt(chainListings[0].price)):0n;return <button key={chainId} type="button" className={activeChain===chainId?"active":""} aria-pressed={activeChain===chainId} onClick={()=>setActiveChain(chainId)}><i aria-hidden="true"/><b>{chain.name}</b><em>{count} NFTs</em><small>Lowest: {floorPrice>0n?formatEther(floorPrice):"—"} {chain.currency}</small></button>})}
+          </div>
+        </aside>
+        <div className={`chain-listings ${layout}`}>{visibleListings.length?visibleListings.map(item=><ListedNft key={item.id} item={item}/>):<div className="collection-loading">{loading?"Reading confirmed listings…":<div><p>{query.trim()?"No NFTs match your search.":`No active NFT listings${activeChain==="all"?"":` on ${getMarketplaceChain(activeChain).name}`} yet.`}</p><Link href="/sell">List an NFT <ArrowUpRight size={15}/></Link></div>}</div>}</div>
       </div>
     </section>
   </main>;
 }
 
-function ListedNft({item}:{item:Listing}){
+function TrendingCollectionCard({item,rank}:{item:TrendingCollection;rank:number}){
   const [nft,setNft]=useState<NftMetadata|null>(null);
   const chain=getMarketplaceChain(item.chainId);
-  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.tokenId}&chainId=${item.chainId}`).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)});return()=>{active=false};},[item]);
-  return <article className="chain-listing"><a className="chain-listing-art" href={tokenUrl(item.chainId,item.nftAddress,item.tokenId)} target="_blank" rel="noreferrer" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}>{!nft?.imageUrl&&<strong>#{item.tokenId}</strong>}<span>{chain.name}</span></a><div><small>{nft?.collection??short(item.nftAddress)}</small><h3>{nft?.name??`Token #${item.tokenId}`}</h3><p><span>PRICE</span><strong>{formatEther(BigInt(item.price))} {chain.currency}</strong></p><a href="/market">View listing <ArrowUpRight size={13}/></a></div></article>;
+  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.representativeTokenId}&chainId=${item.chainId}`,{cache:"no-store"}).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)}).catch(()=>{});return()=>{active=false};},[item]);
+  return <a className="trending-collection-card" href={`/collection/${item.chainId}/${item.nftAddress}`}><div className="trending-collection-art" style={nft?.imageUrl?{backgroundImage:`url(${nft.imageUrl})`}:undefined}><b>#{rank}</b>{!nft?.imageUrl&&<span>{short(item.nftAddress)}</span>}</div><div><small>{chain.name}</small><h3>{nft?.collection??short(item.nftAddress)}</h3><dl><div><dt>OBSERVED HOJ LOW</dt><dd>{item.floorPrice > 0n ? formatEther(item.floorPrice) : "—"} {chain.currency}</dd></div><div><dt>RECENT SALES</dt><dd>{item.sales}</dd></div><div><dt>ACTIVE LISTINGS</dt><dd>{item.activeListings}</dd></div><div><dt>ACTIVITY</dt><dd>{item.recentEvents}</dd></div></dl><span>Explore collection <ArrowUpRight size={13}/></span></div></a>;
+}
+
+function ListedNft({item}:{item:Listing}){
+  const [nft,setNft]=useState<NftMetadata|null>(null);
+  const [artFailed,setArtFailed]=useState(false);
+  const chain=getMarketplaceChain(item.chainId);
+  useEffect(()=>{let active=true;void fetch(`/api/nft?contract=${item.nftAddress}&tokenId=${item.tokenId}&chainId=${item.chainId}`).then(response=>response.ok?response.json():null).then(value=>{if(active)setNft(value as NftMetadata|null)}).catch(()=>{});return()=>{active=false};},[item]);
+  return <Link href={`/nft/${item.chainId}/${item.nftAddress}/${item.tokenId}`} className="chain-listing">
+    <div className="chain-listing-art">{nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT #${item.tokenId}`} fill unoptimized sizes="(max-width: 700px) 100vw, 220px" style={{objectFit:"cover"}} onError={()=>setArtFailed(true)}/>:<strong>#{item.tokenId}<small>Artwork unavailable</small></strong>}<span>{chain.name}</span></div>
+    <div><small>{nft?.collection??short(item.nftAddress)}</small><h3>{nft?.name??`Token #${item.tokenId}`}</h3><p><span>LISTING PRICE</span><strong>{formatEther(BigInt(item.price))} {chain.currency}</strong></p><span>View NFT <ArrowUpRight size={13}/></span></div>
+  </Link>;
 }

@@ -17,11 +17,16 @@ contract NFTMarketplace is ReentrancyGuard {
     uint256 public constant BPS_DENOMINATOR = 10_000;
     uint256 public constant MARKETPLACE_FEE_BPS = 200;
     /// @notice The immutable House of Joshi treasury receiving the 2% protocol fee.
-    address public constant HOUSE_TREASURY = 0x6736d2eA9807297F0e56967361B9410854B86a5f;
+    address public immutable HOUSE_TREASURY;
+
+    constructor(address treasury) {
+        if (treasury == address(0)) revert InvalidTreasury();
+        HOUSE_TREASURY = treasury;
+    }
 
     mapping(address nft => mapping(uint256 tokenId => Listing)) private s_listings;
     mapping(address nft => mapping(uint256 tokenId => mapping(address buyer => Offer))) private s_offers;
-    mapping(address recipient => uint256 amount) private s_proceeds;
+    mapping(address recipient => uint256 amount) internal s_proceeds;
 
     error AlreadyListed();
     error NotListed();
@@ -38,6 +43,7 @@ contract NFTMarketplace is ReentrancyGuard {
     error OfferExpired();
     error OfferNotFound();
     error InvalidExpiration();
+    error InvalidTreasury();
 
     event ItemListed(address indexed seller, address indexed nftAddress, uint256 indexed tokenId, uint256 price);
     event ItemCanceled(address indexed seller, address indexed nftAddress, uint256 indexed tokenId);
@@ -55,14 +61,30 @@ contract NFTMarketplace is ReentrancyGuard {
     event OfferCanceled(address indexed buyer, address indexed nftAddress, uint256 indexed tokenId, uint256 amount);
     event OfferAccepted(address indexed seller, address indexed buyer, address indexed nftAddress, uint256 tokenId, uint256 amount, uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount);
 
-    function marketplaceVersion() external pure returns (uint256) { return 2; }
+    function marketplaceVersion() external pure virtual returns (uint256) { return 3; }
+
+    function updateListing(address nftAddress, uint256 tokenId, uint256 price) external {
+        Listing storage listing = s_listings[nftAddress][tokenId];
+        if (listing.price == 0) revert NotListed();
+        if (listing.seller != msg.sender) revert NotSeller();
+        if (price == 0) revert PriceMustBeAboveZero();
+        if (IERC721(nftAddress).ownerOf(tokenId) != msg.sender) revert NotOwner();
+        listing.price = price;
+        emit ItemListed(msg.sender, nftAddress, tokenId, price);
+    }
     function listItem(address nftAddress, uint256 tokenId, uint256 price) external {
-        if (s_listings[nftAddress][tokenId].price != 0) revert AlreadyListed();
         if (price == 0) revert PriceMustBeAboveZero();
         IERC721 nft = IERC721(nftAddress);
         if (nft.ownerOf(tokenId) != msg.sender) revert NotOwner();
         if (nft.getApproved(tokenId) != address(this) && !nft.isApprovedForAll(msg.sender, address(this))) {
             revert MarketplaceNotApproved();
+        }
+        // An out-of-market transfer must not leave the new owner dependent on
+        // the previous seller to cancel an obsolete listing.
+        Listing memory previous = s_listings[nftAddress][tokenId];
+        if (previous.price != 0) {
+            if (previous.seller == msg.sender) revert AlreadyListed();
+            emit ItemCanceled(previous.seller, nftAddress, tokenId);
         }
         s_listings[nftAddress][tokenId] = Listing(msg.sender, price);
         emit ItemListed(msg.sender, nftAddress, tokenId, price);
@@ -120,7 +142,7 @@ contract NFTMarketplace is ReentrancyGuard {
     function acceptOffer(address nftAddress, uint256 tokenId, address buyer) external nonReentrant {
         Offer memory offer = s_offers[nftAddress][tokenId][buyer];
         if (offer.amount == 0) revert OfferNotFound();
-        if (offer.expiresAt < block.timestamp) revert OfferExpired();
+        if (offer.expiresAt <= block.timestamp) revert OfferExpired();
         IERC721 nft = IERC721(nftAddress);
         if (nft.ownerOf(tokenId) != msg.sender) revert NotOwner();
         if (nft.getApproved(tokenId) != address(this) && !nft.isApprovedForAll(msg.sender, address(this))) revert MarketplaceNotApproved();
@@ -145,7 +167,7 @@ contract NFTMarketplace is ReentrancyGuard {
         emit ItemBought(buyer, nftAddress, tokenId, listing.price, marketplaceFee, royaltyRecipient, royaltyAmount);
     }
 
-    function _creditSale(address nftAddress, uint256 tokenId, address seller, uint256 salePrice) internal returns (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) {
+    function _creditSale(address nftAddress, uint256 tokenId, address seller, uint256 salePrice) internal virtual returns (uint256 marketplaceFee, address royaltyRecipient, uint256 royaltyAmount) {
         marketplaceFee = marketplaceFeeFor(salePrice);
         (royaltyRecipient, royaltyAmount) = _royaltyInfo(nftAddress, tokenId, salePrice);
         if (marketplaceFee + royaltyAmount > salePrice) revert InvalidRoyalty(royaltyAmount, salePrice);

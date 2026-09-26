@@ -1,0 +1,1 @@
+DROP TABLE `xrpl_brokered_listings`;
