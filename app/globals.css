@@ -10080,7 +10080,19 @@ article.royal-profile-nft > a {
 
 /* OpenSea-style Collection Page Layout */
 .royal-collection-header.opensea-style {
-  margin-bottom:0;
+  margin-bottom:16px;
+}
+
+.royal-collection-header.opensea-style.no-banner {
+  margin-bottom:20px;
+  padding-top:20px;
+}
+
+.royal-collection-header.opensea-style.no-banner .royal-collection-avatar {
+  margin-top:0;
+  transform:none;
+  border:2px solid var(--royal-border);
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
 }
 
 .royal-collection-header.opensea-style .royal-collection-banner {
@@ -10092,7 +10104,7 @@ article.royal-profile-nft > a {
   justify-content:space-between;
   align-items:flex-start;
   gap:24px;
-  padding:24px clamp(20px,4vw,60px);
+  padding:20px clamp(20px,4vw,60px);
   max-width:1400px;
   margin:0 auto;
 }
@@ -10100,7 +10112,7 @@ article.royal-profile-nft > a {
 .royal-collection-avatar-row {
   display:flex;
   align-items:center;
-  gap:20px;
+  gap:16px;
   flex:1;
 }
 
@@ -10139,7 +10151,7 @@ article.royal-profile-nft > a {
 
 .royal-collection-actions-row {
   display:flex;
-  gap:12px;
+  gap:8px;
   align-items:center;
 }
 
@@ -10149,7 +10161,7 @@ article.royal-profile-nft > a {
   padding:0;
   background:var(--royal-dark-gray);
   border:1px solid var(--royal-border);
-  margin:0 clamp(20px,4vw,60px) 24px;
+  margin:0 clamp(20px,4vw,60px) 20px;
   max-width:1400px;
   margin-left:auto;
   margin-right:auto;
@@ -10188,14 +10200,14 @@ article.royal-profile-nft > a {
 .royal-collection-tabs.opensea-style {
   padding:0 clamp(20px,4vw,60px);
   max-width:1400px;
-  margin:0 auto 24px;
+  margin:0 auto 20px;
   border-bottom:1px solid var(--royal-border);
   gap:0;
   background:transparent;
 }
 
 .royal-collection-tabs.opensea-style button {
-  padding:16px 20px;
+  padding:12px 16px;
   background:transparent;
   border:none;
   border-bottom:2px solid transparent;
@@ -10220,7 +10232,7 @@ article.royal-profile-nft > a {
 .royal-collection-main-layout {
   display:grid;
   grid-template-columns:280px 1fr;
-  gap:24px;
+  gap:20px;
   padding:0 clamp(20px,4vw,60px) 60px;
   max-width:1400px;
   margin:0 auto;
@@ -10229,13 +10241,13 @@ article.royal-profile-nft > a {
 .royal-collection-sidebar {
   display:flex;
   flex-direction:column;
-  gap:24px;
+  gap:16px;
 }
 
 .royal-filter-section {
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:8px;
 }
 
 .royal-filter-section h3 {
@@ -10250,11 +10262,11 @@ article.royal-profile-nft > a {
 .royal-filter-buttons {
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:6px;
 }
 
 .royal-filter-buttons button {
-  padding:12px 16px;
+  padding:10px 14px;
   background:var(--royal-dark-gray);
   border:1px solid var(--royal-border);
   border-radius:8px;
@@ -10297,14 +10309,14 @@ article.royal-profile-nft > a {
 .royal-collection-content-area {
   display:flex;
   flex-direction:column;
-  gap:24px;
+  gap:16px;
 }
 
 .royal-collection-toolbar {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:16px;
+  gap:12px;
   flex-wrap:wrap;
 }
 
@@ -10336,7 +10348,7 @@ article.royal-profile-nft > a {
 .royal-toolbar-actions {
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:8px;
 }
 
 .royal-sort-select {
@@ -10386,14 +10398,14 @@ article.royal-profile-nft > a {
   background:var(--royal-dark-gray);
   border:1px solid var(--royal-border);
   border-radius:12px;
-  padding:20px;
-  margin-bottom:24px;
+  padding:16px;
+  margin-bottom:16px;
 }
 
 .royal-sweep-tabs {
   display:flex;
   gap:4px;
-  margin-bottom:16px;
+  margin-bottom:12px;
   border-bottom:1px solid var(--royal-border);
 }
 
@@ -10556,12 +10568,22 @@ article.royal-profile-nft > a {
 }
 
 @media (max-width:768px) {
-  .royal-collection-header.opensea-style .royal-collection-banner {
-    height:200px;
+  .royal-collection-header.opensea-style.no-banner {
+    padding-top:16px;
   }
 
   .royal-collection-header-content {
     padding:16px;
+  }
+
+  .royal-collection-avatar-row {
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+  }
+
+  .royal-collection-header.opensea-style.no-banner .royal-collection-avatar {
+    margin-top:0;
   }
 
   .royal-collection-stats-bar.opensea-style {

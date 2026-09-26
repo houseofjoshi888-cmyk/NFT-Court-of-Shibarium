@@ -347,16 +347,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
       ) : (
         <>
           {/* OpenSea-style Collection Header */}
-          <section className="royal-collection-header opensea-style">
-            <div className="royal-collection-banner">
-              {collectionData?.banner ? (
-                <img src={collectionData.banner || ""} alt="Collection Banner" />
-              ) : (
-                <div className="royal-banner-placeholder">
-                  <ImageIcon size={48} />
-                </div>
-              )}
-            </div>
+          <section className="royal-collection-header opensea-style no-banner">
             <div className="royal-collection-header-content">
               <div className="royal-collection-avatar-row">
                 <div className="royal-collection-avatar">
