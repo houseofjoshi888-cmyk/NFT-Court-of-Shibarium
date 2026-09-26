@@ -8,7 +8,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
 import { formatEther } from "viem";
 import Link from "next/link";
-import Image from "next/image";
 import { getMarketplaceChain, marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
 
 type WalletNft = {
@@ -84,7 +83,7 @@ function NftArtwork({ imageUrl, name }: { imageUrl: string | null; name: string 
   
   return <div className="royal-nft-image">
     {imageUrl && !failed
-      ? <img src={imageUrl} alt={name} loading="lazy" onError={handleError} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      ? <img src={imageUrl} alt={name} loading="lazy" onError={handleError} />
       : <div className="royal-nft-artwork-fallback"><ImageIcon size={30} aria-hidden="true" /><span>Artwork unavailable</span></div>}
   </div>;
 }
@@ -406,17 +405,6 @@ export default function ProfilePage() {
                   filteredNfts.map((nft) => {
                     const nftChainId = nft.chainId || 109; // Default to Shibarium if not set
                     const activeListing=listings.find(l=>l.chainId===nftChainId&&l.nftAddress.toLowerCase()===nft.contractAddress.toLowerCase()&&l.tokenId===nft.tokenId);
-                    
-                    // Debug: log image URL for first few NFTs
-                    if (nftChainId === 109 && nft.contractAddress.toLowerCase().includes('nfts2me')) {
-                      console.log('NFT Debug:', {
-                        name: nft.name,
-                        contract: nft.contractAddress,
-                        tokenId: nft.tokenId,
-                        imageUrl: nft.imageUrl,
-                        chainId: nftChainId
-                      });
-                    }
                     
                     return (
                       <Link key={`${nftChainId}-${nft.contractAddress}-${nft.tokenId}`} href={`/nft/${nftChainId}/${nft.contractAddress}/${nft.tokenId}?from=profile`} className="royal-profile-nft">

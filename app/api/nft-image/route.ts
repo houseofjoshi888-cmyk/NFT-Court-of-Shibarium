@@ -141,7 +141,7 @@ async function fetchAlchemyImage(chainId: number, contract: Address, tokenId: st
     image?: { cachedUrl?: string | null; pngUrl?: string | null; thumbnailUrl?: string | null; originalUrl?: string | null };
     raw?: { metadata?: { image?: string | null; image_url?: string | null } };
   };
-  const image = metadata.image?.cachedUrl ?? metadata.image?.pngUrl ?? metadata.image?.thumbnailUrl ?? metadata.image?.originalUrl ?? metadata.raw?.metadata?.image ?? metadata.raw?.metadata?.image_url;
+  const image = metadata.raw?.metadata?.image ?? metadata.raw?.metadata?.image_url ?? metadata.image?.originalUrl ?? metadata.image?.cachedUrl ?? metadata.image?.pngUrl ?? metadata.image?.thumbnailUrl;
   if (!image) throw new Error("Alchemy metadata has no image");
   return fetchFirstImage(image, tokenId, refresh);
 }
@@ -174,7 +174,7 @@ async function fetchExplorerImage(chainId: number, contract: Address, tokenId: s
     thumbnails?: { image_url?: string | null; image?: string | null } | null;
     metadata?: { image?: string | null; image_url?: string | null; image_data?: string | null } | null;
   };
-  const sources = [item.image_url, item.thumbnails?.image_url, item.thumbnails?.image, item.metadata?.image_url, item.metadata?.image, item.metadata?.image_data, item.media_url].filter((source): source is string => !!source);
+  const sources = [item.metadata?.image, item.metadata?.image_url, item.metadata?.image_data, item.media_url, item.image_url, item.thumbnails?.image_url, item.thumbnails?.image].filter((source): source is string => !!source);
   for (const source of sources) {
     try {
       if (source.startsWith("data:image/")) return inlineImage(source);

@@ -135,7 +135,7 @@ function addExplorerItem(nfts: Map<string, WalletNft>, item: ExplorerNft, chainI
   const tokenId = String(item.id);
   const key = `${contractAddress.toLowerCase()}:${tokenId}`;
   const explorerImage =
-    mediaUrl(item.image_url ?? item.thumbnails?.image_url ?? item.thumbnails?.image ?? item.metadata?.image_url ?? item.metadata?.image ?? item.media_url) ??
+    mediaUrl(item.metadata?.image ?? item.metadata?.image_url ?? item.image_url ?? item.media_url ?? item.thumbnails?.image_url ?? item.thumbnails?.image) ??
     embeddedImage(item.metadata?.image_data);
   nfts.set(key, {
     contractAddress,
@@ -262,7 +262,7 @@ async function fetchFromAlchemy(address: string, chainId: MarketplaceChainId, ap
       if (!contractAddress || item.tokenId === undefined) continue;
       const tokenId = item.tokenId.startsWith("0x") ? BigInt(item.tokenId).toString() : String(item.tokenId);
       const key = `${contractAddress.toLowerCase()}:${tokenId}`;
-      const source = mediaUrl(item.image?.cachedUrl ?? item.image?.pngUrl ?? item.image?.thumbnailUrl ?? item.image?.originalUrl ?? item.raw?.metadata?.image);
+      const source = mediaUrl(item.raw?.metadata?.image ?? item.image?.originalUrl ?? item.image?.cachedUrl ?? item.image?.pngUrl ?? item.image?.thumbnailUrl);
       nfts.set(key, {
         contractAddress,
         tokenId,

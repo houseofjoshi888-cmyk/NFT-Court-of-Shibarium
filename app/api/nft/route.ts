@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       : { headers: { accept: "application/json" }, signal: AbortSignal.timeout(10_000), next: { revalidate: 60 } });
     if (!response.ok) throw new Error("Explorer request failed");
     const item = await response.json() as ExplorerNft;
-    const sourceImage = imageUrl(item.image_url ?? item.metadata?.image_url ?? item.metadata?.image ?? item.metadata?.image_data);
+    const sourceImage = imageUrl(item.metadata?.image ?? item.metadata?.image_url ?? item.metadata?.image_data ?? item.image_url);
     return NextResponse.json({
       contractAddress: address,
       chainId,
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     if (runtime.ALCHEMY_API_KEY && ALCHEMY_NETWORKS[chainId]) {
       try {
         const item = await alchemyMetadata(chainId, address, tokenId, runtime.ALCHEMY_API_KEY, refresh);
-        const sourceImage = imageUrl(item.image?.cachedUrl ?? item.image?.pngUrl ?? item.image?.thumbnailUrl ?? item.image?.originalUrl ?? item.raw?.metadata?.image ?? item.raw?.metadata?.image_url ?? item.raw?.metadata?.image_data);
+        const sourceImage = imageUrl(item.raw?.metadata?.image ?? item.raw?.metadata?.image_url ?? item.raw?.metadata?.image_data ?? item.image?.originalUrl ?? item.image?.cachedUrl ?? item.image?.pngUrl ?? item.image?.thumbnailUrl);
         return NextResponse.json({
           contractAddress: address,
           chainId,

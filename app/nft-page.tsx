@@ -28,6 +28,7 @@ const erc721Abi=[
   {type:"function",name:"isApprovedForAll",stateMutability:"view",inputs:[{name:"owner",type:"address"},{name:"operator",type:"address"}],outputs:[{name:"approved",type:"bool"}]},
   {type:"function",name:"approve",stateMutability:"nonpayable",inputs:[{name:"to",type:"address"},{name:"tokenId",type:"uint256"}],outputs:[]},
 ] as const;
+const erc1155SupplyAbi=[{type:"function",name:"totalSupply",stateMutability:"view",inputs:[{name:"id",type:"uint256"}],outputs:[{name:"",type:"uint256"}]}] as const;
 const short=(value:string)=>`${value.slice(0,6)}…${value.slice(-4)}`;
 
 export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:number;contract:string;tokenId:string;returnTo?:"/market"|"/profile"}){
@@ -46,6 +47,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
   const[shareOpen,setShareOpen]=useState(false);
   const[refreshing,setRefreshing]=useState(false);
   const[artFailed,setArtFailed]=useState(false);
+  const[portraitArtwork,setPortraitArtwork]=useState(false);
   const[activeTab,setActiveTab]=useState<"details"|"orders"|"activity">("details");
   const[showListModal,setShowListModal]=useState(false);
   const[listPrice,setListPrice]=useState("");
@@ -60,6 +62,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
   const parsedTokenId=valid?BigInt(tokenId):0n;
   const displayTokenId=tokenId.length>20?`#${tokenId.slice(0,8)}…${tokenId.slice(-6)}`:`#${tokenId}`;
   const{data:isEdition}=useReadContract({address:nftAddress,abi:erc1155Abi,functionName:"supportsInterface",args:["0xd9b67a26"],chainId:marketChainId,query:{enabled:valid}});
+  const{data:editionSupply}=useReadContract({address:nftAddress,abi:erc1155SupplyAbi,functionName:"totalSupply",args:[parsedTokenId],chainId:marketChainId,query:{enabled:valid&&isEdition===true}});
   const{data:owner,refetch:refetchOwner}=useReadContract({address:nftAddress,abi:erc721Abi,functionName:"ownerOf",args:[parsedTokenId],chainId:marketChainId,query:{enabled:valid&&!isEdition,refetchInterval:30_000}});
   const{data:directListing,refetch:refetchListing,isLoading:listingLoading}=useReadContract({address:marketplaceAddress,abi:marketplaceAbi,functionName:"getListing",args:[nftAddress,parsedTokenId],chainId:marketChainId,query:{enabled:valid&&marketplaceLive&&!isEdition,refetchInterval:15_000}});
   const{data:marketVersion}=useReadContract({address:marketplaceAddress,abi:marketplaceAbi,functionName:"marketplaceVersion",chainId:marketChainId,query:{enabled:valid&&marketplaceLive}});
@@ -87,6 +90,7 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
     if(!response.ok)throw new Error(body.error??"NFT metadata is unavailable.");
     setNft(body);
     setArtFailed(false);
+    setPortraitArtwork(false);
     setError("");
     return body;
   },[chainId,contract,tokenId]);
@@ -273,8 +277,8 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
 
     <div className="royal-nft-split">
       <div className="royal-nft-media">
-        <div className={`royal-nft-art ${nft?.imageUrl&&!artFailed?"":"empty"}`}>
-          {nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT ${displayTokenId}`} fill unoptimized sizes="(max-width: 800px) 100vw, 50vw" style={{objectFit:"contain"}} onError={()=>setArtFailed(true)}/>:<><ImageIcon size={48}/><span>{error||(nft?"Artwork unavailable from the NFT metadata source.":"Loading verified NFT…")}</span><strong>{displayTokenId}</strong></>}
+        <div className={`royal-nft-art ${nft?.imageUrl&&!artFailed?"":"empty"}${portraitArtwork?" portrait-artwork":""}`}>
+          {nft?.imageUrl&&!artFailed?<Image src={nft.imageUrl} alt={nft.name??`NFT ${displayTokenId}`} fill unoptimized sizes="(max-width: 1100px) 100vw, 56vw" style={{objectFit:"contain"}} onLoad={event=>{const image=event.currentTarget;setPortraitArtwork(image.naturalHeight>image.naturalWidth*1.3);}} onError={()=>setArtFailed(true)}/>:<><ImageIcon size={48}/><span>{error||(nft?"Artwork unavailable from the NFT metadata source.":"Loading verified NFT…")}</span><strong>{displayTokenId}</strong></>}
         </div>
         {artFailed&&chainId===109&&contract.toLowerCase()==="0x007bbf85988caf18cf4222c9214e4fa019b3e002"&&<p className="royal-nft-artwork-warning">The Shib Magazine Covers metadata host is denying public access. Your NFT remains on Shibarium, but its publisher must restore the image source for the original cover to appear.</p>}
         <div className="royal-nft-media-info">
@@ -306,6 +310,8 @@ export function NftPage({chainId,contract,tokenId,returnTo="/market"}:{chainId:n
           <span>{isEdition?"Edition ownership":"Owned by"}</span>
           {isEdition?<span>Multiple holders</span>:owner?<a href={`${chain.explorerUrl}/address/${owner}`} target="_blank" rel="noreferrer">{short(owner)} <ExternalLink size={12}/></a>:<span>—</span>}
         </div>
+
+        {isEdition&&<div className="royal-nft-edition-supply"><span>EDITIONS MINTED</span><strong>{editionSupply===undefined?"Unavailable":editionSupply.toLocaleString()}</strong></div>}
 
         {nft?.description&&<p className="royal-nft-intro">{nft.description}</p>}
 

@@ -11623,6 +11623,30 @@ article.royal-profile-nft > a {
 .royal-profile-content .royal-nft-status .listed { overflow-wrap:anywhere; }
 @media (max-width:620px) { .royal-homepage .royal-nfts-grid,.portal-market .market-listings-grid,.royal-profile-content .royal-portfolio-grid,.royal-content .royal-portfolio-grid,.chain-listings.grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } }
 
+.royal-homepage .royal-nft-card .royal-nft-image,
+.royal-profile-content .royal-profile-nft .royal-nft-image,
+.royal-content .royal-profile-nft .royal-nft-image {
+  width:100%;
+  aspect-ratio:1;
+  min-height:0;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:#171715;
+}
+.royal-homepage .royal-nft-card .royal-nft-image img,
+.royal-profile-content .royal-profile-nft .royal-nft-image img,
+.royal-content .royal-profile-nft .royal-nft-image img {
+  position:static;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+
 /* Market browsing stays usable even before the first listing is indexed. */
 .royal-portal-market .royal-portal-hero { display:grid; grid-template-columns:1fr auto; align-items:center; column-gap:20px; padding:24px clamp(18px,3vw,42px); background:#0f0f0e; }
 .royal-portal-market .royal-portal-hero label { grid-column:2; grid-row:1/4; margin:0; color:#bdb5a7; font-size:12px; }
@@ -11830,3 +11854,86 @@ article.royal-profile-nft > a {
 .hoj-profile-withdraw-link { display:inline-flex; align-items:center; gap:6px; color:#d8b678; font-size:12px; text-decoration:none; }
 .hoj-profile-withdraw-link:hover { color:#f3d79f; }
 @media(max-width:720px) { .hoj-proceeds-grid { grid-template-columns:1fr; } .hoj-proceeds-card { padding:16px; } }
+
+/* NFT detail: a full page gallery with artwork visible above the fold. */
+.royal-nft-page { padding:24px clamp(16px,4vw,64px) 72px; background:#000; }
+.royal-nft-page .royal-nft-stage {
+  width:100%; max-width:1600px; height:auto; min-height:0; display:block;
+  overflow:visible; border:0; border-radius:0; background:#000; box-shadow:none;
+}
+.royal-nft-page .royal-nft-nav { border:1px solid rgba(213,185,125,.2); border-radius:12px 12px 0 0; background:#000; }
+.royal-nft-page .royal-nft-split {
+  display:grid; grid-template-columns:minmax(0,56%) minmax(0,44%); min-height:0;
+  border:1px solid rgba(213,185,125,.2); border-top:0;
+  border-radius:0 0 12px 12px; overflow:hidden; background:#000;
+}
+.royal-nft-page .royal-nft-split .royal-nft-media {
+  grid-column:1; grid-row:1; justify-content:flex-start; overflow:visible;
+  border-right:1px solid rgba(255,255,255,.1); background:#000;
+}
+.royal-nft-page .royal-nft-split .royal-nft-art {
+  flex:none; width:100%; height:min(62dvh,760px); min-height:0; aspect-ratio:auto; background:#000;
+}
+.royal-nft-page .royal-nft-info-scroll { grid-column:2; overflow:visible; min-height:0; background:#000; }
+.royal-nft-page .royal-nft-info-scroll .royal-nft-tabs { position:static; background:#000; }
+.royal-nft-page :is(.royal-nft-market-info,.royal-nft-action-section,.royal-nft-accordion,.royal-nft-thumb) {
+  background:#000;
+  background-image:none;
+}
+@media (max-width:1100px) {
+  .royal-nft-page .royal-nft-split { display:flex; flex-direction:column; }
+  .royal-nft-page .royal-nft-split .royal-nft-media { border-right:0; border-bottom:1px solid rgba(255,255,255,.1); }
+  .royal-nft-page .royal-nft-split .royal-nft-art { height:min(58dvh,620px); min-height:0; aspect-ratio:auto; }
+}
+
+.royal-nft-page .royal-nft-gallery-nav :is(.royal-nft-gallery-back,.royal-nft-gallery-next),
+.royal-nft-page .royal-nft-nav-actions .royal-nft-gallery-close {
+  width:44px; height:44px; min-width:44px; min-height:44px;
+  border:1px solid rgba(215,188,137,.3); border-radius:8px; background:#000;
+}
+.royal-nft-page .royal-nft-nav-actions .nft-share-wrap > button,
+.royal-nft-page .royal-nft-nav-actions > button {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  width:112px; height:44px; min-height:44px; padding:0 12px;
+  border:1px solid rgba(215,188,137,.3); border-radius:8px;
+  background:#000; color:#f4f0e7; font-size:13px; font-weight:600;
+}
+.royal-nft-page .royal-nft-nav-actions > button.active { color:#e5c080; border-color:#e5c080; background:#000; }
+.royal-nft-page .royal-nft-nav-actions .nft-share-menu { background:#000; }
+.royal-nft-page .royal-nft-nav-actions .nft-share-menu button {
+  width:100%; min-height:44px; height:auto; padding:10px 14px;
+  justify-content:flex-start; border:0; border-bottom:1px solid rgba(215,188,137,.18); border-radius:0;
+  color:#f4f0e7; background:#000;
+}
+.royal-nft-page .royal-nft-nav-actions .nft-share-menu button:last-child { border-bottom:0; }
+.royal-nft-page .royal-nft-nav-actions .nft-share-menu button:hover { background:#171717; }
+.royal-nft-edition-supply {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 16px; border:1px solid rgba(215,188,137,.24); border-radius:8px; background:#000;
+}
+.royal-nft-edition-supply span { color:#aaa397; font-size:11px; letter-spacing:.08em; }
+.royal-nft-edition-supply strong { color:#f4f0e7; font-size:20px; font-weight:600; }
+@media (max-width:760px) {
+  .royal-nft-page .royal-nft-nav { grid-template-columns:minmax(0,1fr); gap:10px; }
+  .royal-nft-page .royal-nft-gallery-nav { width:100%; grid-template-columns:44px minmax(0,1fr) 44px; }
+  .royal-nft-page .royal-nft-thumbnails { max-width:100%; }
+  .royal-nft-page .royal-nft-nav-actions { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px; width:100%; gap:8px; }
+  .royal-nft-page .royal-nft-nav-actions .nft-share-wrap,
+  .royal-nft-page .royal-nft-nav-actions > button { display:flex; width:100%; }
+  .royal-nft-page .royal-nft-nav-actions .nft-share-wrap > button { width:100%; }
+  .royal-nft-page .royal-nft-nav-actions .royal-nft-gallery-close { margin:0; }
+}
+@media (max-width:620px) {
+  .royal-nft-page .royal-nft-nav-actions .nft-share-wrap,
+  .royal-nft-page .royal-nft-nav-actions > button { display:flex; }
+  .royal-nft-page .royal-nft-nav-actions .nft-share-wrap > button,
+  .royal-nft-page .royal-nft-nav-actions > button { width:100%; height:44px; }
+  .royal-nft-page .royal-nft-nav-actions .nft-share-wrap > button span,
+  .royal-nft-page .royal-nft-nav-actions > button span { display:inline; }
+  .royal-nft-page .royal-nft-split .royal-nft-art { height:min(58dvh,calc(100vw - 58px)); }
+  .royal-nft-page .royal-nft-nav-actions .nft-share-menu { left:0; right:auto; min-width:min(200px,calc(100vw - 40px)); }
+}
+.royal-nft-page .royal-nft-split .royal-nft-art.portrait-artwork {
+  height:min(78dvh,960px);
+  background:#000;
+}
