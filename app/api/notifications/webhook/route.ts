@@ -108,7 +108,12 @@ async function getNotificationSettings(walletAddress: string) {
   try {
     const response = await fetch(`/api/notifications/settings?wallet=${walletAddress}`);
     if (response.ok) {
-      return await response.json();
+      return await response.json() as {
+        email: string;
+        emailEnabled: boolean;
+        salesEnabled: boolean;
+        offersEnabled: boolean;
+      };
     }
     return { email: "", emailEnabled: false, salesEnabled: true, offersEnabled: true };
   } catch {
@@ -120,7 +125,11 @@ async function getNftMetadata(contract: string, tokenId: string, chainId: number
   try {
     const response = await fetch(`/api/nft?contract=${contract}&tokenId=${encodeURIComponent(tokenId)}&chainId=${chainId}`, { cache: "no-store" });
     if (response.ok) {
-      return await response.json();
+      return await response.json() as {
+        name?: string;
+        collection?: string;
+        imageUrl?: string;
+      } | null;
     }
     return null;
   } catch {
