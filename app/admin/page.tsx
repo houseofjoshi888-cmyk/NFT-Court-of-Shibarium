@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Settings, Globe, Coin, Layers, AlertTriangle, ToggleLeft, ToggleRight, Save, RefreshCw, Lock, Unlock, Database, Layout, Palette, Zap } from "lucide-react";
+import { Shield, Settings, Globe, Coins, Layers, AlertTriangle, ToggleLeft, ToggleRight, Save, RefreshCw, Lock, Unlock, Database, Layout, Palette, Zap } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useState, useEffect } from "react";
 import { marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
@@ -194,7 +194,7 @@ export default function AdminPage() {
             className={activeTab === "fees" ? "active" : ""}
             onClick={() => setActiveTab("fees")}
           >
-            <Coin size={16} /> Fees
+            <Coins size={16} /> Fees
           </button>
           <button 
             className={activeTab === "ui" ? "active" : ""}
@@ -391,7 +391,7 @@ export default function AdminPage() {
 
           {activeTab === "fees" && (
             <div className="royal-admin-section">
-              <h2><Coin size={20} /> Fee Configuration</h2>
+              <h2><Coins size={20} /> Fee Configuration</h2>
               <p>Configure marketplace and royalty fees (in basis points, 100 = 1%).</p>
               
               <div className="royal-config-item">
