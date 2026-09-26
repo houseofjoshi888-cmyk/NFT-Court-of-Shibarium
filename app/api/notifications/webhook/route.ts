@@ -30,6 +30,9 @@ export async function POST(request: Request) {
       return Response.json({ error: "Missing required fields: chainId, contract, tokenId, eventType" }, { status: 400 });
     }
 
+    // Ensure tokenId is a string
+    const validTokenId = String(tokenId);
+
     if (!isMarketplaceChainId(Number(chainId))) {
       return Response.json({ error: "Unsupported chain" }, { status: 400 });
     }
@@ -39,12 +42,16 @@ export async function POST(request: Request) {
 
     // Handle different event types
     if (eventType === "sold" || eventType === "offer_accepted") {
+      if (!seller) {
+        return Response.json({ error: "Seller address is required for this event type" }, { status: 400 });
+      }
+      
       // Get seller's notification settings
       const sellerSettings = await getNotificationSettings(seller);
       
       if (sellerSettings.emailEnabled && sellerSettings.email && sellerSettings.salesEnabled) {
         // Get NFT metadata
-        const nftData = await getNftMetadata(validContract, tokenId, Number(chainId));
+        const nftData = await getNftMetadata(validContract, validTokenId, Number(chainId));
         
         // Send sale notification
         await fetch('/api/notifications/send-sale', {
@@ -52,7 +59,7 @@ export async function POST(request: Request) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: sellerSettings.email,
-            nftName: nftData?.name || `Token #${tokenId}`,
+            nftName: nftData?.name || `Token #${validTokenId}`,
             collectionName: nftData?.collection || null,
             price: price || "0",
             currency: chain.currency,
@@ -64,17 +71,21 @@ export async function POST(request: Request) {
     }
 
     if (eventType === "offer_received" && seller) {
+      if (!validTokenId) {
+        return Response.json({ error: "Token ID is required for offer events" }, { status: 400 });
+      }
+      
       const sellerSettings = await getNotificationSettings(seller);
       
       if (sellerSettings.emailEnabled && sellerSettings.email && sellerSettings.offersEnabled) {
-        const nftData = await getNftMetadata(validContract, tokenId, Number(chainId));
+        const nftData = await getNftMetadata(validContract, validTokenId, Number(chainId));
         
         await fetch('/api/notifications/send-offer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: sellerSettings.email,
-            nftName: nftData?.name || `Token #${tokenId}`,
+            nftName: nftData?.name || `Token #${validTokenId}`,
             collectionName: nftData?.collection || null,
             offerPrice: price || "0",
             currency: chain.currency,
@@ -107,7 +118,7 @@ async function getNotificationSettings(walletAddress: string) {
 
 async function getNftMetadata(contract: string, tokenId: string, chainId: number) {
   try {
-    const response = await fetch(`/api/nft?contract=${contract}&tokenId=${tokenId}&chainId=${chainId}`, { cache: "no-store" });
+    const response = await fetch(`/api/nft?contract=${contract}&tokenId=${encodeURIComponent(tokenId)}&chainId=${chainId}`, { cache: "no-store" });
     if (response.ok) {
       return await response.json();
     }
