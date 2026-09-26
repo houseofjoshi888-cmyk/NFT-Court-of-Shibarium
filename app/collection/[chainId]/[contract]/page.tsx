@@ -252,17 +252,6 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             standard: null,
           });
 
-          // Try to fetch contract information
-          try {
-            const contractRes = await fetch(`/api/contract-info?chainId=${chainId}&contract=${contract}`, { cache: "no-store" });
-            if (contractRes.ok) {
-              const contractData = await contractRes.json();
-              setContractInfo(contractData);
-            }
-          } catch (error) {
-            console.log("Could not fetch contract info:", error);
-          }
-
           // Calculate price history from activity
           const priceHistoryData = collectionActivity
             .filter((a: IndexedActivity) => ["sold","offer_accepted"].includes(a.eventType) && a.price)
