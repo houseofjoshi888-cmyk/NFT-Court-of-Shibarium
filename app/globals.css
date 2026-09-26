@@ -24,6 +24,23 @@
   --font-sans: "Inter", Avenir, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   
+  /* Standardized Font Sizes */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  
+  /* Standardized Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
   /* Legacy mappings for compatibility */
   --ink: var(--royal-white);
   --paper: var(--royal-black);
@@ -973,7 +990,8 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
 }
 
 .royal-notification-filters button:hover {
@@ -985,7 +1003,7 @@
   background: var(--royal-gold);
   border-color: var(--royal-gold);
   color: var(--royal-black);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .royal-notification-actions {
@@ -1001,7 +1019,8 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1183,7 +1202,8 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1198,7 +1218,7 @@
   background: var(--royal-gold);
   border-color: var(--royal-gold);
   color: var(--royal-black);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .royal-admin-content {
@@ -1450,6 +1470,121 @@ button,input,select { font:inherit; }
 button,a { -webkit-tap-highlight-color:transparent; }
 a { color:inherit; text-decoration:none; }
 main { min-height:100vh; overflow:hidden; }
+
+/* Standardized Typography Base */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: var(--font-medium);
+  line-height: 1.2;
+  margin: 0;
+  color: var(--royal-white);
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); }
+h4 { font-size: clamp(1rem, 1.5vw, 1.25rem); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+/* Standardized Button Base */
+.royal-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--royal-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.royal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.royal-button-primary {
+  background: var(--royal-gold);
+  color: var(--royal-black);
+  border-color: var(--royal-gold);
+}
+
+.royal-button-primary:hover:not(:disabled) {
+  background: var(--royal-bright-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--royal-glow);
+}
+
+.royal-button-secondary {
+  background: transparent;
+  color: var(--royal-gold);
+  border-color: var(--royal-gold);
+}
+
+.royal-button-secondary:hover:not(:disabled) {
+  background: var(--royal-gold);
+  color: var(--royal-black);
+  transform: translateY(-2px);
+}
+
+.royal-button-ghost {
+  background: transparent;
+  color: var(--royal-light-gray);
+  border-color: var(--royal-border);
+}
+
+.royal-button-ghost:hover:not(:disabled) {
+  background: var(--royal-mid-gray);
+  color: var(--royal-white);
+  border-color: var(--royal-gold);
+}
+
+/* Standardized Tab Base */
+.royal-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: var(--royal-mid-gray);
+  border: 1px solid var(--royal-border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.royal-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--royal-light-gray);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.royal-tabs button:hover:not(.active) {
+  background: var(--royal-dark-gray);
+  color: var(--royal-white);
+}
+
+.royal-tabs button.active {
+  background: var(--royal-gold);
+  color: var(--royal-black);
+  font-weight: var(--font-semibold);
+}
 
 .site-header { height:82px; padding:0 clamp(22px,4vw,68px); display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--royal-border); position:relative; z-index:30; background:var(--royal-black); }
 .wordmark { display:flex; gap:14px; align-items:center; font-size:13px; letter-spacing:.19em; font-weight:700; color:var(--royal-white); }
@@ -1715,8 +1850,8 @@ footer a:hover { color:var(--royal-ivory); }
   background:var(--royal-gold);
   color:var(--royal-black);
   border-radius:12px;
-  font-weight:600;
-  font-size:14px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
   letter-spacing:.05em;
   text-transform:uppercase;
   transition:all .3s ease;
@@ -1744,8 +1879,8 @@ footer a:hover { color:var(--royal-ivory); }
   color:var(--royal-gold);
   border:2px solid var(--royal-gold);
   border-radius:12px;
-  font-weight:600;
-  font-size:14px;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
   letter-spacing:.05em;
   text-transform:uppercase;
   transition:all .3s ease;
@@ -4494,8 +4629,8 @@ footer a:hover { color:var(--royal-ivory); }
   background:transparent;
   border:none;
   border-radius:8px;
-  font-size:13px;
-  font-weight:600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color:var(--royal-light-gray);
   cursor:pointer;
   transition:all .3s ease;
@@ -4505,6 +4640,7 @@ footer a:hover { color:var(--royal-ivory); }
 .royal-rankings-tabs button.active {
   background:var(--royal-black);
   color:var(--royal-white);
+  font-weight: var(--font-semibold);
   box-shadow:0 2px 8px var(--royal-shadow);
 }
 
@@ -7949,8 +8085,8 @@ a {
   background:transparent;
   border:none;
   border-radius:8px;
-  font-size:13px;
-  font-weight:600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color:var(--royal-light-gray);
   cursor:pointer;
   transition:all .3s ease;
@@ -7960,6 +8096,7 @@ a {
 .royal-profile-tabs button.active {
   background:var(--royal-gold);
   color:var(--royal-black);
+  font-weight: var(--font-semibold);
 }
 
 .royal-profile-tabs button:hover:not(.active) {
@@ -8507,8 +8644,8 @@ article.royal-profile-nft > a {
   background:transparent;
   border:none;
   border-radius:8px;
-  font-size:13px;
-  font-weight:600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   color:var(--royal-light-gray);
   cursor:pointer;
   transition:all .3s ease;
@@ -8517,6 +8654,7 @@ article.royal-profile-nft > a {
 .royal-activity-tabs button.active {
   background:var(--royal-gold);
   color:var(--royal-black);
+  font-weight: var(--font-semibold);
 }
 
 .royal-activity-tabs button:hover:not(.active) {
@@ -9138,8 +9276,8 @@ article.royal-profile-nft > a {
   border:none;
   border-radius:6px;
   color:var(--royal-light-gray);
-  font-size:13px;
-  font-weight:600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor:pointer;
   transition:all .3s ease;
   white-space:nowrap;
@@ -9148,6 +9286,7 @@ article.royal-profile-nft > a {
 .royal-nft-tabs button.active {
   background:var(--royal-gold);
   color:var(--royal-black);
+  font-weight: var(--font-semibold);
 }
 
 .royal-nft-tabs button:hover:not(.active) {
@@ -9848,8 +9987,8 @@ article.royal-profile-nft > a {
   border:none;
   border-radius:6px;
   color:var(--royal-light-gray);
-  font-size:13px;
-  font-weight:600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor:pointer;
   transition:all .3s ease;
   white-space:nowrap;
@@ -9858,6 +9997,7 @@ article.royal-profile-nft > a {
 .royal-collection-tabs button.active {
   background:var(--royal-gold);
   color:var(--royal-black);
+  font-weight: var(--font-semibold);
 }
 
 .royal-collection-tabs button:hover:not(.active) {
