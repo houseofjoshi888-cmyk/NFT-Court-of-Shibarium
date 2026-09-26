@@ -2188,6 +2188,42 @@ footer a:hover { color:var(--royal-ivory); }
   background:linear-gradient(135deg, var(--royal-lavender), var(--royal-soft-purple));
 }
 
+.royal-nft-image img {
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+
+.royal-nft-image .royal-expand-button {
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;
+  color:var(--royal-white);
+  cursor:pointer;
+  opacity:0;
+  transition:opacity .3s ease;
+  z-index:2;
+}
+
+.royal-nft-card:hover .royal-nft-image .royal-expand-button {
+  opacity:1;
+}
+
+.royal-nft-image .royal-expand-button:hover {
+  background:rgba(0,0,0,.9);
+  border-color:var(--royal-gold);
+}
+
 .royal-nft-placeholder {
   width:100%;
   height:100%;
@@ -10500,6 +10536,7 @@ article.royal-profile-nft > a {
   align-items:center;
   justify-content:center;
   overflow:hidden;
+  position:relative;
 }
 
 .royal-nft-card.opensea-style .royal-nft-image img {
@@ -10545,6 +10582,86 @@ article.royal-profile-nft > a {
 .royal-nft-card.opensea-style .royal-nft-last-sale {
   font-size:12px;
   color:var(--royal-light-gray);
+}
+
+.royal-expand-button {
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;
+  color:var(--royal-white);
+  cursor:pointer;
+  opacity:0;
+  transition:opacity .3s ease;
+  z-index:2;
+}
+
+.royal-nft-card:hover .royal-expand-button {
+  opacity:1;
+}
+
+.royal-expand-button:hover {
+  background:rgba(0,0,0,.9);
+  border-color:var(--royal-gold);
+}
+
+.royal-lightbox {
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:rgba(0,0,0,.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  cursor:pointer;
+}
+
+.royal-lightbox-close {
+  position:absolute;
+  top:20px;
+  right:20px;
+  width:48px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;
+  color:var(--royal-white);
+  cursor:pointer;
+  transition:all .3s ease;
+  z-index:1001;
+}
+
+.royal-lightbox-close:hover {
+  background:rgba(255,255,255,.2);
+  border-color:var(--royal-gold);
+}
+
+.royal-lightbox-content {
+  max-width:90vw;
+  max-height:90vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.royal-lightbox-content img {
+  max-width:100%;
+  max-height:90vh;
+  object-fit:contain;
+  border-radius:8px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
 }
 
 @media (max-width:1024px) {

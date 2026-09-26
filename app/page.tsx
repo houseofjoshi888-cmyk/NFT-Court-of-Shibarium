@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Sparkles, TrendingUp, Users, Clock, Search, ImageIcon } from "lucide-react";
+import { ArrowUpRight, Sparkles, TrendingUp, Users, Clock, Search, ImageIcon, Maximize2, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -87,7 +87,7 @@ function ListedCollectionCard({collection,rank}:{collection:ListedCollection;ran
   </Link>;
 }
 
-function FeaturedArtwork({ listing }: { listing: IndexedListing }) {
+function FeaturedArtwork({ listing, onExpand }: { listing: IndexedListing; onExpand: (url: string) => void }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -99,7 +99,32 @@ function FeaturedArtwork({ listing }: { listing: IndexedListing }) {
     return () => controller.abort();
   }, [listing.chainId, listing.nftAddress, listing.tokenId]);
   return imageUrl && !failed
-    ? <img src={imageUrl} alt={`NFT #${listing.tokenId}`} loading="lazy" onError={() => setFailed(true)} className="royal-featured-artwork" />
+    ? (
+      <>
+        <img 
+          src={imageUrl} 
+          alt={`NFT #${listing.tokenId}`} 
+          loading="lazy" 
+          onError={() => setFailed(true)} 
+          className="royal-featured-artwork"
+          onClick={(e) => {
+            e.preventDefault();
+            onExpand(imageUrl);
+          }}
+          style={{ cursor: 'pointer' }}
+        />
+        <button 
+          className="royal-expand-button"
+          onClick={(e) => {
+            e.preventDefault();
+            onExpand(imageUrl);
+          }}
+          aria-label="Expand image"
+        >
+          <Maximize2 size={16} />
+        </button>
+      </>
+    )
     : <div className="royal-nft-placeholder"><ImageIcon size={36} aria-label="Artwork unavailable" /></div>;
 }
 
@@ -110,6 +135,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [listingCount, setListingCount] = useState(0);
   const [saleCount, setSaleCount] = useState(0);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -330,7 +356,7 @@ export default function Home() {
                   className="royal-nft-card"
                 >
                   <div className="royal-nft-image">
-                    <FeaturedArtwork listing={nft} />
+                    <FeaturedArtwork listing={nft} onExpand={setLightboxImage} />
                     <div className="royal-nft-overlay">
                       <span className="royal-quick-view" aria-hidden="true">
                         <Search size={20} />
@@ -438,6 +464,32 @@ export default function Home() {
           </div>
         </div>
       </section>
+      
+      {/* Lightbox for full image view */}
+      {lightboxImage && (
+        <div 
+          className="royal-lightbox"
+          onClick={() => setLightboxImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image lightbox"
+        >
+          <button 
+            className="royal-lightbox-close"
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close lightbox"
+          >
+            <X size={24} />
+          </button>
+          <div className="royal-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={lightboxImage} 
+              alt="Full size NFT image" 
+              onClick={() => setLightboxImage(null)}
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

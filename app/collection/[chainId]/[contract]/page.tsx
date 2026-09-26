@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List, ShoppingCart, Filter, Search, SlidersHorizontal, X } from "lucide-react";
+import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List, ShoppingCart, Filter, Search, SlidersHorizontal, X, Maximize2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getMarketplaceChain, type MarketplaceChainId } from "@/lib/marketplace-chains";
 import { formatEther } from "viem";
@@ -110,6 +110,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [showFilters, setShowFilters] = useState(false);
   const [buySellTab, setBuySellTab] = useState<"buy" | "sell">("buy");
   const [maxPrice, setMaxPrice] = useState("");
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const sweepListings = [...allListings]
     .filter(listing => listing.tokenType !== "ERC-1155" && BigInt(listing.price) > 0n)
@@ -625,7 +626,27 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                           >
                             <div className="royal-nft-image">
                               {nft.imageUrl ? (
-                                <img src={nft.imageUrl} alt={nft.name || `Token #${listing.tokenId}`} />
+                                <>
+                                  <img 
+                                    src={nft.imageUrl} 
+                                    alt={nft.name || `Token #${listing.tokenId}`} 
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setLightboxImage(nft.imageUrl);
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                  />
+                                  <button 
+                                    className="royal-expand-button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setLightboxImage(nft.imageUrl);
+                                    }}
+                                    aria-label="Expand image"
+                                  >
+                                    <Maximize2 size={16} />
+                                  </button>
+                                </>
                               ) : (
                                 <ImageIcon size={32} />
                               )}
@@ -838,6 +859,32 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             </div>
           </section>
         </>
+      )}
+      
+      {/* Lightbox for full image view */}
+      {lightboxImage && (
+        <div 
+          className="royal-lightbox"
+          onClick={() => setLightboxImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image lightbox"
+        >
+          <button 
+            className="royal-lightbox-close"
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close lightbox"
+          >
+            <X size={24} />
+          </button>
+          <div className="royal-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={lightboxImage} 
+              alt="Full size NFT image" 
+              onClick={() => setLightboxImage(null)}
+            />
+          </div>
+        </div>
       )}
     </main>
   );
