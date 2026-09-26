@@ -9677,6 +9677,8 @@ article.royal-profile-nft > a {
   min-height:100vh;
   background:var(--royal-black);
   padding:0;
+  width:100%;
+  max-width:none;
 }
 
 .royal-collection-header {
@@ -10271,9 +10273,8 @@ article.royal-profile-nft > a {
   display:grid;
   grid-template-columns:280px 1fr;
   gap:20px;
-  padding:0 clamp(20px,4vw,60px) 60px;
-  max-width:1400px;
-  margin:0 auto;
+  padding:0 clamp(20px,4vw,60px) clamp(20px,4vw,60px);
+  width:100%;
 }
 
 .royal-collection-sidebar {
@@ -10348,6 +10349,7 @@ article.royal-profile-nft > a {
   display:flex;
   flex-direction:column;
   gap:16px;
+  width:100%;
 }
 
 .royal-collection-toolbar {

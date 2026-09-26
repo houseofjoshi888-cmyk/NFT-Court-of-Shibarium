@@ -1,12 +1,12 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Activity, Bell, BookOpen, CircleHelp, ExternalLink, Gem, Heart, LayoutDashboard, Menu, Network, Rocket, Search, ShoppingCart, Sparkles, TrendingUp, UserRound, Wallet, X, Shield } from "lucide-react";
+import { Activity, Bell, BookOpen, CircleHelp, ExternalLink, Gem, Heart, LayoutDashboard, Menu, Network, Rocket, Search, ShoppingCart, Sparkles, TrendingUp, UserRound, Wallet, X, Shield, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { ChainLogo } from "./chain-logo";
 import { marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
 import { addNotification } from "@/lib/notifications";
@@ -21,7 +21,7 @@ function readCartCounts() {
   });
 }
 
-const navigation: ReadonlyArray<{ href:string; label:string; icon:any; external?:boolean; admin?:boolean }> = [
+const navigation: ReadonlyArray<{ href:string; label:string; icon:LucideIcon; external?:boolean; admin?:boolean }> = [
   { href: "/", label: "Discover", icon: LayoutDashboard },
   { href: "/collections", label: "Collections", icon: Gem },
   { href: "https://swap.thehouseofjoshi.com/", label: "Swap", icon: Sparkles, external: true },
@@ -41,15 +41,18 @@ export function GlobalHeader() {
   const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
   const [chainStripHidden,setChainStripHidden]=useState(false);
   const [cartCounts,setCartCounts]=useState<ReturnType<typeof readCartCounts>>([]);
+  const [showNotifications,setShowNotifications]=useState(false);
   const [notificationCount,setNotificationCount]=useState(0);
   const [notifications,setNotifications]=useState<Array<{id:string;type:string;message:string;timestamp:number;read:boolean}>>([]);
-  const [showNotifications,setShowNotifications]=useState(false);
-  const [isAdmin,setIsAdmin]=useState(false);
+  const notificationsLoadedRef = useRef<Record<string, boolean>>({});
+  const prevAddressRef = useRef<string | undefined>(undefined);
   
-  // Admin wallet addresses (in production, this should be in a database)
-  const ADMIN_WALLETS = [
-    "0x69Bf308E5e30158072Cf9d2c6DE7b86F5Ae2f9B4", // Admin wallet
-  ];
+  const isAdmin = useMemo(() => {
+    const ADMIN_WALLETS = [
+      "0x69Bf308E5e30158072Cf9d2c6DE7b86F5Ae2f9B4", // Admin wallet
+    ];
+    return address ? ADMIN_WALLETS.includes(address.toLowerCase()) : false;
+  }, [address]);
   
   useEffect(()=>{
     const update=()=>setCartCounts(readCartCounts());
@@ -61,24 +64,38 @@ export function GlobalHeader() {
 
   // Load notifications when wallet connects
   useEffect(()=>{
-    if(!address){
+    // Handle wallet disconnection
+    if(!address && prevAddressRef.current){
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotificationCount(0);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotifications([]);
+      notificationsLoadedRef.current = {};
+      prevAddressRef.current = undefined;
       return;
     }
     
-    try{
-      const storedNotifications=localStorage.getItem(`hoj:notifications:${address.toLowerCase()}`);
-      if(storedNotifications){
-        const parsed=JSON.parse(storedNotifications);
-        setNotifications(parsed);
-        setNotificationCount(parsed.filter((n:{read:boolean})=>!n.read).length);
-      }else{
-        // Add welcome notification for new users
-        addNotification(address, "WELCOME", "Welcome to House of Joshi Marketplace! Connect your wallet to start trading NFTs.");
+    // Handle wallet connection
+    if(address && address !== prevAddressRef.current){
+      const addressKey = address.toLowerCase();
+      
+      try{
+        const storedNotifications=localStorage.getItem(`hoj:notifications:${addressKey}`);
+        if(storedNotifications){
+          const parsed=JSON.parse(storedNotifications);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setNotifications(parsed);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setNotificationCount(parsed.filter((n:{read:boolean})=>!n.read).length);
+        }else{
+          // Add welcome notification for new users
+          addNotification(address, "WELCOME", "Welcome to House of Joshi Marketplace! Connect your wallet to start trading NFTs.");
+        }
+        notificationsLoadedRef.current[addressKey] = true;
+        prevAddressRef.current = address;
+      }catch(error){
+        console.error("Failed to load notifications:",error);
       }
-    }catch(error){
-      console.error("Failed to load notifications:",error);
     }
   },[address]);
 
@@ -114,14 +131,6 @@ export function GlobalHeader() {
     setNotificationCount(0);
   };
 
-  // Check if wallet is admin
-  useEffect(()=>{
-    if(address){
-      setIsAdmin(ADMIN_WALLETS.includes(address.toLowerCase()));
-    }else{
-      setIsAdmin(false);
-    }
-  },[address]);
   useEffect(()=>{
     const rememberNftOrigin=(event:MouseEvent)=>{
       const target=event.target;

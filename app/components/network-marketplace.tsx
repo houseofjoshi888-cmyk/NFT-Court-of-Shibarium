@@ -195,7 +195,7 @@ export function NetworkMarketplace({ chainId }: { chainId: MarketplaceChainId })
   );
 }
 
-function ListedNft({ item, chain }: { item: Listing; chain: any }) {
+function ListedNft({ item, chain }: { item: Listing; chain: ReturnType<typeof getMarketplaceChain> }) {
   const [nft, setNft] = useState<NftMetadata | null>(null);
   const [artFailed, setArtFailed] = useState(false);
 
@@ -244,7 +244,7 @@ function ListedNft({ item, chain }: { item: Listing; chain: any }) {
   );
 }
 
-function ActivityEvent({ event, chain }: { event: Activity; chain: any }) {
+function ActivityEvent({ event, chain }: { event: Activity; chain: ReturnType<typeof getMarketplaceChain> }) {
   const [nft, setNft] = useState<NftMetadata | null>(null);
 
   useEffect(() => {

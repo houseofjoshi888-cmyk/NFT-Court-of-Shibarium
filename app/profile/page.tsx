@@ -584,7 +584,7 @@ export default function ProfilePage() {
                 <div className="royal-notification-info">
                   <h3><Bell size={20} /> Notification Information</h3>
                   <ul>
-                    <li><strong>Sale Notifications:</strong> You'll receive an email when your listed NFT is sold</li>
+                    <li><strong>Sale Notifications:</strong> You&apos;ll receive an email when your listed NFT is sold</li>
                     <li><strong>Offer Notifications:</strong> Get notified when someone makes an offer on your NFT</li>
                     <li><strong>Transaction Details:</strong> Each email includes price, buyer, and transaction links</li>
                     <li><strong>Privacy:</strong> Your email is only used for marketplace notifications</li>

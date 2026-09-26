@@ -1,3 +1,11 @@
+type Notification = {
+  id: string;
+  type: string;
+  message: string;
+  timestamp: number;
+  read: boolean;
+};
+
 // Helper function to add in-app notifications
 export function addNotification(
   walletAddress: string,
@@ -108,7 +116,7 @@ export function markNotificationAsRead(walletAddress: string, notificationId: st
   try {
     const key = `hoj:notifications:${walletAddress.toLowerCase()}`;
     const existing = JSON.parse(localStorage.getItem(key) || '[]');
-    const updated = existing.map((n: any) => 
+    const updated = existing.map((n: Notification) => 
       n.id === notificationId ? { ...n, read: true } : n
     );
     localStorage.setItem(key, JSON.stringify(updated));
@@ -124,7 +132,7 @@ export function markAllNotificationsAsRead(walletAddress: string) {
   try {
     const key = `hoj:notifications:${walletAddress.toLowerCase()}`;
     const existing = JSON.parse(localStorage.getItem(key) || '[]');
-    const updated = existing.map((n: any) => ({ ...n, read: true }));
+    const updated = existing.map((n: Notification) => ({ ...n, read: true }));
     localStorage.setItem(key, JSON.stringify(updated));
   } catch (error) {
     console.error('Failed to mark all notifications as read:', error);

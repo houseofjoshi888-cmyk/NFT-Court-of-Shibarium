@@ -1,9 +1,9 @@
 "use client";
 
-import { Shield, Settings, Globe, Coins, Layers, AlertTriangle, ToggleLeft, ToggleRight, Save, RefreshCw, Lock, Unlock, Database, Layout, Palette, Zap } from "lucide-react";
+import { Shield, Settings, Globe, Coins, AlertTriangle, ToggleLeft, ToggleRight, Save, RefreshCw, Lock, Layout, Zap } from "lucide-react";
 import { useAccount } from "wagmi";
-import { useState, useEffect } from "react";
-import { marketplaceChains, type MarketplaceChainId } from "@/lib/marketplace-chains";
+import { useState, useMemo } from "react";
+import { marketplaceChains } from "@/lib/marketplace-chains";
 import { getAdminConfig, type AdminConfig } from "@/lib/admin-config";
 
 // Admin wallet addresses (in production, this should be in a database or environment variable)
@@ -13,39 +13,27 @@ const ADMIN_WALLETS = [
 
 export default function AdminPage() {
   const { address } = useAccount();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [config, setConfig] = useState<AdminConfig>(getAdminConfig());
+  const loadedConfig = getAdminConfig();
+  
+  // Initialize contract addresses from marketplace-chains if config is empty
+  const initialContractAddresses = Object.keys(loadedConfig.contractAddresses).length === 0
+    ? Object.fromEntries(
+        Object.entries(marketplaceChains)
+          .filter(([, chain]) => chain.marketplaceAddress)
+          .map(([id, chain]) => [Number(id), chain.marketplaceAddress])
+      )
+    : loadedConfig.contractAddresses;
+
+  const isAdmin = useMemo(() => {
+    return address ? ADMIN_WALLETS.includes(address.toLowerCase()) : false;
+  }, [address]);
+
+  const [config, setConfig] = useState<AdminConfig>({ ...loadedConfig, contractAddresses: initialContractAddresses });
   const [activeTab, setActiveTab] = useState<"contracts" | "platform" | "features" | "fees" | "ui">("contracts");
   const [saving, setSaving] = useState(false);
   const [changesMade, setChangesMade] = useState(false);
 
-  useEffect(() => {
-    if (!address) {
-      setIsAdmin(false);
-      return;
-    }
-
-    // Check if wallet is admin (in production, verify against database)
-    const isWalletAdmin = ADMIN_WALLETS.includes(address.toLowerCase());
-    setIsAdmin(isWalletAdmin);
-
-    // Load existing config
-    const loadedConfig = getAdminConfig();
-    setConfig(loadedConfig);
-
-    // If no contract addresses in config, load from marketplace-chains.ts
-    if (Object.keys(loadedConfig.contractAddresses).length === 0) {
-      const contractAddresses: Record<number, string> = {};
-      Object.entries(marketplaceChains).forEach(([id, chain]) => {
-        if (chain.marketplaceAddress) {
-          contractAddresses[Number(id)] = chain.marketplaceAddress;
-        }
-      });
-      setConfig(prev => ({ ...prev, contractAddresses }));
-    }
-  }, [address]);
-
-  const handleConfigChange = (key: keyof AdminConfig, value: any) => {
+  const handleConfigChange = (key: keyof AdminConfig, value: string | number | boolean | Array<{ chainId: number; contract: string; name: string }>) => {
     setConfig(prev => ({ ...prev, [key]: value }));
     setChangesMade(true);
   };

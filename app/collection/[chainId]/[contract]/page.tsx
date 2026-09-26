@@ -101,7 +101,6 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [priceFilter, setPriceFilter] = useState("all");
   const [followKey, setFollowKey] = useState("");
   const [following, setFollowing] = useState(false);
-  const [contractInfo, setContractInfo] = useState<any>(null);
   const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: string; event: string }>>([]);
   const [traitDistribution, setTraitDistribution] = useState<Array<{ traitType: string; value: string; count: number; percentage: number }>>([]);
   const [rarityRankings, setRarityRankings] = useState<Array<{ tokenId: string; rank: number; score: number }>>([]);
