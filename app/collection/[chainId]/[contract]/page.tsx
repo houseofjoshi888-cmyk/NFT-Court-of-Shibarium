@@ -330,7 +330,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
           <section className="royal-collection-header">
             <div className="royal-collection-banner">
               {collectionData?.banner ? (
-                <img src={collectionData.banner} alt="Collection Banner" />
+                <img src={collectionData.banner || ""} alt="Collection Banner" />
               ) : (
                 <div className="royal-banner-placeholder">
                   <ImageIcon size={48} />
@@ -340,7 +340,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             <div className="royal-collection-info">
               <div className="royal-collection-avatar">
                 {collectionData?.avatar ? (
-                  <img src={collectionData.avatar} alt="Collection Avatar" />
+                  <img src={collectionData.avatar || ""} alt="Collection Avatar" />
                 ) : (
                   <div className="royal-avatar-placeholder">
                     <ImageIcon size={32} />
@@ -363,7 +363,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                 <p>{collectionData?.description || "No description available."}</p>
                 <div className="royal-collection-links">
                   {collectionData?.externalUrl && (
-                    <a href={collectionData.externalUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={collectionData.externalUrl || ""} target="_blank" rel="noopener noreferrer">
                       <ExternalLink size={16} />
                       Website
                     </a>
@@ -600,7 +600,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                 {collectionData?.externalUrl && (
                   <div className="royal-details-section">
                     <h3>Website</h3>
-                    <a href={collectionData.externalUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={collectionData.externalUrl || ""} target="_blank" rel="noopener noreferrer">
                       {collectionData.externalUrl} <ExternalLink size={14} />
                     </a>
                   </div>
@@ -624,25 +624,25 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                     {collectionData?.creator && (
                       <div>
                         <span>Creator</span>
-                        <code>{collectionData.creator}</code>
+                        <code>{collectionData?.creator}</code>
                       </div>
                     )}
                     {collectionData?.royaltyPercentage !== null && (
                       <div>
                         <span>Royalty</span>
-                        <strong>{collectionData.royaltyPercentage}%</strong>
+                        <strong>{collectionData?.royaltyPercentage}%</strong>
                       </div>
                     )}
                     {collectionData?.totalSupply !== null && (
                       <div>
                         <span>Total Supply</span>
-                        <strong>{collectionData.totalSupply.toLocaleString()}</strong>
+                        <strong>{collectionData?.totalSupply?.toLocaleString() || "—"}</strong>
                       </div>
                     )}
                     {collectionData?.mintedDate && (
                       <div>
                         <span>Minted Date</span>
-                        <strong>{new Date(collectionData.mintedDate).toLocaleDateString()}</strong>
+                        <strong>{new Date(collectionData.mintedDate || "").toLocaleDateString()}</strong>
                       </div>
                     )}
                   </div>
