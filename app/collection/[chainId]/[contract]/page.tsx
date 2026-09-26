@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List, ShoppingCart } from "lucide-react";
+import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List, ShoppingCart, Filter, Search, SlidersHorizontal, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getMarketplaceChain, type MarketplaceChainId } from "@/lib/marketplace-chains";
 import { formatEther } from "viem";
@@ -95,9 +95,9 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [floorComplete, setFloorComplete] = useState(false);
   const [currency, setCurrency] = useState("ETH");
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"items" | "activity" | "analytics" | "offers" | "details" | "traits">("items");
+  const [activeTab, setActiveTab] = useState<string>("items");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState<"price" | "recent" | "rarity">("recent");
+  const [sortBy, setSortBy] = useState<string>("recent");
   const [priceFilter, setPriceFilter] = useState("all");
   const [followKey, setFollowKey] = useState("");
   const [following, setFollowing] = useState(false);
@@ -105,6 +105,11 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [priceHistory, setPriceHistory] = useState<Array<{ date: string; price: string; event: string }>>([]);
   const [traitDistribution, setTraitDistribution] = useState<Array<{ traitType: string; value: string; count: number; percentage: number }>>([]);
   const [rarityRankings, setRarityRankings] = useState<Array<{ tokenId: string; rank: number; score: number }>>([]);
+  const [statusFilter, setStatusFilter] = useState<"all" | "listed" | "not_listed" | "owned">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [buySellTab, setBuySellTab] = useState<"buy" | "sell">("buy");
+  const [maxPrice, setMaxPrice] = useState("");
 
   const sweepListings = [...allListings]
     .filter(listing => listing.tokenType !== "ERC-1155" && BigInt(listing.price) > 0n)
@@ -312,9 +317,24 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
     if (priceFilter === "medium") return price >= 100_000_000_000_000_000n && price <= 1_000_000_000_000_000_000n;
     if (priceFilter === "high") return price > 1_000_000_000_000_000_000n;
     return true;
-  }).sort((a, b) => sortBy === "price"
-    ? (BigInt(a.listing.price) < BigInt(b.listing.price) ? -1 : BigInt(a.listing.price) > BigInt(b.listing.price) ? 1 : 0)
-    : b.listing.updatedBlock - a.listing.updatedBlock);
+  }).filter((nft) => {
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (nft.name?.toLowerCase().includes(query) || nft.listing.tokenId.includes(query));
+    }
+    return true;
+  }).filter(({listing}) => {
+    if (statusFilter === "listed") return BigInt(listing.price) > 0n;
+    if (statusFilter === "not_listed") return BigInt(listing.price) === 0n;
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === "price") {
+      return BigInt(a.listing.price) < BigInt(b.listing.price) ? -1 : BigInt(a.listing.price) > BigInt(b.listing.price) ? 1 : 0;
+    } else if (sortBy === "price_desc") {
+      return BigInt(a.listing.price) > BigInt(b.listing.price) ? -1 : BigInt(a.listing.price) < BigInt(b.listing.price) ? 1 : 0;
+    }
+    return b.listing.updatedBlock - a.listing.updatedBlock;
+  });
 
   return (
     <main className="royal-collection-page">
@@ -326,8 +346,8 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
         </div>
       ) : (
         <>
-          {/* Collection Header - Modern Layout */}
-          <section className="royal-collection-header">
+          {/* OpenSea-style Collection Header */}
+          <section className="royal-collection-header opensea-style">
             <div className="royal-collection-banner">
               {collectionData?.banner ? (
                 <img src={collectionData.banner || ""} alt="Collection Banner" />
@@ -337,44 +357,33 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                 </div>
               )}
             </div>
-            <div className="royal-collection-info">
-              <div className="royal-collection-avatar">
-                {collectionData?.avatar ? (
-                  <img src={collectionData.avatar || ""} alt="Collection Avatar" />
-                ) : (
-                  <div className="royal-avatar-placeholder">
-                    <ImageIcon size={32} />
-                  </div>
-                )}
-                {collectionData?.verified && (
-                  <div className="royal-verified-badge">
-                    <Check size={16} />
-                  </div>
-                )}
-              </div>
-              <div className="royal-collection-details">
-                <div className="royal-collection-header-top">
+            <div className="royal-collection-header-content">
+              <div className="royal-collection-avatar-row">
+                <div className="royal-collection-avatar">
+                  {collectionData?.avatar ? (
+                    <img src={collectionData.avatar || ""} alt="Collection Avatar" />
+                  ) : (
+                    <div className="royal-avatar-placeholder">
+                      <ImageIcon size={32} />
+                    </div>
+                  )}
+                  {collectionData?.verified && (
+                    <div className="royal-verified-badge">
+                      <Check size={16} />
+                    </div>
+                  )}
+                </div>
+                <div className="royal-collection-name-section">
                   <h1>{collectionData?.name || "Unknown Collection"}</h1>
                   <div className="royal-collection-badges">
-                    {collectionData?.verified && <span className="royal-badge verified">Verified</span>}
-                    <span className="royal-badge chain">{getMarketplaceChain(collectionChainId || 109).name}</span>
+                    <span className="royal-badge">{stats?.totalItems || 0}</span>
+                    {stats?.createdDate && <span className="royal-badge">{new Date(stats.createdDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase()}</span>}
+                    <span className="royal-badge">PFPS</span>
+                    {collectionData?.royaltyPercentage && <span className="royal-badge">{collectionData.royaltyPercentage}% CREATOR FEE</span>}
                   </div>
                 </div>
-                <p>{collectionData?.description || "No description available."}</p>
-                <div className="royal-collection-links">
-                  {collectionData?.externalUrl && (
-                    <a href={collectionData.externalUrl || ""} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={16} />
-                      Website
-                    </a>
-                  )}
-                  <a href={`${getMarketplaceChain(collectionChainId || 109).explorerUrl}/token/${contractAddress}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={16} />
-                    Explorer
-                  </a>
-                </div>
               </div>
-              <div className="royal-collection-actions">
+              <div className="royal-collection-actions-row">
                 <button className="royal-primary-button" onClick={toggleFollow} aria-pressed={following}>
                   <Heart size={16} />
                   {following ? "Following" : "Follow"}
@@ -383,67 +392,210 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                   <ExternalLink size={16} />
                   Share
                 </button>
+                {collectionData?.externalUrl && (
+                  <a href={collectionData.externalUrl || ""} target="_blank" rel="noopener noreferrer" className="royal-secondary-button">
+                    <ExternalLink size={16} />
+                    Website
+                  </a>
+                )}
               </div>
             </div>
           </section>
 
-          {/* Collection Stats - Modern Horizontal Layout */}
-          <section className="royal-collection-stats">
-            <div className="royal-stat-group">
-              <div className="royal-stat-item primary">
-                <span className="royal-stat-label">Floor Price</span>
-                <strong className="royal-stat-value">{stats && stats.floorPrice > 0n ? formatEther(stats.floorPrice) : "—"} {currency}</strong>
-              </div>
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Total Volume</span>
-                <strong className="royal-stat-value">{stats?.totalVolume ? formatEther(stats.totalVolume) : "—"} {currency}</strong>
-              </div>
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Owners</span>
-                <strong className="royal-stat-value">{stats?.totalOwners || 0}</strong>
-              </div>
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Items</span>
-                <strong className="royal-stat-value">{stats?.totalItems || 0}</strong>
-              </div>
+          {/* OpenSea-style Stats Bar */}
+          <section className="royal-collection-stats-bar opensea-style">
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">FLOOR PRICE</span>
+              <strong className="royal-stat-value">{stats && stats.floorPrice > 0n ? formatEther(stats.floorPrice) : "—"} {currency}</strong>
             </div>
-            <div className="royal-stat-group">
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Created</span>
-                <strong className="royal-stat-value">{stats?.createdDate ? new Date(stats.createdDate).toLocaleDateString() : "—"}</strong>
-              </div>
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Creator Fee</span>
-                <strong className="royal-stat-value">{collectionData?.royaltyPercentage ? `${collectionData.royaltyPercentage}%` : "—"}</strong>
-              </div>
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Chain</span>
-                <strong className="royal-stat-value">{getMarketplaceChain(collectionChainId || 109).name}</strong>
-              </div>
-              <div className="royal-stat-item">
-                <span className="royal-stat-label">Category</span>
-                <strong className="royal-stat-value">NFTs</strong>
-              </div>
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">1D FLOOR %</span>
+              <strong className="royal-stat-value">0%</strong>
+            </div>
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">TOP OFFER</span>
+              <strong className="royal-stat-value">—</strong>
+            </div>
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">24H VOLUME</span>
+              <strong className="royal-stat-value">{stats?.totalVolume ? formatEther(stats.totalVolume) : "—"} {currency}</strong>
+            </div>
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">TOTAL VOLUME</span>
+              <strong className="royal-stat-value">{stats?.totalVolume ? formatEther(stats.totalVolume) : "—"} {currency}</strong>
+            </div>
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">LISTED</span>
+              <strong className="royal-stat-value">{stats?.listedItems || 0} ({stats?.totalItems ? ((stats.listedItems / stats.totalItems) * 100).toFixed(1) : 0}%)</strong>
+            </div>
+            <div className="royal-stat-item">
+              <span className="royal-stat-label">OWNERS (UNIQUE)</span>
+              <strong className="royal-stat-value">{stats?.totalOwners || 0} ({stats?.totalItems ? ((stats.totalOwners / stats.totalItems) * 100).toFixed(1) : 0}%)</strong>
             </div>
           </section>
 
           {/* Collection Tabs */}
-          {sweepListings.length > 0 && (
-            <section className="royal-sweep-floor" aria-label="Sweep floor">
-              <div>
-                <span>COLLECTION CHECKOUT</span>
-                <h2>Sweep floor</h2>
-                <p>Select the lowest-priced available ERC-721 listings on this network.</p>
+          <section className="royal-collection-tabs opensea-style">
+            <button className={activeTab === "explore" ? "active" : ""} onClick={() => setActiveTab("explore")}>
+              Explore
+            </button>
+            <button className={activeTab === "items" ? "active" : ""} onClick={() => setActiveTab("items")}>
+              Items
+            </button>
+            <button className={activeTab === "offers" ? "active" : ""} onClick={() => setActiveTab("offers")}>
+              Offers
+            </button>
+            <button className={activeTab === "holders" ? "active" : ""} onClick={() => setActiveTab("holders")}>
+              Holders
+            </button>
+            <button className={activeTab === "traits" ? "active" : ""} onClick={() => setActiveTab("traits")}>
+              Traits
+            </button>
+            <button className={activeTab === "activity" ? "active" : ""} onClick={() => setActiveTab("activity")}>
+              Activity
+            </button>
+            <button className={activeTab === "analytics" ? "active" : ""} onClick={() => setActiveTab("analytics")}>
+              Analytics
+            </button>
+            <button className={activeTab === "details" ? "active" : ""} onClick={() => setActiveTab("details")}>
+              About
+            </button>
+          </section>
+
+          {/* Main Content Area with Sidebar */}
+          <section className="royal-collection-main-layout">
+            {/* Sidebar Filters */}
+            <aside className="royal-collection-sidebar">
+              <div className="royal-filter-section">
+                <h3>Status</h3>
+                <div className="royal-filter-buttons">
+                  <button className={statusFilter === "all" ? "active" : ""} onClick={() => setStatusFilter("all")}>
+                    All
+                  </button>
+                  <button className={statusFilter === "listed" ? "active" : ""} onClick={() => setStatusFilter("listed")}>
+                    Listed
+                  </button>
+                  <button className={statusFilter === "not_listed" ? "active" : ""} onClick={() => setStatusFilter("not_listed")}>
+                    Not Listed
+                  </button>
+                  <button className={statusFilter === "owned" ? "active" : ""} onClick={() => setStatusFilter("owned")}>
+                    Owned by you
+                  </button>
+                </div>
               </div>
-              <label>
-                NFTs
-                <input type="number" min={1} max={sweepListings.length} value={sweepQuantity} onChange={event => setSweepQuantity(Math.min(sweepListings.length, Math.max(1, Number(event.target.value) || 1)))} />
-              </label>
-              <div className="royal-sweep-total"><span>{sweepCount} NFTs · current total</span><strong>{formatEther(sweepTotal)} {currency}</strong></div>
-              <button type="button" onClick={addSweepToCart}><ShoppingCart size={16} /> Review in cart</button>
-              <small>Prices and availability are rechecked by the marketplace contract at checkout. Your wallet confirms the purchase.</small>
-            </section>
-          )}
+
+              <div className="royal-filter-section">
+                <h3>Rarity</h3>
+                <select className="royal-filter-select">
+                  <option>All Rarities</option>
+                  <option>Common</option>
+                  <option>Rare</option>
+                  <option>Epic</option>
+                  <option>Legendary</option>
+                </select>
+              </div>
+
+              <div className="royal-filter-section">
+                <h3>Price</h3>
+                <select className="royal-filter-select">
+                  <option>All Prices</option>
+                  <option>Under 0.1</option>
+                  <option>0.1 - 1</option>
+                  <option>1 - 10</option>
+                  <option>Over 10</option>
+                </select>
+              </div>
+
+              <div className="royal-filter-section">
+                <h3>Marketplaces</h3>
+                <select className="royal-filter-select">
+                  <option>All Marketplaces</option>
+                  <option>House of Joshi</option>
+                </select>
+              </div>
+            </aside>
+
+            {/* Main Content */}
+            <div className="royal-collection-content-area">
+              {/* Search and Filter Bar */}
+              <div className="royal-collection-toolbar">
+                <div className="royal-search-bar">
+                  <Search size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search by item or trait"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="royal-toolbar-actions">
+                  <select className="royal-sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <option value="recent">Recently Listed</option>
+                    <option value="price">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                  <div className="royal-view-toggle">
+                    <button className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")}>
+                      <Grid3X3 size={16} />
+                    </button>
+                    <button className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")}>
+                      <List size={16} />
+                    </button>
+                  </div>
+                  <button className="royal-insights-button">
+                    <Activity size={16} />
+                    Insights
+                  </button>
+                </div>
+              </div>
+
+              {/* Item Count */}
+              <div className="royal-item-count">
+                <strong>{stats?.totalItems || 0} ITEMS</strong>
+              </div>
+
+              {/* Sweep Floor Section */}
+              {sweepListings.length > 0 && (
+                <section className="royal-sweep-floor opensea-style" aria-label="Sweep floor">
+                  <div className="royal-sweep-tabs">
+                    <button className={buySellTab === "buy" ? "active" : ""} onClick={() => setBuySellTab("buy")}>
+                      Buy
+                    </button>
+                    <button className={buySellTab === "sell" ? "active" : ""} onClick={() => setBuySellTab("sell")}>
+                      Sell
+                    </button>
+                  </div>
+                  <div className="royal-sweep-controls">
+                    <div className="royal-sweep-input-group">
+                      <label>Quantity</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={sweepListings.length}
+                        value={sweepQuantity}
+                        onChange={event => setSweepQuantity(Math.min(sweepListings.length, Math.max(1, Number(event.target.value) || 1)))}
+                      />
+                    </div>
+                    <div className="royal-sweep-input-group">
+                      <label>Max Price Per Item</label>
+                      <input
+                        type="text"
+                        placeholder={`Max price in ${currency}`}
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                      />
+                    </div>
+                    <div className="royal-sweep-actions">
+                      <button className="royal-primary-button" onClick={addSweepToCart}>
+                        Make Collection Offer
+                      </button>
+                      <button className="royal-secondary-button" onClick={addSweepToCart}>
+                        Buy Floor
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              )}
           <section className="royal-collection-tabs">
             <button className={activeTab === "items" ? "active" : ""} onClick={() => setActiveTab("items")}>
               Items
@@ -465,235 +617,230 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
             </button>
           </section>
 
-          {/* Collection Filters */}
-          <section className="royal-collection-filters">
-            <div className="royal-filter-group">
-              <span>Sort by</span>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
-                <option value="recent">Recently Listed</option>
-                <option value="price">Price: Low to High</option>
-              </select>
-            </div>
-            <div className="royal-filter-group">
-              <span>Price</span>
-              <select value={priceFilter} onChange={event => setPriceFilter(event.target.value)}>
-                <option value="all">All Prices</option>
-                <option value="low">Under 0.1</option>
-                <option value="medium">0.1 - 1</option>
-                <option value="high">Over 1</option>
-              </select>
-            </div>
-            <div className="royal-filter-group">
-              <span>View</span>
-              <div className="royal-view-toggle">
-                <button className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")}>
-                  <Grid3X3 size={16} />
-                </button>
-                <button className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")}>
-                  <List size={16} />
-                </button>
-              </div>
-            </div>
-          </section>
+              {/* Collection Content */}
+              <div className="royal-collection-tab-content">
+                {activeTab === "items" && (
+                  <div className={`royal-nft-grid ${viewMode}`}>
+                    {sortedNfts.length > 0 ? (
+                      sortedNfts.map((nft) => {
+                        const listing = nft.listing;
+                        const chain = getMarketplaceChain(listing.chainId);
+                        const lastSale = activity.find(a => a.tokenId === listing.tokenId && ["sold", "offer_accepted"].includes(a.eventType));
+                        return (
+                          <Link
+                            key={listing.id}
+                            href={`/nft/${listing.chainId}/${listing.nftAddress}/${listing.tokenId}`}
+                            className="royal-nft-card opensea-style"
+                          >
+                            <div className="royal-nft-image" style={nft.imageUrl ? { backgroundImage: `url(${nft.imageUrl})` } : undefined}>
+                              {!nft.imageUrl && <ImageIcon size={32} />}
+                            </div>
+                            <div className="royal-nft-details">
+                              <div className="royal-nft-header">
+                                <small>{collectionData?.name?.slice(0, 2).toUpperCase() || "UNK"}</small>
+                                <strong>#{listing.tokenId}</strong>
+                              </div>
+                              <div className="royal-nft-price">
+                                <span>{formatEther(BigInt(listing.price))} {chain.currency}</span>
+                              </div>
+                              {lastSale && (
+                                <div className="royal-nft-last-sale">
+                                  <small>Last sale {formatEther(BigInt(lastSale.price || "0"))} {chain.currency}</small>
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        );
+                      })
+                    ) : (
+                      <div className="royal-empty-state">
+                        <ImageIcon size={48} />
+                        <h2>No items listed</h2>
+                        <p>This collection has no items currently listed for sale.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-          {/* Collection Content */}
-          <section className="royal-collection-content">
-            {activeTab === "items" && (
-              <div className={`royal-nft-grid ${viewMode}`}>
-                {sortedNfts.length > 0 ? (
-                  sortedNfts.map((nft) => {
-                    const listing = nft.listing;
-                    const chain = getMarketplaceChain(listing.chainId);
-                    return (
-                      <Link
-                        key={listing.id}
-                        href={`/nft/${listing.chainId}/${listing.nftAddress}/${listing.tokenId}`}
-                        className="royal-nft-card"
-                      >
-                        <div className="royal-nft-image" style={nft.imageUrl ? { backgroundImage: `url(${nft.imageUrl})` } : undefined}>
-                          {!nft.imageUrl && <ImageIcon size={32} />}
-                        </div>
-                        <div className="royal-nft-details">
-                          <small>{nft.collection || "Unknown Collection"}</small>
-                          <h3>{nft.name || `Token #${listing.tokenId}`}</h3>
-                          <div className="royal-nft-price">
-                            <span>{formatEther(BigInt(listing.price))} {chain.currency}</span>
+                {activeTab === "activity" && (
+                  <div className="royal-activity-timeline">
+                    {activity.length > 0 ? (
+                      activity.map((item) => {
+                        const chain = getMarketplaceChain(item.chainId);
+                        return (
+                          <div key={item.id} className="royal-activity-item">
+                            <div className="royal-activity-icon">
+                              {item.eventType === "sold" && <TrendingUp size={16} />}
+                              {item.eventType === "listed" && <Activity size={16} />}
+                              {item.eventType === "canceled" && <Clock size={16} />}
+                            </div>
+                            <div className="royal-activity-content">
+                              <span className="royal-activity-type">{item.eventType.toUpperCase()}</span>
+                              <p>#{item.tokenId} • {item.price ? `${formatEther(BigInt(item.price))} ${chain.currency}` : "—"}</p>
+                            </div>
+                            <div className="royal-activity-time">
+                              <small>Block {item.blockNumber}</small>
+                            </div>
                           </div>
-                        </div>
-                      </Link>
-                    );
-                  })
-                ) : (
+                        );
+                      })
+                    ) : (
+                      <div className="royal-empty-state">
+                        <Activity size={64} />
+                        <h2>No activity yet</h2>
+                        <p>This collection has no recorded activity.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "analytics" && (
+                  <div className="royal-analytics-dashboard">
+                    <div className="royal-analytics-card">
+                      <h3>Volume Chart</h3>
+                      <p>Volume tracking coming soon</p>
+                    </div>
+                    <div className="royal-analytics-card">
+                      <h3>Price Distribution</h3>
+                      <p>Price analytics coming soon</p>
+                    </div>
+                    <div className="royal-analytics-card">
+                      <h3>Rarity Rankings</h3>
+                      <p>Rarity analysis coming soon</p>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "offers" && (
                   <div className="royal-empty-state">
-                    <ImageIcon size={48} />
-                    <h2>No items listed</h2>
-                    <p>This collection has no items currently listed for sale.</p>
+                    <Heart size={64} />
+                    <h2>No offers yet</h2>
+                    <p>Offers on this collection will appear here.</p>
                   </div>
                 )}
-              </div>
-            )}
 
-            {activeTab === "activity" && (
-              <div className="royal-activity-timeline">
-                {activity.length > 0 ? (
-                  activity.map((item) => {
-                    const chain = getMarketplaceChain(item.chainId);
-                    return (
-                      <div key={item.id} className="royal-activity-item">
-                        <div className="royal-activity-icon">
-                          {item.eventType === "sold" && <TrendingUp size={16} />}
-                          {item.eventType === "listed" && <Activity size={16} />}
-                          {item.eventType === "canceled" && <Clock size={16} />}
-                        </div>
-                        <div className="royal-activity-content">
-                          <span className="royal-activity-type">{item.eventType.toUpperCase()}</span>
-                          <p>#{item.tokenId} • {item.price ? `${formatEther(BigInt(item.price))} ${chain.currency}` : "—"}</p>
-                        </div>
-                        <div className="royal-activity-time">
-                          <small>Block {item.blockNumber}</small>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
+                {activeTab === "holders" && (
                   <div className="royal-empty-state">
-                    <Activity size={64} />
-                    <h2>No activity yet</h2>
-                    <p>This collection has no recorded activity.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "analytics" && (
-              <div className="royal-analytics-dashboard">
-                <div className="royal-analytics-card">
-                  <h3>Volume Chart</h3>
-                  <p>Volume tracking coming soon</p>
-                </div>
-                <div className="royal-analytics-card">
-                  <h3>Price Distribution</h3>
-                  <p>Price analytics coming soon</p>
-                </div>
-                <div className="royal-analytics-card">
-                  <h3>Rarity Rankings</h3>
-                  <p>Rarity analysis coming soon</p>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "offers" && (
-              <div className="royal-empty-state">
-                <Heart size={64} />
-                <h2>No offers yet</h2>
-                <p>Offers on this collection will appear here.</p>
-              </div>
-            )}
-
-            {activeTab === "details" && (
-              <div className="royal-collection-details-tab">
-                <div className="royal-details-section">
-                  <h3>About Collection</h3>
-                  <p>{collectionData?.description || "No description available for this collection."}</p>
-                </div>
-
-                {collectionData?.externalUrl && (
-                  <div className="royal-details-section">
-                    <h3>Website</h3>
-                    <a href={collectionData.externalUrl || ""} target="_blank" rel="noopener noreferrer">
-                      {collectionData.externalUrl} <ExternalLink size={14} />
-                    </a>
+                    <Users size={64} />
+                    <h2>Holder information coming soon</h2>
+                    <p>Unique holder statistics will appear here.</p>
                   </div>
                 )}
 
-                <div className="royal-details-section">
-                  <h3>Contract Information</h3>
-                  <div className="royal-contract-info">
-                    <div>
-                      <span>Contract Address</span>
-                      <code>{contractAddress || "Loading..."}</code>
-                    </div>
-                    <div>
-                      <span>Token Standard</span>
-                      <strong>{collectionData?.standard || "ERC-721"}</strong>
-                    </div>
-                    <div>
-                      <span>Chain</span>
-                      <strong>{getMarketplaceChain(collectionChainId || 109).name}</strong>
-                    </div>
-                    {collectionData?.creator && (
-                      <div>
-                        <span>Creator</span>
-                        <code>{collectionData?.creator}</code>
-                      </div>
-                    )}
-                    {collectionData?.royaltyPercentage !== null && (
-                      <div>
-                        <span>Royalty</span>
-                        <strong>{collectionData?.royaltyPercentage}%</strong>
-                      </div>
-                    )}
-                    {collectionData?.totalSupply !== null && (
-                      <div>
-                        <span>Total Supply</span>
-                        <strong>{collectionData?.totalSupply?.toLocaleString() || "—"}</strong>
-                      </div>
-                    )}
-                    {collectionData?.mintedDate && (
-                      <div>
-                        <span>Minted Date</span>
-                        <strong>{new Date(collectionData.mintedDate || "").toLocaleDateString()}</strong>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="royal-details-section">
-                  <h3>Links</h3>
-                  <div className="royal-social-links">
-                    {contractAddress && (
-                      <a href={`${getMarketplaceChain(collectionChainId || 109).explorerUrl}/token/${contractAddress}`} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink size={14} /> View on Explorer
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "traits" && (
-              <div className="royal-traits-tab">
-                {traitDistribution.length > 0 ? (
-                  <div className="royal-traits-distribution">
-                    <h3>Trait Distribution</h3>
-                    <p>Most common traits in this collection based on listed items.</p>
-                    <div className="royal-traits-grid">
-                      {traitDistribution.map((trait, index) => (
-                        <div key={index} className="royal-trait-card">
-                          <div className="royal-trait-header">
-                            <span>{trait.traitType}</span>
-                            <strong>{trait.value}</strong>
-                          </div>
-                          <div className="royal-trait-stats">
-                            <span>{trait.count} NFTs</span>
-                            <strong>{trait.percentage.toFixed(1)}%</strong>
-                          </div>
-                          <div className="royal-trait-bar">
-                            <div style={{ width: `${trait.percentage}%` }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
+                {activeTab === "explore" && (
                   <div className="royal-empty-state">
                     <Activity size={64} />
-                    <h2>No trait data available</h2>
-                    <p>Trait information will appear when NFTs with metadata are listed.</p>
+                    <h2>Explore coming soon</h2>
+                    <p>Collection exploration features will appear here.</p>
+                  </div>
+                )}
+
+                {activeTab === "details" && (
+                  <div className="royal-collection-details-tab">
+                    <div className="royal-details-section">
+                      <h3>About Collection</h3>
+                      <p>{collectionData?.description || "No description available for this collection."}</p>
+                    </div>
+
+                    {collectionData?.externalUrl && (
+                      <div className="royal-details-section">
+                        <h3>Website</h3>
+                        <a href={collectionData.externalUrl || ""} target="_blank" rel="noopener noreferrer">
+                          {collectionData.externalUrl} <ExternalLink size={14} />
+                        </a>
+                      </div>
+                    )}
+
+                    <div className="royal-details-section">
+                      <h3>Contract Information</h3>
+                      <div className="royal-contract-info">
+                        <div>
+                          <span>Contract Address</span>
+                          <code>{contractAddress || "Loading..."}</code>
+                        </div>
+                        <div>
+                          <span>Token Standard</span>
+                          <strong>{collectionData?.standard || "ERC-721"}</strong>
+                        </div>
+                        <div>
+                          <span>Chain</span>
+                          <strong>{getMarketplaceChain(collectionChainId || 109).name}</strong>
+                        </div>
+                        {collectionData?.creator && (
+                          <div>
+                            <span>Creator</span>
+                            <code>{collectionData?.creator}</code>
+                          </div>
+                        )}
+                        {collectionData?.royaltyPercentage !== null && (
+                          <div>
+                            <span>Royalty</span>
+                            <strong>{collectionData?.royaltyPercentage}%</strong>
+                          </div>
+                        )}
+                        {collectionData?.totalSupply !== null && (
+                          <div>
+                            <span>Total Supply</span>
+                            <strong>{collectionData?.totalSupply?.toLocaleString() || "—"}</strong>
+                          </div>
+                        )}
+                        {collectionData?.mintedDate && (
+                          <div>
+                            <span>Minted Date</span>
+                            <strong>{new Date(collectionData.mintedDate || "").toLocaleDateString()}</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="royal-details-section">
+                      <h3>Links</h3>
+                      <div className="royal-social-links">
+                        {contractAddress && (
+                          <a href={`${getMarketplaceChain(collectionChainId || 109).explorerUrl}/token/${contractAddress}`} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink size={14} /> View on Explorer
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "traits" && (
+                  <div className="royal-traits-tab">
+                    {traitDistribution.length > 0 ? (
+                      <div className="royal-traits-distribution">
+                        <h3>Trait Distribution</h3>
+                        <p>Most common traits in this collection based on listed items.</p>
+                        <div className="royal-traits-grid">
+                          {traitDistribution.map((trait, index) => (
+                            <div key={index} className="royal-trait-card">
+                              <div className="royal-trait-header">
+                                <span>{trait.traitType}</span>
+                                <strong>{trait.value}</strong>
+                              </div>
+                              <div className="royal-trait-stats">
+                                <span>{trait.count} NFTs</span>
+                                <strong>{trait.percentage.toFixed(1)}%</strong>
+                              </div>
+                              <div className="royal-trait-bar">
+                                <div style={{ width: `${trait.percentage}%` }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="royal-empty-state">
+                        <Activity size={64} />
+                        <h2>No trait data available</h2>
+                        <p>Trait information will appear when NFTs with metadata are listed.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+            </div>
           </section>
         </>
       )}
