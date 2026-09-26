@@ -11875,6 +11875,11 @@ article.royal-profile-nft > a {
   flex:none; align-self:center; width:min(100%,84dvh); height:auto; min-height:0;
   aspect-ratio:1; background:#000;
 }
+.royal-sweep-floor.opensea-style { background:#000; }
+.royal-sweep-floor.opensea-style h2 { margin:0 0 6px; font-size:20px; }
+.royal-sweep-floor.opensea-style p { margin:0 0 16px; }
+.royal-sweep-floor.opensea-style input { background:#000; }
+.royal-sweep-floor.opensea-style button:disabled { opacity:.45; cursor:not-allowed; }
 .royal-nft-page .royal-nft-info-scroll { grid-column:2; overflow:visible; min-height:0; background:#000; }
 .royal-nft-page .royal-nft-info-scroll .royal-nft-tabs { position:static; background:#000; }
 .royal-nft-page :is(.royal-nft-market-info,.royal-nft-action-section,.royal-nft-accordion,.royal-nft-thumb) {

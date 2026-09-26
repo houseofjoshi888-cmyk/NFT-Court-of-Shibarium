@@ -3,7 +3,7 @@
 import { ImageIcon, TrendingUp, Activity, Users, DollarSign, Zap, Clock, Heart, ExternalLink, Check, Grid3X3, List, ShoppingCart, Filter, Search, SlidersHorizontal, X, Maximize2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getMarketplaceChain, type MarketplaceChainId } from "@/lib/marketplace-chains";
-import { formatEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import Link from "next/link";
 
 type NftMetadata = {
@@ -107,12 +107,18 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
   const [statusFilter, setStatusFilter] = useState<"all" | "listed" | "not_listed" | "owned">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [buySellTab, setBuySellTab] = useState<"buy" | "sell">("buy");
   const [maxPrice, setMaxPrice] = useState("");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
+  let maxPriceWei: bigint | null = null;
+  let maxPriceInvalid = false;
+  if (maxPrice.trim()) {
+    try { maxPriceWei = parseEther(maxPrice.trim()); if (maxPriceWei <= 0n) maxPriceInvalid = true; }
+    catch { maxPriceInvalid = true; }
+  }
   const sweepListings = [...allListings]
     .filter(listing => listing.tokenType !== "ERC-1155" && BigInt(listing.price) > 0n)
+    .filter(listing => !maxPriceInvalid && (maxPriceWei === null || BigInt(listing.price) <= maxPriceWei))
     .sort((a, b) => BigInt(a.price) < BigInt(b.price) ? -1 : BigInt(a.price) > BigInt(b.price) ? 1 : 0);
   const sweepCount = Math.min(Math.max(1, sweepQuantity), sweepListings.length);
   const sweepSelection = sweepListings.slice(0, sweepCount);
@@ -535,45 +541,40 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
               </div>
 
               {/* Sweep Floor Section */}
-              {sweepListings.length > 0 && (
+              {allListings.some(listing => listing.tokenType !== "ERC-1155" && BigInt(listing.price) > 0n) && (
                 <section className="royal-sweep-floor opensea-style" aria-label="Sweep floor">
-                  <div className="royal-sweep-tabs">
-                    <button className={buySellTab === "buy" ? "active" : ""} onClick={() => setBuySellTab("buy")}>
-                      Buy
-                    </button>
-                    <button className={buySellTab === "sell" ? "active" : ""} onClick={() => setBuySellTab("sell")}>
-                      Sell
-                    </button>
-                  </div>
+                  <h2>Sweep floor</h2>
+                  <p>Choose the lowest priced active listings in this collection.</p>
                   <div className="royal-sweep-controls">
                     <div className="royal-sweep-input-group">
-                      <label>Quantity</label>
+                      <label htmlFor="sweep-quantity">Quantity</label>
                       <input
+                        id="sweep-quantity"
                         type="number"
                         min={1}
-                        max={sweepListings.length}
+                        max={Math.max(1, sweepListings.length)}
                         value={sweepQuantity}
-                        onChange={event => setSweepQuantity(Math.min(sweepListings.length, Math.max(1, Number(event.target.value) || 1)))}
+                        onChange={event => setSweepQuantity(Math.min(Math.max(1, sweepListings.length), Math.max(1, Number(event.target.value) || 1)))}
                       />
                     </div>
                     <div className="royal-sweep-input-group">
-                      <label>Max Price Per Item</label>
+                      <label htmlFor="sweep-max-price">Max price per item</label>
                       <input
-                        type="text"
+                        id="sweep-max-price"
+                        type="number"
+                        min="0"
+                        step="any"
                         placeholder={`Max price in ${currency}`}
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(e.target.value)}
                       />
                     </div>
-                    <div className="royal-sweep-actions">
-                      <button className="royal-primary-button" onClick={addSweepToCart}>
-                        Make Collection Offer
-                      </button>
-                      <button className="royal-secondary-button" onClick={addSweepToCart}>
-                        Buy Floor
-                      </button>
-                    </div>
+                    <div className="royal-sweep-total" role="status"><span>{sweepSelection.length} selected · total</span><strong>{formatEther(sweepTotal)} {currency}</strong></div>
+                    <div className="royal-sweep-actions"><button className="royal-primary-button" disabled={!sweepSelection.length || maxPriceInvalid} onClick={addSweepToCart}><ShoppingCart size={16}/> Sweep floor</button></div>
                   </div>
+                  {maxPriceInvalid && <small>Enter a valid price greater than zero.</small>}
+                  {!maxPriceInvalid && maxPrice.trim() && !sweepSelection.length && <small>No active listings match that price.</small>}
+                  {!floorComplete && <small>Listings are still syncing; review current prices in the cart before buying.</small>}
                 </section>
               )}
           <section className="royal-collection-tabs">
