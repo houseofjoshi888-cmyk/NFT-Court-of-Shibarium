@@ -121,7 +121,7 @@ function FeaturedArtwork({ listing, onExpand }: { listing: IndexedListing; onExp
           }}
           aria-label="Expand image"
         >
-          <Maximize2 size={16} />
+          <Maximize2 size={20} />
         </button>
       </>
     )

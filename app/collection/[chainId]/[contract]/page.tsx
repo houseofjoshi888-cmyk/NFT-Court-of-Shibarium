@@ -644,7 +644,7 @@ export default function CollectionPage({ params }: { params: Promise<{ chainId: 
                                     }}
                                     aria-label="Expand image"
                                   >
-                                    <Maximize2 size={16} />
+                                    <Maximize2 size={20} />
                                   </button>
                                 </>
                               ) : (
